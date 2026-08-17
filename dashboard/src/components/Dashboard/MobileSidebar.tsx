@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux";
 import { LogOut, Menu } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import SidebarItem from "./SidebarItem";
 import type { SidebarItem as SidebarItemType } from "./types";
@@ -12,28 +13,40 @@ import { APP_CONFIG } from "@/config";
 
 export default function MobileSidebar({ items }: { items: SidebarItemType[] }) {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        >
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64 flex flex-col">
+      <SheetContent
+        side="left"
+        className="p-0 w-64 flex flex-col bg-sidebar text-sidebar-foreground border-sidebar-border"
+      >
         <SheetTitle className="sr-only">Navigation</SheetTitle>
         {/* Logo — mirrors DesktopSidebar */}
-        <div className="flex items-center h-16 border-b shrink-0 px-4">
-          <img
-            src={APP_CONFIG.logo}
-            alt="Logo"
-            className={cn(
-              "object-contain shrink-0",
-              APP_CONFIG.showName ? "w-8 h-8" : "w-full h-12"
-            )}
-          />
+        <div className="flex items-center h-16 border-b border-sidebar-border shrink-0 px-4">
+          {APP_CONFIG.showLogo && (
+            <img
+              src={APP_CONFIG.logo}
+              alt="Logo"
+              className={cn(
+                "object-contain shrink-0",
+                APP_CONFIG.showName ? "w-8 h-8" : "w-full h-12"
+              )}
+            />
+          )}
           {APP_CONFIG.showName && (
-            <span className="ml-3 font-bold text-lg truncate">{APP_CONFIG.name}</span>
+            <span className={cn("font-bold text-lg truncate", APP_CONFIG.showLogo && "ml-3")}>
+              {APP_CONFIG.name}
+            </span>
           )}
         </div>
 
@@ -45,15 +58,15 @@ export default function MobileSidebar({ items }: { items: SidebarItemType[] }) {
         </nav>
 
         {/* Logout */}
-        <div className="border-t p-2 shrink-0">
+        <div className="border-t border-sidebar-border p-2 shrink-0">
           <button
             onClick={() => dispatch(logout())}
             className={cn(
-              "flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              "flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/20 hover:text-white"
             )}
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            <span>Logout</span>
+            <span>{t("common.logout")}</span>
           </button>
         </div>
       </SheetContent>

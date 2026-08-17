@@ -1,5 +1,6 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ const iconVariantClass: Record<StatsCardVariant, string> = {
   success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
   warning: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   danger: "bg-red-500/15 text-red-600 dark:text-red-400",
-  info: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+  info: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
 };
 
 const sizeConfig: Record<
@@ -72,7 +73,8 @@ const sizeConfig: Record<
 // ─── Trend sub-component ──────────────────────────────────────────────────────
 
 function Trend({ trend }: { trend: StatsCardTrend }) {
-  const { value, label = "vs last period", positiveIsGood = true } = trend;
+  const { t } = useTranslation();
+  const { value, label = t("statsCard.vsLastPeriod"), positiveIsGood = true } = trend;
   const isUp = value > 0;
   const isNeutral = value === 0;
   const isGood = positiveIsGood ? isUp : !isUp;
@@ -88,7 +90,7 @@ function Trend({ trend }: { trend: StatsCardTrend }) {
   return (
     <span className={cn("flex items-center gap-1 text-xs font-medium", colorClass)}>
       <Icon className="h-3.5 w-3.5 shrink-0" />
-      {isNeutral ? "No change" : `${isUp ? "+" : ""}${value}%`}
+      {isNeutral ? t("statsCard.noChange") : `${isUp ? "+" : ""}${value}%`}
       {label && <span className="text-muted-foreground font-normal">{label}</span>}
     </span>
   );

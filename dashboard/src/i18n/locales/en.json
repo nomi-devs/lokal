@@ -3,13 +3,1066 @@
     "overview": "Overview",
     "banners": "Banners",
     "categories": "Categories",
+    "products": "Products",
     "userManagement": "Users",
     "vendors": "Vendors",
     "orders": "Orders",
-    "analytics": "Analytics",
+    "payments": "Payments",
+    "reviews": "Reviews",
     "notifications": "Notifications",
     "settings": "Settings",
     "send": "Send",
     "inbox": "Inbox"
+  },
+  "common": {
+    "logout": "Logout",
+    "actions": {
+      "view": "View",
+      "viewDetails": "View Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteSelected": "Delete selected",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "suspendSelected": "Suspend selected",
+      "reinstate": "Reinstate",
+      "hide": "Hide",
+      "unhide": "Unhide",
+      "publish": "Publish",
+      "preview": "Preview",
+      "markAsRead": "Mark as read",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "confirm": "Confirm"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "suspended": "Suspended",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "scheduled": "Scheduled",
+      "hidden": "Hidden",
+      "published": "Published",
+      "draft": "Draft",
+      "archived": "Archived",
+      "cancelled": "Cancelled",
+      "delivered": "Delivered",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "refunded": "Refunded",
+      "info": "Info",
+      "warning": "Warning",
+      "alert": "Alert",
+      "system": "System",
+      "normal": "Normal",
+      "high": "High",
+      "critical": "Critical",
+      "read": "Read",
+      "unread": "Unread",
+      "admin": "Admin",
+      "editor": "Editor",
+      "user": "User",
+      "vendor": "Vendor",
+      "confirmed": "Confirmed",
+      "success": "Success",
+      "failed": "Failed"
+    }
+  },
+  "table": {
+    "search": "Search…",
+    "clear": "Clear",
+    "rowsPerPage": "Rows per page",
+    "noResults": "No results",
+    "resultsRange": "{{start}}–{{end}} of {{total}}",
+    "filterAll": "{{label}}: All",
+    "selectedCount": "{{count}} selected",
+    "defaultEmptyTitle": "No results found",
+    "actions": "Actions"
+  },
+  "statsCard": {
+    "noChange": "No change",
+    "vsLastPeriod": "vs last period",
+    "vsLastMonth": "vs last month"
+  },
+  "dashboard": {
+    "topbarTitle": "Overview",
+    "stats": {
+      "totalRevenue": "Total Revenue",
+      "activeUsers": "Active Users",
+      "newOrders": "New Orders",
+      "growthRate": "Growth Rate"
+    },
+    "topCategories": {
+      "title": "Top Categories by Revenue"
+    },
+    "statusDistribution": {
+      "title": "Project Status Distribution",
+      "active": "Active",
+      "completed": "Completed",
+      "draft": "Draft",
+      "cancelled": "Cancelled"
+    }
+  },
+  "users": {
+    "topbarTitle": "User Management",
+    "title": "All Users",
+    "description": "Manage user accounts, roles, and access.",
+    "searchPlaceholder": "Search by name or email…",
+    "filterRole": "Role",
+    "filterStatus": "Status",
+    "filterUserType": "User Type",
+    "userTypeIndividual": "Individual",
+    "userTypeBusiness": "Business",
+    "addUser": "Add User",
+    "emptyTitle": "No users found",
+    "emptyDescription": "Try adjusting your search or filters.",
+    "tabs": {
+      "active": "Active Users",
+      "deleted": "Deleted Users"
+    },
+    "columns": {
+      "nameCompany": "Name / Company",
+      "userType": "User Type",
+      "phone": "Phone",
+      "email": "Email",
+      "registrationDate": "Registration Date",
+      "totalBookings": "Total Bookings",
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "deletedAt": "Deleted At",
+      "actions": "Actions",
+      "joined": "Joined",
+      "lastSeen": "Last Seen"
+    },
+    "actions": {
+      "delete": "Delete",
+      "restore": "Restore",
+      "hardDelete": "Hard Delete"
+    },
+    "deleted": {
+      "title": "Deleted Users",
+      "description": "Soft-deleted user accounts. Restore to re-activate, or permanently delete (only if user has no content).",
+      "searchPlaceholder": "Search deleted users…",
+      "emptyTitle": "No deleted users",
+      "emptyDescription": "Deleted users will appear here.",
+      "warningBanner": "Hard delete is irreversible. It permanently removes the account and all of its content — posts, polls, comments, likes, follows, and payment history from the database. Use Restore to bring a user back instead.",
+      "confirmTitle": "Permanently delete user?",
+      "confirmDescription": "This will permanently remove \"{{name}}\" and all associated data. This action cannot be undone.",
+      "confirmLabel": "Hard Delete",
+      "toastRestored": "\"{{name}}\" restored.",
+      "toastHardDeleted": "\"{{name}}\" permanently deleted."
+    },
+    "stats": {
+      "total": "Total Users",
+      "active": "Active",
+      "suspended": "Suspended",
+      "pending": "Pending",
+      "thisMonth": "this month",
+      "vsLastMonth": "vs last month",
+      "accounts": "accounts"
+    },
+    "toasts": {
+      "softDeleted": "\"{{name}}\" moved to deleted users.",
+      "suspended": "\"{{name}}\" suspended.",
+      "activated": "\"{{name}}\" activated.",
+      "suspendedSelected": "Suspended {{count}} users.",
+      "created": "\"{{name}}\" created.",
+      "updated": "\"{{name}}\" updated."
+    },
+    "dialog": {
+      "addTitle": "Add New User",
+      "addDescription": "Fill in the user details below",
+      "editTitle": "Edit User",
+      "editDescription": "Editing user #{{id}}",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter phone number",
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter last name",
+      "language": "Language",
+      "username": "Username",
+      "usernamePlaceholder": "Enter username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "passwordEditPlaceholder": "Leave blank to keep current",
+      "role": "Role",
+      "gender": "Gender",
+      "genderSelect": "Select gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderOther": "Other",
+      "birthday": "Birthday",
+      "profilePicture": "Profile Picture",
+      "profileBackground": "Profile Background",
+      "chooseFile": "Choose file",
+      "noFileChosen": "No file chosen",
+      "fileChosen": "File chosen",
+      "activeStatus": "Active Status",
+      "cancel": "Cancel",
+      "addButton": "Add User",
+      "saveButton": "Save Changes"
+    },
+    "view": {
+      "tabs": {
+        "details": "Details",
+        "orders": "Orders",
+        "reviews": "Reviews",
+        "wishlist": "Wishlist",
+        "addresses": "Addresses",
+        "payments": "Payments"
+      },
+      "basicInfo": "Basic Information",
+      "email": "Email",
+      "phone": "Phone Number",
+      "role": "Role",
+      "joined": "Joined",
+      "verification": "Verification",
+      "verified": "Verified",
+      "status": "Status",
+      "authType": "Auth Type",
+      "language": "Language",
+      "gender": "Gender",
+      "birthday": "Birthday",
+      "lastLogin": "Last Login",
+      "username": "Username",
+      "changePasswordTitle": "Change Password",
+      "changePasswordDesc": "Set a new password for \"{{name}}\"",
+      "stats": {
+        "totalPosts": "Total Posts",
+        "communities": "Communities",
+        "topics": "Topics",
+        "subscriptions": "Subscriptions",
+        "payments": "Payments",
+        "likes": "Likes"
+      },
+      "defaultAddress": "Default",
+      "columns": {
+        "addedDate": "Added Date"
+      },
+      "empty": {
+        "orders": "No orders yet",
+        "reviews": "No reviews given yet",
+        "wishlist": "Wishlist is empty",
+        "addresses": "No saved addresses",
+        "payments": "No payment history"
+      }
+    },
+    "confirm": {
+      "suspendTitle": "Suspend User?",
+      "suspendDesc": "This will suspend \"{{name}}\" and prevent them from accessing the platform.",
+      "activateTitle": "Activate User?",
+      "activateDesc": "This will restore access for \"{{name}}\".",
+      "deleteTitle": "Delete User?",
+      "deleteDesc": "This will move \"{{name}}\" to the deleted users list. You can restore them later."
+    }
+  },
+  "banners": {
+    "topbarTitle": "Banners",
+    "title": "All Banners",
+    "description": "Manage promotional banners shown across the platform.",
+    "searchPlaceholder": "Search by title or link…",
+    "filterPosition": "Position",
+    "filterStatus": "Status",
+    "positions": {
+      "homeTop": "Home Top",
+      "homeMiddle": "Home Middle",
+      "categoryPage": "Category Page",
+      "checkout": "Checkout"
+    },
+    "addBanner": "Add Banner",
+    "emptyTitle": "No banners found",
+    "emptyDescription": "Try adjusting your search or filters.",
+    "columns": {
+      "banner": "Banner",
+      "position": "Position",
+      "status": "Status",
+      "activeWindow": "Active Window",
+      "clicks": "Clicks",
+      "order": "Order"
+    },
+    "stats": {
+      "total": "Total Banners",
+      "active": "Active",
+      "scheduled": "Scheduled",
+      "totalClicks": "Total Clicks",
+      "vsLastMonth": "vs last month"
+    },
+    "toasts": {
+      "editing": "Editing \"{{title}}\"",
+      "deactivated": "\"{{title}}\" deactivated.",
+      "activated": "\"{{title}}\" activated.",
+      "deleted": "\"{{title}}\" deleted.",
+      "deletedSelected": "Deleted {{count}} banner(s).",
+      "openAddForm": "Open the add-banner form here.",
+      "created": "\"{{title}}\" created.",
+      "updated": "\"{{title}}\" updated."
+    },
+    "dialog": {
+      "addTitle": "Add Banner",
+      "addDescription": "Create a promotional banner for the feed.",
+      "editTitle": "Edit Banner",
+      "editDescription": "ID: {{id}} · Update banner details.",
+      "bannerImage": "Banner Image",
+      "uploadImage": "Upload Image",
+      "replaceImage": "Replace Image",
+      "imageHint": "Recommended: 1200×400px. Max 10MB.",
+      "imageRequired": "Banner image is required",
+      "titleEnglish": "Title (English)",
+      "titleEnglishPlaceholder": "e.g. Summer Sale — Up to 40% Off",
+      "titleRequired": "Title is required",
+      "titleArabic": "Title (Arabic)",
+      "titleArabicPlaceholder": "Banner title (Arabic – optional)",
+      "linkUrl": "Link / Deep-link URL",
+      "linkPlaceholder": "https://... or /posts/abc",
+      "linkRequired": "Link is required",
+      "displayOrder": "Display Order",
+      "scheduling": "Scheduling",
+      "validFrom": "Valid From",
+      "validUntil": "Valid Until"
+    }
+  },
+  "categories": {
+    "topbarTitle": "Categories",
+    "tabs": {
+      "categories": "Categories",
+      "content": "Content Pages"
+    },
+    "list": {
+      "title": "Marketplace Categories",
+      "description": "Organize how listings are grouped and browsed.",
+      "searchPlaceholder": "Search categories…",
+      "filterStatus": "Status",
+      "topLevel": "— top level —",
+      "addCategory": "Add Category",
+      "emptyTitle": "No categories found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "category": "Category",
+        "parent": "Parent",
+        "listings": "Listings",
+        "status": "Status",
+        "order": "Order"
+      },
+      "stats": {
+        "total": "Total Categories",
+        "topLevel": "Top Level",
+        "active": "Active",
+        "totalListings": "Total Listings"
+      },
+      "toasts": {
+        "editing": "Editing \"{{name}}\"",
+        "created": "\"{{name}}\" created.",
+        "edited": "\"{{name}}\" updated.",
+        "hidden": "\"{{name}}\" hidden.",
+        "unhidden": "\"{{name}}\" is now active.",
+        "deleted": "\"{{name}}\" deleted.",
+        "deletedSelected_one": "Deleted {{count}} category.",
+        "deletedSelected_other": "Deleted {{count}} categories.",
+        "openAddForm": "Open the add-category form here."
+      },
+      "confirm": {
+        "deleteTitle": "Delete category?",
+        "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone.",
+        "deleteSelectedTitle_one": "Delete {{count}} category?",
+        "deleteSelectedTitle_other": "Delete {{count}} categories?",
+        "deleteSelectedDescription": "This will permanently remove the selected categories and cannot be undone.",
+        "hideTitle": "Hide category?",
+        "hideDescription": "\"{{name}}\" will no longer be visible to customers.",
+        "unhideTitle": "Unhide category?",
+        "unhideDescription": "\"{{name}}\" will become visible to customers again."
+      }
+    },
+    "dialog": {
+      "addTitle": "Add New Category",
+      "editTitle": "Edit Category",
+      "addDescription": "Create a new category for the marketplace.",
+      "editDescription": "Update details for \"{{name}}\".",
+      "nameEnglish": "Name (English)",
+      "nameEnglishPlaceholder": "Home Cleaning",
+      "nameArabic": "Name (Arabic)",
+      "nameArabicPlaceholder": "تنظيف المنازل",
+      "descriptionEnglish": "Description (English)",
+      "descriptionEnglishPlaceholder": "Professional home cleaning services including deep cleaning and regular maintenance.",
+      "descriptionArabic": "Description (Arabic)",
+      "descriptionArabicPlaceholder": "خدمات تنظيف المنازل الاحترافية بما في ذلك التنظيف العميق والصيانة الدورية.",
+      "categoryIcon": "Category Icon",
+      "chooseIcon": "Choose an icon…",
+      "bannerImage": "Banner Image",
+      "chooseBanner": "Choose a banner…",
+      "parentCategory": "Parent Category",
+      "topLevel": "— Top level —",
+      "displayOrder": "Display Order",
+      "commission": "Commission %",
+      "close": "Close",
+      "save": "Save",
+      "add": "Add"
+    },
+    "content": {
+      "title": "Content Pages",
+      "description": "Manage static pages, articles, FAQs, and legal documents.",
+      "searchPlaceholder": "Search content…",
+      "filterType": "Type",
+      "filterStatus": "Status",
+      "types": {
+        "page": "Page",
+        "article": "Article",
+        "faq": "FAQ",
+        "legal": "Legal"
+      },
+      "newContent": "New Content",
+      "emptyTitle": "No content found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "title": "Title",
+        "type": "Type",
+        "status": "Status",
+        "author": "Author",
+        "updated": "Updated"
+      },
+      "stats": {
+        "total": "Total Pages",
+        "published": "Published",
+        "drafts": "Drafts"
+      },
+      "toasts": {
+        "editing": "Editing \"{{title}}\"",
+        "published": "\"{{title}}\" published.",
+        "deleted": "\"{{title}}\" deleted.",
+        "openEditor": "Open the new-content editor here."
+      }
+    }
+  },
+  "products": {
+    "topbarTitle": "Products",
+    "list": {
+      "title": "Marketplace Products",
+      "description": "Manage the products listed for sale across the marketplace.",
+      "searchPlaceholder": "Search products…",
+      "filterStatus": "Status",
+      "filterCategory": "Category",
+      "addProduct": "Add Product",
+      "emptyTitle": "No products found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "product": "Product",
+        "vendor": "Vendor",
+        "category": "Category",
+        "price": "Price",
+        "stock": "Stock",
+        "status": "Status",
+        "rating": "Rating"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "outOfStock": "Out of Stock"
+      },
+      "stats": {
+        "total": "Total Products",
+        "active": "Active",
+        "outOfStock": "Out of Stock",
+        "totalStockUnits": "Total Stock Units"
+      },
+      "toasts": {
+        "created": "\"{{name}}\" created.",
+        "edited": "\"{{name}}\" updated.",
+        "deleted": "\"{{name}}\" deleted.",
+        "deletedSelected_one": "Deleted {{count}} product.",
+        "deletedSelected_other": "Deleted {{count}} products."
+      },
+      "confirm": {
+        "deleteTitle": "Delete product?",
+        "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone.",
+        "deleteSelectedTitle_one": "Delete {{count}} product?",
+        "deleteSelectedTitle_other": "Delete {{count}} products?",
+        "deleteSelectedDescription": "This will permanently remove the selected products and cannot be undone."
+      }
+    },
+    "dialog": {
+      "addTitle": "Add New Product",
+      "editTitle": "Edit Product",
+      "addDescription": "Create a new product for the marketplace.",
+      "editDescription": "Update details for \"{{name}}\".",
+      "nameEnglish": "Name (English)",
+      "nameEnglishPlaceholder": "Modular Sofa Set",
+      "nameArabic": "Name (Arabic)",
+      "nameArabicPlaceholder": "طقم كنب معياري",
+      "descriptionEnglish": "Description (English)",
+      "descriptionEnglishPlaceholder": "3-seat modular sofa with washable covers.",
+      "descriptionArabic": "Description (Arabic)",
+      "descriptionArabicPlaceholder": "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
+      "productImage": "Product Image",
+      "chooseImage": "Choose an image…",
+      "vendor": "Vendor",
+      "selectVendor": "— Select vendor —",
+      "category": "Category",
+      "selectCategory": "— Select category —",
+      "price": "Price",
+      "currency": "Currency",
+      "currencyKWD": "KWD",
+      "currencySAR": "SAR",
+      "sizes": "Sizes",
+      "sizesPlaceholder": "S, M, L, XL",
+      "colors": "Colors",
+      "colorsPlaceholder": "Beige, Charcoal, Sand",
+      "stock": "Stock",
+      "status": "Status",
+      "close": "Close",
+      "save": "Save",
+      "add": "Add"
+    }
+  },
+  "orders": {
+    "topbarTitle": "Orders",
+    "title": "All Orders",
+    "description": "Every order placed across the marketplace.",
+    "searchPlaceholder": "Search by order # or customer…",
+    "filterStatus": "Status",
+    "filterPayment": "Payment",
+    "emptyTitle": "No orders found",
+    "emptyDescription": "Try adjusting your search or filters.",
+    "columns": {
+      "order": "Order",
+      "customer": "Customer",
+      "items": "Items",
+      "total": "Total",
+      "status": "Status",
+      "payment": "Payment",
+      "date": "Date"
+    },
+    "stats": {
+      "total": "Total Orders",
+      "revenue": "Revenue",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "vsLastMonth": "vs last month",
+      "orders": "orders"
+    },
+    "details": {
+      "placedOn": "Placed on {{date}}",
+      "customer": "Customer",
+      "deliveryAddress": "Delivery Address",
+      "items": "Items ({{count}})",
+      "qty": "Qty {{qty}}",
+      "paymentSummary": "Payment Summary",
+      "vendor": "Vendor",
+      "total": "Total"
+    }
+  },
+  "payments": {
+    "topbarTitle": "Payments",
+    "currency": {
+      "kwd": "KWD",
+      "sar": "SAR"
+    },
+    "method": {
+      "knet": "KNET",
+      "credit_card": "Credit Card",
+      "debit_card": "Debit Card"
+    },
+    "gateway": {
+      "myfatoorah": "MyFatoorah",
+      "tap": "Tap"
+    },
+    "list": {
+      "title": "All Payments",
+      "description": "Track and manage payment transactions across orders.",
+      "searchPlaceholder": "Search by transaction ID…",
+      "filterStatus": "Status",
+      "filterMethod": "Method",
+      "emptyTitle": "No payments found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "transaction": "Transaction",
+        "order": "Order",
+        "customer": "Customer",
+        "amount": "Amount",
+        "method": "Method",
+        "gateway": "Gateway",
+        "status": "Status",
+        "date": "Date"
+      },
+      "stats": {
+        "total": "Total Payments",
+        "successful": "Successful",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "toasts": {
+        "created": "Payment {{transactionId}} created",
+        "edited": "Payment {{transactionId}} updated",
+        "deleted": "Payment {{transactionId}} deleted"
+      },
+      "confirm": {
+        "deleteTitle": "Delete payment?",
+        "deleteDescription": "Are you sure you want to delete payment {{transactionId}}? This action cannot be undone."
+      }
+    },
+    "dialog": {
+      "addTitle": "Add Payment",
+      "addDescription": "Record a new payment transaction.",
+      "editTitle": "Edit Payment",
+      "editDescription": "Editing payment {{transactionId}}.",
+      "order": "Order",
+      "selectOrder": "Select order",
+      "customer": "Customer",
+      "selectCustomer": "Select customer",
+      "amount": "Amount",
+      "currency": "Currency",
+      "method": "Method",
+      "gateway": "Gateway",
+      "transactionId": "Transaction ID",
+      "transactionIdPlaceholder": "e.g. TXN-0083920145",
+      "status": "Status",
+      "close": "Close",
+      "save": "Save",
+      "add": "Add"
+    }
+  },
+  "addresses": {
+    "list": {
+      "searchPlaceholder": "Search addresses…",
+      "columns": {
+        "recipient": "Recipient",
+        "type": "Type",
+        "location": "Location",
+        "phone": "Phone",
+        "address": "Address"
+      }
+    },
+    "types": {
+      "home": "Home",
+      "office": "Office",
+      "other": "Other"
+    },
+    "dialog": {
+      "isDefault": "Default Address"
+    }
+  },
+  "reviews": {
+    "topbarTitle": "Reviews",
+    "list": {
+      "title": "Reviews",
+      "description": "Moderate product reviews submitted by customers.",
+      "searchPlaceholder": "Search reviews...",
+      "addReview": "Add Review",
+      "filterStatus": "Status",
+      "filterRating": "Rating",
+      "verifiedPurchase": "Verified Purchase",
+      "emptyTitle": "No reviews found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "review": "Review",
+        "product": "Product",
+        "reviewer": "Reviewer",
+        "rating": "Rating",
+        "verified": "Verified",
+        "status": "Status",
+        "date": "Date"
+      },
+      "stats": {
+        "total": "Total Reviews",
+        "pending": "Pending Moderation",
+        "approved": "Approved",
+        "avgRating": "Average Rating"
+      },
+      "confirm": {
+        "deleteTitle": "Delete review?",
+        "deleteDescription": "This will permanently delete the review \"{{title}}\". This action cannot be undone.",
+        "deleteSelectedTitle": "Delete {{count}} reviews?",
+        "deleteSelectedDescription": "This will permanently delete the selected reviews. This action cannot be undone."
+      },
+      "toasts": {
+        "created": "Review \"{{title}}\" was added.",
+        "edited": "Review \"{{title}}\" was updated.",
+        "deleted": "Review \"{{title}}\" was deleted.",
+        "deletedSelected": "{{count}} reviews were deleted.",
+        "approvedTitle": "Review approved",
+        "approvedBody": "\"{{title}}\" is now visible to customers.",
+        "rejectedTitle": "Review rejected",
+        "rejectedBody": "\"{{title}}\" was rejected and hidden from customers."
+      }
+    },
+    "dialog": {
+      "addTitle": "Add Review",
+      "addDescription": "Manually add a product review.",
+      "editTitle": "Edit Review",
+      "editDescription": "Editing \"{{title}}\"",
+      "product": "Product",
+      "productPlaceholder": "Select a product",
+      "order": "Order",
+      "orderPlaceholder": "Select an order",
+      "reviewer": "Reviewer",
+      "reviewerPlaceholder": "Select a reviewer",
+      "rating": "Rating",
+      "titleEnglish": "Title (English)",
+      "titleEnglishPlaceholder": "e.g. Excellent quality",
+      "titleArabic": "Title (Arabic)",
+      "titleArabicPlaceholder": "مثال: جودة ممتازة",
+      "commentEnglish": "Comment (English)",
+      "commentEnglishPlaceholder": "Write the review comment in English",
+      "commentArabic": "Comment (Arabic)",
+      "commentArabicPlaceholder": "اكتب تعليق المراجعة بالعربية",
+      "verifiedPurchase": "Verified Purchase",
+      "status": "Status",
+      "close": "Close",
+      "save": "Save",
+      "add": "Add"
+    }
+  },
+  "vendors": {
+    "topbarTitle": "Vendors",
+    "tabs": {
+      "pending": "Pending",
+      "approved": "Approved"
+    },
+    "pending": {
+      "title": "Pending Applications",
+      "description": "Review new vendor sign-ups and approve or reject them.",
+      "emptyTitle": "No pending applications",
+      "emptyDescription": "New vendor sign-ups will show up here for review."
+    },
+    "approved": {
+      "title": "Approved Vendors",
+      "description": "Vendors currently live on the platform.",
+      "emptyTitle": "No approved vendors",
+      "emptyDescription": "Approve a pending vendor to see them here."
+    },
+    "searchPlaceholder": "Search by business or owner…",
+    "filterCategory": "Category",
+    "filterStatus": "Status",
+    "columns": {
+      "vendor": "Vendor",
+      "category": "Category",
+      "city": "City",
+      "documents": "Documents",
+      "documentsCount": "{{count}} files",
+      "submitted": "Submitted",
+      "joined": "Joined",
+      "rating": "Rating",
+      "status": "Status",
+      "providerName": "Provider Name",
+      "type": "Type",
+      "phone": "Phone",
+      "email": "Email",
+      "approvalStatus": "Approval Status",
+      "accountStatus": "Account Status",
+      "actions": "Actions"
+    },
+    "stats": {
+      "pendingReview": "Pending Review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "totalVendors": "Total Vendors",
+      "liveVendors": "Live Vendors",
+      "suspended": "Suspended"
+    },
+    "toasts": {
+      "approvedTitle": "Vendor Approved",
+      "approvedBody": "{{name}} has been approved.",
+      "rejectedTitle": "Vendor Rejected",
+      "rejectedBody": "{{name}} has been rejected.",
+      "suspendedTitle": "Vendor Suspended",
+      "suspendedBody": "{{name}} has been suspended.",
+      "reinstatedTitle": "Vendor Reinstated",
+      "reinstatedBody": "{{name}} has been reinstated.",
+      "updatedTitle": "Vendor Updated",
+      "updatedBody": "\"{{name}}\" has been updated.",
+      "passwordChangedTitle": "Password Changed",
+      "passwordChangedBody": "Password for \"{{name}}\" has been updated.",
+      "deletedTitle": "Vendor Deleted",
+      "deletedBody": "\"{{name}}\" has been removed."
+    },
+    "typeCompany": "Company",
+    "typeIndividual": "Individual",
+    "filterType": "Type",
+    "actions": {
+      "changePassword": "Change Password"
+    },
+    "dialog": {
+      "viewDescription": "Vendor account details",
+      "editTitle": "Edit Vendor",
+      "editDescription": "Editing \"{{name}}\"",
+      "businessName": "Business Name",
+      "businessNameEnglish": "Business Name (English)",
+      "businessNameArabic": "Business Name (Arabic)",
+      "ownerName": "Owner Name",
+      "email": "Email",
+      "phone": "Phone",
+      "category": "Category",
+      "city": "City",
+      "type": "Type",
+      "approvalStatus": "Approval Status",
+      "accountStatus": "Account Status",
+      "commission": "Commission",
+      "rating": "Rating",
+      "documents": "Documents",
+      "changePasswordTitle": "Change Password",
+      "changePasswordDescription": "Set a new password for \"{{name}}\"",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "changePasswordButton": "Update Password",
+      "deleteTitle": "Delete Vendor?",
+      "deleteDescription": "This will permanently remove \"{{name}}\" from the platform. This action cannot be undone."
+    },
+    "view": {
+      "tabs": {
+        "details": "Details",
+        "products": "Products",
+        "orders": "Orders",
+        "reviews": "Reviews",
+        "documents": "Documents"
+      },
+      "basicInfo": "Basic Information",
+      "businessLicense": "Business License",
+      "taxId": "Tax ID",
+      "joined": "Joined",
+      "approvedOn": "Approved On",
+      "columns": {
+        "documentType": "Document Type",
+        "uploadedAt": "Uploaded"
+      },
+      "empty": {
+        "products": "No products listed yet",
+        "orders": "No orders yet",
+        "reviews": "No reviews yet",
+        "documents": "No documents uploaded"
+      }
+    }
+  },
+  "analytics": {
+    "stats": {
+      "totalOrders": "Total Orders",
+      "newCustomers": "New Customers",
+      "avgOrderValue": "Avg. Order Value"
+    },
+    "revenueTrend": {
+      "title": "Revenue Trend",
+      "description": "Monthly revenue across the marketplace"
+    },
+    "ordersByStatus": {
+      "title": "Orders by Status",
+      "description": "Current order pipeline breakdown"
+    },
+    "customerGrowth": {
+      "title": "Customer Growth",
+      "description": "New vs. returning customers",
+      "new": "New",
+      "returning": "Returning"
+    },
+    "topVendors": {
+      "title": "Top Vendors by Revenue",
+      "description": "Highest-earning vendors this month"
+    }
+  },
+  "notifications": {
+    "topbarTitle": "Notifications",
+    "title": "Inbox",
+    "description": "All notifications sent to your account.",
+    "searchPlaceholder": "Search notifications…",
+    "filterType": "Type",
+    "filterPriority": "Priority",
+    "filterStatus": "Status",
+    "emptyTitle": "No notifications",
+    "emptyDescription": "You're all caught up.",
+    "columns": {
+      "notification": "Notification",
+      "type": "Type",
+      "priority": "Priority",
+      "received": "Received",
+      "status": "Status"
+    },
+    "stats": {
+      "total": "Total",
+      "unread": "Unread",
+      "high": "High",
+      "critical": "Critical",
+      "needAttention": "need attention",
+      "actionRequired": "action required"
+    }
+  },
+  "notificationsSend": {
+    "topbarTitle": "Send Notification",
+    "compose": {
+      "title": "Compose Notification",
+      "description": "Send a notification to one or more user groups.",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Notification title…",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Write your message here…",
+      "recipients": "Recipients",
+      "recipientOptions": {
+        "all": "All Users",
+        "admins": "Admins only",
+        "users": "Regular Users only",
+        "editors": "Editors only"
+      },
+      "type": "Type",
+      "priority": "Priority",
+      "submit": "Send Notification",
+      "sentConfirmation": "✓ Notification sent successfully"
+    },
+    "history": {
+      "title": "Sent History",
+      "description": "Previously sent notifications.",
+      "searchPlaceholder": "Search sent notifications…",
+      "filterType": "Type",
+      "filterPriority": "Priority",
+      "emptyTitle": "No notifications sent yet",
+      "columns": {
+        "title": "Title",
+        "recipients": "Recipients",
+        "type": "Type",
+        "priority": "Priority",
+        "delivered": "Delivered",
+        "sentAt": "Sent At"
+      },
+      "stats": {
+        "totalSent": "Total Sent",
+        "totalDelivered": "Total Delivered",
+        "highPriority": "High Priority",
+        "criticalSent": "Critical Sent"
+      }
+    }
+  },
+  "settings": {
+    "topbarTitle": "Settings",
+    "title": "Settings",
+    "description": "Manage platform configuration and preferences",
+    "saveChanges": "Save Changes",
+    "savedToast": {
+      "title": "Settings Saved",
+      "body": "Your changes have been saved."
+    },
+    "tabs": {
+      "general": "General",
+      "notifications": "Notifications",
+      "security": "Security",
+      "appearance": "Appearance"
+    },
+    "general": {
+      "title": "General Settings",
+      "description": "Configure basic platform information",
+      "platformName": "Platform Name",
+      "supportEmail": "Support Email",
+      "supportPhone": "Support Phone",
+      "defaultLanguage": "Default Language",
+      "timezone": "Timezone",
+      "languages": {
+        "english": "English",
+        "arabic": "Arabic",
+        "french": "French",
+        "spanish": "Spanish"
+      }
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Control how and when notifications are delivered",
+      "emailNotifications": "Email Notifications",
+      "pushNotifications": "Push Notifications",
+      "digestFrequency": "Digest Frequency",
+      "alertEmail": "Alert Email",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "frequencies": {
+        "realtime": "Real-time",
+        "hourly": "Hourly",
+        "daily": "Daily",
+        "weekly": "Weekly"
+      }
+    },
+    "security": {
+      "title": "Security Settings",
+      "description": "Manage account security and authentication",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "appearance": {
+      "title": "Appearance Settings",
+      "description": "Customize the look and feel of the platform",
+      "theme": "Theme",
+      "direction": "Text Direction",
+      "dateFormat": "Date Format",
+      "timeFormat": "Time Format",
+      "fontSize": "Font Size",
+      "themes": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "directions": {
+        "ltr": "Left to Right (LTR)",
+        "rtl": "Right to Left (RTL)"
+      },
+      "timeFormats": {
+        "12h": "12-hour (AM/PM)",
+        "24h": "24-hour"
+      },
+      "fontSizes": {
+        "small": "Small",
+        "medium": "Medium (default)",
+        "large": "Large"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Please sign in to continue",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Login",
+      "forgotPassword": "Forgot Password?",
+      "noAccount": "Don't have an account?",
+      "register": "Register",
+      "successTitle": "Login Successful",
+      "successBody": "Welcome back!",
+      "failTitle": "Login Failed"
+    },
+    "register": {
+      "title": "Create an Account",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "submit": "Sign Up",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong"
+      },
+      "passwordsDontMatch": "Passwords do not match",
+      "backToLogin": "Back to Login",
+      "forgotOldOne": "Forgot old one?",
+      "resetPassword": "Reset Password"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "emailLabel": "Email",
+      "submit": "Send Reset Link",
+      "backToLogin": "Back to Login",
+      "noAccount": "Don’t have an account?",
+      "register": "Register"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to home"
   }
 }

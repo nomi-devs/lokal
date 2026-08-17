@@ -5,11 +5,14 @@
  * LOGO: set logo to any path under /public (served at root) or a remote URL:
  *       logo: "/logo.png"
  *       logo: "https://cdn.example.com/logo.svg"
+ *
+ * showLogo / showName combine independently: logo only, name only, both, or neither.
  */
 export const APP_CONFIG = {
-  name: "Dashboard Kit", // shown in sidebar when showName is true
-  showName: false, // false = logo only, true = logo + name
+  name: "LOKAL", // shown in sidebar when showName is true
+  showName: true, // false = logo only, true = logo + name
   logo: "/logo.png", // ← swap this path to change the logo everywhere
+  showLogo: false, // false = name only (or nothing, if showName is also false), true = show logo
 };
 
 export const AUTH_CONFIG = {

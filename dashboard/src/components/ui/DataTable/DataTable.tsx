@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   ChevronUp,
@@ -93,7 +94,8 @@ function RowActionsMenu<T extends RowData>({ row, actions }: { row: T; actions: 
                 }}
                 className={cn(
                   "flex w-full items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-muted text-left",
-                  action.variant === "destructive" && "text-destructive hover:text-destructive"
+                  action.variant === "destructive" && "text-destructive hover:text-destructive",
+                  action.variant === "warning" && "text-amber-500 hover:text-amber-500"
                 )}
               >
                 {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
@@ -103,6 +105,55 @@ function RowActionsMenu<T extends RowData>({ row, actions }: { row: T; actions: 
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Row actions inline icon buttons ──────────────────────────────────────────
+
+const inlineActionColor: Record<NonNullable<RowAction<RowData>["variant"]>, string> = {
+  default: "text-primary hover:bg-primary/10",
+  warning: "text-amber-500 hover:bg-amber-500/10",
+  destructive: "text-destructive hover:bg-destructive/10",
+};
+
+function RowActionsInline<T extends RowData>({
+  row,
+  actions,
+}: {
+  row: T;
+  actions: RowAction<T>[];
+}) {
+  const visible = actions.filter((a) => !a.hidden?.(row));
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {visible.map((action) => {
+        const Icon = action.icon;
+
+        return (
+          <button
+            key={action.label}
+            type="button"
+            title={action.label}
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick(row);
+            }}
+            className={cn(
+              "h-8 w-8 flex items-center justify-center rounded-md transition-colors",
+              inlineActionColor[action.variant ?? "default"]
+            )}
+          >
+            {Icon && <Icon className="h-4 w-4" />}
+            <span className="sr-only">{action.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -130,6 +181,8 @@ function Toolbar<T extends RowData>({
   toolbarActions?: DataTableProps<T>["toolbarActions"];
   selectedRows: T[];
 }) {
+  const { t } = useTranslation();
+
   const hasAny =
     searchable || (filters && filters.length > 0) || (toolbarActions && toolbarActions.length > 0);
 
@@ -146,7 +199,7 @@ function Toolbar<T extends RowData>({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={searchPlaceholder ?? "Search…"}
+            placeholder={searchPlaceholder ?? t("table.search")}
             className="w-full h-9 pl-8 pr-8 rounded-md border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {searchQuery && (
@@ -167,7 +220,7 @@ function Toolbar<T extends RowData>({
           onChange={(e) => setFilter(f.key, e.target.value)}
           className="h-9 rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
         >
-          <option value="">{f.label}: All</option>
+          <option value="">{t("table.filterAll", { label: f.label })}</option>
           {f.options.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -241,10 +294,14 @@ function EmptyState({
   config?: DataTableProps<RowData>["emptyState"];
   colSpan: number;
 }) {
+  const { t } = useTranslation();
+
   return (
     <tr>
       <td colSpan={colSpan} className="px-4 py-16 text-center">
-        <p className="font-medium text-foreground">{config?.title ?? "No results found"}</p>
+        <p className="font-medium text-foreground">
+          {config?.title ?? t("table.defaultEmptyTitle")}
+        </p>
         {config?.description && (
           <p className="text-sm text-muted-foreground mt-1">{config.description}</p>
         )}
@@ -273,17 +330,20 @@ function Pagination({
   setPageSize: (s: number) => void;
   pageSizeOptions?: number[];
 }) {
+  const { t } = useTranslation();
   const start = Math.min((currentPage - 1) * pageSize + 1, totalCount);
   const end = Math.min(currentPage * pageSize, totalCount);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t text-sm text-muted-foreground">
       <span className="shrink-0">
-        {totalCount === 0 ? "No results" : `${start}–${end} of ${totalCount}`}
+        {totalCount === 0
+          ? t("table.noResults")
+          : t("table.resultsRange", { start, end, total: totalCount })}
       </span>
 
       <div className="flex items-center gap-2">
-        <span className="hidden sm:inline">Rows per page</span>
+        <span className="hidden sm:inline">{t("table.rowsPerPage")}</span>
         <select
           value={pageSize}
           onChange={(e) => setPageSize(Number(e.target.value))}
@@ -336,6 +396,8 @@ function Pagination({
 // ─── DataTable ────────────────────────────────────────────────────────────────
 
 function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
+  const { t } = useTranslation();
+
   const {
     data,
     columns,
@@ -351,6 +413,8 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
     selectable,
     onSelectionChange,
     rowActions,
+    rowActionsVariant = "menu",
+    rowActionsLabel,
     toolbarActions,
     pagination,
     loading = false,
@@ -479,12 +543,14 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
         {/* Selection banner */}
         {selectable && selectedKeys.size > 0 && (
           <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b text-sm">
-            <span className="font-medium">{selectedKeys.size} selected</span>
+            <span className="font-medium">
+              {t("table.selectedCount", { count: selectedKeys.size })}
+            </span>
             <button
               onClick={() => setSelectedKeys(new Set())}
               className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline text-xs"
             >
-              Clear
+              {t("table.clear")}
             </button>
           </div>
         )}
@@ -530,7 +596,16 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
                     </span>
                   </th>
                 ))}
-                {rowActions?.length ? <th className="w-12 px-4 py-3" /> : null}
+                {rowActions?.length ? (
+                  <th
+                    className={cn(
+                      "px-4 py-3 font-medium text-muted-foreground whitespace-nowrap text-right",
+                      rowActionsVariant === "inline" ? "w-32" : "w-12"
+                    )}
+                  >
+                    {rowActionsLabel ?? t("table.actions")}
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
@@ -588,8 +663,18 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
                         );
                       })}
                       {rowActions?.length ? (
-                        <td className="w-12 px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                          <RowActionsMenu row={row} actions={rowActions} />
+                        <td
+                          className={cn(
+                            "px-2 py-3",
+                            rowActionsVariant === "inline" ? "w-32" : "w-12"
+                          )}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {rowActionsVariant === "inline" ? (
+                            <RowActionsInline row={row} actions={rowActions} />
+                          ) : (
+                            <RowActionsMenu row={row} actions={rowActions} />
+                          )}
                         </td>
                       ) : null}
                     </tr>

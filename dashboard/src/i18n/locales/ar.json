@@ -3,13 +3,1066 @@
     "overview": "نظرة عامة",
     "banners": "البانرات",
     "categories": "الفئات",
+    "products": "المنتجات",
     "userManagement": "المستخدمون",
     "vendors": "الموردون",
     "orders": "الطلبات",
-    "analytics": "التحليلات",
+    "payments": "المدفوعات",
+    "reviews": "التقييمات",
     "notifications": "الإشعارات",
     "settings": "الإعدادات",
     "send": "إرسال",
     "inbox": "البريد الوارد"
+  },
+  "common": {
+    "logout": "تسجيل الخروج",
+    "actions": {
+      "view": "عرض",
+      "viewDetails": "عرض التفاصيل",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "deleteSelected": "حذف المحدد",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "suspend": "تعليق",
+      "suspendSelected": "تعليق المحدد",
+      "reinstate": "إعادة تفعيل",
+      "hide": "إخفاء",
+      "unhide": "إظهار",
+      "publish": "نشر",
+      "preview": "معاينة",
+      "markAsRead": "تعليم كمقروء",
+      "cancel": "إلغاء",
+      "saveChanges": "حفظ التغييرات",
+      "confirm": "تأكيد"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار",
+      "suspended": "معلّق",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض",
+      "scheduled": "مجدول",
+      "hidden": "مخفي",
+      "published": "منشور",
+      "draft": "مسودة",
+      "archived": "مؤرشف",
+      "cancelled": "ملغي",
+      "delivered": "تم التوصيل",
+      "processing": "قيد المعالجة",
+      "shipped": "تم الشحن",
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع",
+      "refunded": "مسترد",
+      "info": "معلومة",
+      "warning": "تحذير",
+      "alert": "تنبيه",
+      "system": "نظام",
+      "normal": "عادي",
+      "high": "مرتفع",
+      "critical": "حرج",
+      "read": "مقروء",
+      "unread": "غير مقروء",
+      "admin": "مسؤول",
+      "editor": "محرر",
+      "user": "مستخدم",
+      "vendor": "مورد",
+      "confirmed": "مؤكد",
+      "success": "نجاح",
+      "failed": "فشل"
+    }
+  },
+  "table": {
+    "search": "بحث…",
+    "clear": "مسح",
+    "rowsPerPage": "صفوف لكل صفحة",
+    "noResults": "لا توجد نتائج",
+    "resultsRange": "{{start}}–{{end}} من {{total}}",
+    "filterAll": "{{label}}: الكل",
+    "selectedCount": "تم تحديد {{count}}",
+    "defaultEmptyTitle": "لم يتم العثور على نتائج",
+    "actions": "الإجراءات"
+  },
+  "statsCard": {
+    "noChange": "لا تغيير",
+    "vsLastPeriod": "مقارنة بالفترة السابقة",
+    "vsLastMonth": "مقارنة بالشهر الماضي"
+  },
+  "dashboard": {
+    "topbarTitle": "نظرة عامة",
+    "stats": {
+      "totalRevenue": "إجمالي الإيرادات",
+      "activeUsers": "المستخدمون النشطون",
+      "newOrders": "طلبات جديدة",
+      "growthRate": "معدل النمو"
+    },
+    "topCategories": {
+      "title": "أفضل الفئات حسب الإيرادات"
+    },
+    "statusDistribution": {
+      "title": "توزيع حالة المشاريع",
+      "active": "نشط",
+      "completed": "مكتمل",
+      "draft": "مسودة",
+      "cancelled": "ملغي"
+    }
+  },
+  "users": {
+    "topbarTitle": "إدارة المستخدمين",
+    "title": "جميع المستخدمين",
+    "description": "إدارة حسابات المستخدمين وأدوارهم وصلاحيات وصولهم.",
+    "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني…",
+    "filterRole": "الدور",
+    "filterStatus": "الحالة",
+    "filterUserType": "نوع المستخدم",
+    "userTypeIndividual": "فرد",
+    "userTypeBusiness": "شركة",
+    "addUser": "إضافة مستخدم",
+    "emptyTitle": "لم يتم العثور على مستخدمين",
+    "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+    "tabs": {
+      "active": "المستخدمون النشطون",
+      "deleted": "المستخدمون المحذوفون"
+    },
+    "columns": {
+      "nameCompany": "الاسم / الشركة",
+      "userType": "نوع المستخدم",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "registrationDate": "تاريخ التسجيل",
+      "totalBookings": "إجمالي الحجوزات",
+      "user": "المستخدم",
+      "role": "الدور",
+      "status": "الحالة",
+      "deletedAt": "تاريخ الحذف",
+      "actions": "الإجراءات",
+      "joined": "تاريخ الانضمام",
+      "lastSeen": "آخر ظهور"
+    },
+    "actions": {
+      "delete": "حذف",
+      "restore": "استعادة",
+      "hardDelete": "حذف نهائي"
+    },
+    "deleted": {
+      "title": "المستخدمون المحذوفون",
+      "description": "حسابات محذوفة مؤقتًا. استعدها لإعادة التفعيل، أو احذفها نهائيًا (فقط إذا لم يكن للمستخدم محتوى).",
+      "searchPlaceholder": "البحث في المستخدمين المحذوفين…",
+      "emptyTitle": "لا يوجد مستخدمون محذوفون",
+      "emptyDescription": "سيظهر المستخدمون المحذوفون هنا.",
+      "warningBanner": "الحذف النهائي لا رجعة فيه. يزيل الحساب وجميع محتوياته نهائيًا — المنشورات والاستطلاعات والتعليقات والإعجابات والمتابعات وسجل المدفوعات من قاعدة البيانات. استخدم الاستعادة لإعادة المستخدم بدلاً من ذلك.",
+      "confirmTitle": "حذف المستخدم نهائيًا؟",
+      "confirmDescription": "سيؤدي هذا إلى إزالة \"{{name}}\" وجميع البيانات المرتبطة به نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      "confirmLabel": "حذف نهائي",
+      "toastRestored": "تمت استعادة \"{{name}}\".",
+      "toastHardDeleted": "تم حذف \"{{name}}\" نهائيًا."
+    },
+    "stats": {
+      "total": "إجمالي المستخدمين",
+      "active": "نشط",
+      "suspended": "معلّق",
+      "pending": "قيد الانتظار",
+      "thisMonth": "هذا الشهر",
+      "vsLastMonth": "مقارنة بالشهر الماضي",
+      "accounts": "حسابات"
+    },
+    "toasts": {
+      "softDeleted": "تم نقل \"{{name}}\" إلى المستخدمين المحذوفين.",
+      "suspended": "تم تعليق \"{{name}}\".",
+      "activated": "تم تفعيل \"{{name}}\".",
+      "suspendedSelected": "تم تعليق {{count}} مستخدمين.",
+      "created": "تم إنشاء \"{{name}}\".",
+      "updated": "تم تحديث \"{{name}}\"."
+    },
+    "dialog": {
+      "addTitle": "إضافة مستخدم جديد",
+      "addDescription": "أدخل تفاصيل المستخدم أدناه",
+      "editTitle": "تعديل المستخدم",
+      "editDescription": "تعديل المستخدم رقم {{id}}",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "أدخل رقم الهاتف",
+      "firstName": "الاسم الأول",
+      "firstNamePlaceholder": "أدخل الاسم الأول",
+      "lastName": "اسم العائلة",
+      "lastNamePlaceholder": "أدخل اسم العائلة",
+      "language": "اللغة",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "أدخل اسم المستخدم",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "passwordEditPlaceholder": "اتركه فارغًا للإبقاء على الحالي",
+      "role": "الدور",
+      "gender": "الجنس",
+      "genderSelect": "اختر الجنس",
+      "genderMale": "ذكر",
+      "genderFemale": "أنثى",
+      "genderOther": "آخر",
+      "birthday": "تاريخ الميلاد",
+      "profilePicture": "صورة الملف الشخصي",
+      "profileBackground": "خلفية الملف الشخصي",
+      "chooseFile": "اختر ملفًا",
+      "noFileChosen": "لم يتم اختيار ملف",
+      "fileChosen": "تم اختيار ملف",
+      "activeStatus": "الحالة النشطة",
+      "cancel": "إلغاء",
+      "addButton": "إضافة مستخدم",
+      "saveButton": "حفظ التغييرات"
+    },
+    "view": {
+      "tabs": {
+        "details": "التفاصيل",
+        "orders": "الطلبات",
+        "reviews": "التقييمات",
+        "wishlist": "المفضلة",
+        "addresses": "العناوين",
+        "payments": "المدفوعات"
+      },
+      "basicInfo": "المعلومات الأساسية",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف",
+      "role": "الدور",
+      "joined": "تاريخ الانضمام",
+      "verification": "التحقق",
+      "verified": "موثّق",
+      "status": "الحالة",
+      "authType": "نوع المصادقة",
+      "language": "اللغة",
+      "gender": "الجنس",
+      "birthday": "تاريخ الميلاد",
+      "lastLogin": "آخر تسجيل دخول",
+      "username": "اسم المستخدم",
+      "changePasswordTitle": "تغيير كلمة المرور",
+      "changePasswordDesc": "تعيين كلمة مرور جديدة لـ \"{{name}}\"",
+      "stats": {
+        "totalPosts": "إجمالي المنشورات",
+        "communities": "المجتمعات",
+        "topics": "المواضيع",
+        "subscriptions": "الاشتراكات",
+        "payments": "المدفوعات",
+        "likes": "الإعجابات"
+      },
+      "defaultAddress": "افتراضي",
+      "columns": {
+        "addedDate": "تاريخ الإضافة"
+      },
+      "empty": {
+        "orders": "لا توجد طلبات بعد",
+        "reviews": "لم يتم تقديم أي تقييمات بعد",
+        "wishlist": "قائمة المفضلة فارغة",
+        "addresses": "لا توجد عناوين محفوظة",
+        "payments": "لا يوجد سجل مدفوعات"
+      }
+    },
+    "confirm": {
+      "suspendTitle": "تعليق المستخدم؟",
+      "suspendDesc": "سيؤدي هذا إلى تعليق \"{{name}}\" ومنعه من الوصول إلى المنصة.",
+      "activateTitle": "تفعيل المستخدم؟",
+      "activateDesc": "سيؤدي هذا إلى استعادة وصول \"{{name}}\".",
+      "deleteTitle": "حذف المستخدم؟",
+      "deleteDesc": "سيؤدي هذا إلى نقل \"{{name}}\" إلى قائمة المستخدمين المحذوفين. يمكنك استعادتهم لاحقًا."
+    }
+  },
+  "banners": {
+    "topbarTitle": "البانرات",
+    "title": "جميع البانرات",
+    "description": "إدارة البانرات الترويجية المعروضة عبر المنصة.",
+    "searchPlaceholder": "البحث بالعنوان أو الرابط…",
+    "filterPosition": "الموضع",
+    "filterStatus": "الحالة",
+    "positions": {
+      "homeTop": "أعلى الصفحة الرئيسية",
+      "homeMiddle": "منتصف الصفحة الرئيسية",
+      "categoryPage": "صفحة الفئة",
+      "checkout": "الدفع"
+    },
+    "addBanner": "إضافة بانر",
+    "emptyTitle": "لم يتم العثور على بانرات",
+    "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+    "columns": {
+      "banner": "البانر",
+      "position": "الموضع",
+      "status": "الحالة",
+      "activeWindow": "فترة النشاط",
+      "clicks": "النقرات",
+      "order": "الترتيب"
+    },
+    "stats": {
+      "total": "إجمالي البانرات",
+      "active": "نشط",
+      "scheduled": "مجدول",
+      "totalClicks": "إجمالي النقرات",
+      "vsLastMonth": "مقارنة بالشهر الماضي"
+    },
+    "toasts": {
+      "editing": "جارٍ تعديل \"{{title}}\"",
+      "deactivated": "تم إلغاء تفعيل \"{{title}}\".",
+      "activated": "تم تفعيل \"{{title}}\".",
+      "deleted": "تم حذف \"{{title}}\".",
+      "deletedSelected": "تم حذف {{count}} بانر.",
+      "openAddForm": "افتح نموذج إضافة بانر هنا.",
+      "created": "تم إنشاء \"{{title}}\".",
+      "updated": "تم تحديث \"{{title}}\"."
+    },
+    "dialog": {
+      "addTitle": "إضافة بانر",
+      "addDescription": "إنشاء بانر ترويجي لعرضه في الخلاصة.",
+      "editTitle": "تعديل البانر",
+      "editDescription": "المعرف: {{id}} · تحديث تفاصيل البانر.",
+      "bannerImage": "صورة البانر",
+      "uploadImage": "رفع صورة",
+      "replaceImage": "استبدال الصورة",
+      "imageHint": "الحجم الموصى به: 1200×400 بكسل. الحد الأقصى 10 ميجابايت.",
+      "imageRequired": "صورة البانر مطلوبة",
+      "titleEnglish": "العنوان (إنجليزي)",
+      "titleEnglishPlaceholder": "مثال: تخفيضات الصيف — خصم حتى 40%",
+      "titleRequired": "العنوان مطلوب",
+      "titleArabic": "العنوان (عربي)",
+      "titleArabicPlaceholder": "عنوان البانر (عربي – اختياري)",
+      "linkUrl": "الرابط / رابط التوجيه",
+      "linkPlaceholder": "https://... أو /posts/abc",
+      "linkRequired": "الرابط مطلوب",
+      "displayOrder": "ترتيب العرض",
+      "scheduling": "الجدولة",
+      "validFrom": "صالح من",
+      "validUntil": "صالح حتى"
+    }
+  },
+  "categories": {
+    "topbarTitle": "الفئات",
+    "tabs": {
+      "categories": "الفئات",
+      "content": "صفحات المحتوى"
+    },
+    "list": {
+      "title": "فئات السوق",
+      "description": "تنظيم كيفية تجميع العناصر وتصفحها.",
+      "searchPlaceholder": "البحث في الفئات…",
+      "filterStatus": "الحالة",
+      "topLevel": "— المستوى الأعلى —",
+      "addCategory": "إضافة فئة",
+      "emptyTitle": "لم يتم العثور على فئات",
+      "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+      "columns": {
+        "category": "الفئة",
+        "parent": "الفئة الأم",
+        "listings": "العناصر",
+        "status": "الحالة",
+        "order": "الترتيب"
+      },
+      "stats": {
+        "total": "إجمالي الفئات",
+        "topLevel": "المستوى الأعلى",
+        "active": "نشط",
+        "totalListings": "إجمالي العناصر"
+      },
+      "toasts": {
+        "editing": "جارٍ تعديل \"{{name}}\"",
+        "created": "تم إنشاء \"{{name}}\".",
+        "edited": "تم تحديث \"{{name}}\".",
+        "hidden": "تم إخفاء \"{{name}}\".",
+        "unhidden": "أصبح \"{{name}}\" نشطًا الآن.",
+        "deleted": "تم حذف \"{{name}}\".",
+        "deletedSelected_one": "تم حذف {{count}} فئة.",
+        "deletedSelected_other": "تم حذف {{count}} فئات.",
+        "openAddForm": "افتح نموذج إضافة فئة هنا."
+      },
+      "confirm": {
+        "deleteTitle": "حذف الفئة؟",
+        "deleteDescription": "سيؤدي هذا إلى إزالة \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك.",
+        "deleteSelectedTitle_one": "حذف {{count}} فئة؟",
+        "deleteSelectedTitle_other": "حذف {{count}} فئات؟",
+        "deleteSelectedDescription": "سيؤدي هذا إلى إزالة الفئات المحددة نهائيًا ولا يمكن التراجع عن ذلك.",
+        "hideTitle": "إخفاء الفئة؟",
+        "hideDescription": "لن تكون \"{{name}}\" مرئية للعملاء بعد الآن.",
+        "unhideTitle": "إظهار الفئة؟",
+        "unhideDescription": "ستصبح \"{{name}}\" مرئية للعملاء مرة أخرى."
+      }
+    },
+    "dialog": {
+      "addTitle": "إضافة فئة جديدة",
+      "editTitle": "تعديل الفئة",
+      "addDescription": "إنشاء فئة جديدة للسوق.",
+      "editDescription": "تحديث تفاصيل \"{{name}}\".",
+      "nameEnglish": "الاسم (بالإنجليزية)",
+      "nameEnglishPlaceholder": "Home Cleaning",
+      "nameArabic": "الاسم (بالعربية)",
+      "nameArabicPlaceholder": "تنظيف المنازل",
+      "descriptionEnglish": "الوصف (بالإنجليزية)",
+      "descriptionEnglishPlaceholder": "Professional home cleaning services including deep cleaning and regular maintenance.",
+      "descriptionArabic": "الوصف (بالعربية)",
+      "descriptionArabicPlaceholder": "خدمات تنظيف المنازل الاحترافية بما في ذلك التنظيف العميق والصيانة الدورية.",
+      "categoryIcon": "أيقونة الفئة",
+      "chooseIcon": "اختر أيقونة…",
+      "bannerImage": "صورة البانر",
+      "chooseBanner": "اختر بانر…",
+      "parentCategory": "الفئة الأم",
+      "topLevel": "— المستوى الأعلى —",
+      "displayOrder": "ترتيب العرض",
+      "commission": "نسبة العمولة %",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "add": "إضافة"
+    },
+    "content": {
+      "title": "صفحات المحتوى",
+      "description": "إدارة الصفحات الثابتة والمقالات والأسئلة الشائعة والمستندات القانونية.",
+      "searchPlaceholder": "البحث في المحتوى…",
+      "filterType": "النوع",
+      "filterStatus": "الحالة",
+      "types": {
+        "page": "صفحة",
+        "article": "مقالة",
+        "faq": "أسئلة شائعة",
+        "legal": "قانوني"
+      },
+      "newContent": "محتوى جديد",
+      "emptyTitle": "لم يتم العثور على محتوى",
+      "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+      "columns": {
+        "title": "العنوان",
+        "type": "النوع",
+        "status": "الحالة",
+        "author": "الكاتب",
+        "updated": "آخر تحديث"
+      },
+      "stats": {
+        "total": "إجمالي الصفحات",
+        "published": "منشور",
+        "drafts": "المسودات"
+      },
+      "toasts": {
+        "editing": "جارٍ تعديل \"{{title}}\"",
+        "published": "تم نشر \"{{title}}\".",
+        "deleted": "تم حذف \"{{title}}\".",
+        "openEditor": "افتح محرر المحتوى الجديد هنا."
+      }
+    }
+  },
+  "products": {
+    "topbarTitle": "المنتجات",
+    "list": {
+      "title": "منتجات السوق",
+      "description": "إدارة المنتجات المعروضة للبيع في السوق.",
+      "searchPlaceholder": "بحث عن منتجات…",
+      "filterStatus": "الحالة",
+      "filterCategory": "الفئة",
+      "addProduct": "إضافة منتج",
+      "emptyTitle": "لا توجد منتجات",
+      "emptyDescription": "حاول تعديل البحث أو الفلاتر.",
+      "columns": {
+        "product": "المنتج",
+        "vendor": "البائع",
+        "category": "الفئة",
+        "price": "السعر",
+        "stock": "المخزون",
+        "status": "الحالة",
+        "rating": "التقييم"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "outOfStock": "نفدت الكمية"
+      },
+      "stats": {
+        "total": "إجمالي المنتجات",
+        "active": "نشط",
+        "outOfStock": "نفدت الكمية",
+        "totalStockUnits": "إجمالي وحدات المخزون"
+      },
+      "toasts": {
+        "created": "تم إنشاء \"{{name}}\".",
+        "edited": "تم تحديث \"{{name}}\".",
+        "deleted": "تم حذف \"{{name}}\".",
+        "deletedSelected_one": "تم حذف {{count}} منتج.",
+        "deletedSelected_other": "تم حذف {{count}} منتجات."
+      },
+      "confirm": {
+        "deleteTitle": "حذف المنتج؟",
+        "deleteDescription": "سيتم حذف \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك.",
+        "deleteSelectedTitle_one": "حذف {{count}} منتج؟",
+        "deleteSelectedTitle_other": "حذف {{count}} منتجات؟",
+        "deleteSelectedDescription": "سيتم حذف المنتجات المحددة نهائيًا ولا يمكن التراجع عن ذلك."
+      }
+    },
+    "dialog": {
+      "addTitle": "إضافة منتج جديد",
+      "editTitle": "تعديل المنتج",
+      "addDescription": "إنشاء منتج جديد للسوق.",
+      "editDescription": "تحديث تفاصيل \"{{name}}\".",
+      "nameEnglish": "الاسم (إنجليزي)",
+      "nameEnglishPlaceholder": "طقم كنب معياري",
+      "nameArabic": "الاسم (عربي)",
+      "nameArabicPlaceholder": "طقم كنب معياري",
+      "descriptionEnglish": "الوصف (إنجليزي)",
+      "descriptionEnglishPlaceholder": "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
+      "descriptionArabic": "الوصف (عربي)",
+      "descriptionArabicPlaceholder": "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
+      "productImage": "صورة المنتج",
+      "chooseImage": "اختر صورة…",
+      "vendor": "البائع",
+      "selectVendor": "— اختر بائعًا —",
+      "category": "الفئة",
+      "selectCategory": "— اختر فئة —",
+      "price": "السعر",
+      "currency": "العملة",
+      "currencyKWD": "دينار كويتي",
+      "currencySAR": "ريال سعودي",
+      "sizes": "المقاسات",
+      "sizesPlaceholder": "S, M, L, XL",
+      "colors": "الألوان",
+      "colorsPlaceholder": "بيج، رمادي غامق، رملي",
+      "stock": "المخزون",
+      "status": "الحالة",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "add": "إضافة"
+    }
+  },
+  "orders": {
+    "topbarTitle": "الطلبات",
+    "title": "جميع الطلبات",
+    "description": "كل طلب تم تقديمه عبر السوق.",
+    "searchPlaceholder": "البحث برقم الطلب أو العميل…",
+    "filterStatus": "الحالة",
+    "filterPayment": "الدفع",
+    "emptyTitle": "لم يتم العثور على طلبات",
+    "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+    "columns": {
+      "order": "الطلب",
+      "customer": "العميل",
+      "items": "العناصر",
+      "total": "الإجمالي",
+      "status": "الحالة",
+      "payment": "الدفع",
+      "date": "التاريخ"
+    },
+    "stats": {
+      "total": "إجمالي الطلبات",
+      "revenue": "الإيرادات",
+      "pending": "قيد الانتظار",
+      "cancelled": "ملغي",
+      "vsLastMonth": "مقارنة بالشهر الماضي",
+      "orders": "طلب"
+    },
+    "details": {
+      "placedOn": "تم الطلب في {{date}}",
+      "customer": "العميل",
+      "deliveryAddress": "عنوان التوصيل",
+      "items": "العناصر ({{count}})",
+      "qty": "الكمية {{qty}}",
+      "paymentSummary": "ملخص الدفع",
+      "vendor": "المورد",
+      "total": "الإجمالي"
+    }
+  },
+  "payments": {
+    "topbarTitle": "المدفوعات",
+    "currency": {
+      "kwd": "دينار كويتي",
+      "sar": "ريال سعودي"
+    },
+    "method": {
+      "knet": "كي نت",
+      "credit_card": "بطاقة ائتمان",
+      "debit_card": "بطاقة خصم"
+    },
+    "gateway": {
+      "myfatoorah": "ماي فاتورة",
+      "tap": "تاب"
+    },
+    "list": {
+      "title": "جميع المدفوعات",
+      "description": "تتبع وإدارة معاملات الدفع عبر الطلبات.",
+      "searchPlaceholder": "البحث برقم المعاملة…",
+      "filterStatus": "الحالة",
+      "filterMethod": "طريقة الدفع",
+      "emptyTitle": "لا توجد مدفوعات",
+      "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+      "columns": {
+        "transaction": "المعاملة",
+        "order": "الطلب",
+        "customer": "العميل",
+        "amount": "المبلغ",
+        "method": "طريقة الدفع",
+        "gateway": "البوابة",
+        "status": "الحالة",
+        "date": "التاريخ"
+      },
+      "stats": {
+        "total": "إجمالي المدفوعات",
+        "successful": "الناجحة",
+        "pending": "قيد الانتظار",
+        "failed": "الفاشلة"
+      },
+      "toasts": {
+        "created": "تم إنشاء الدفعة {{transactionId}}",
+        "edited": "تم تحديث الدفعة {{transactionId}}",
+        "deleted": "تم حذف الدفعة {{transactionId}}"
+      },
+      "confirm": {
+        "deleteTitle": "حذف الدفعة؟",
+        "deleteDescription": "هل أنت متأكد من حذف الدفعة {{transactionId}}؟ لا يمكن التراجع عن هذا الإجراء."
+      }
+    },
+    "dialog": {
+      "addTitle": "إضافة دفعة",
+      "addDescription": "تسجيل معاملة دفع جديدة.",
+      "editTitle": "تعديل الدفعة",
+      "editDescription": "تعديل الدفعة {{transactionId}}.",
+      "order": "الطلب",
+      "selectOrder": "اختر الطلب",
+      "customer": "العميل",
+      "selectCustomer": "اختر العميل",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "method": "طريقة الدفع",
+      "gateway": "البوابة",
+      "transactionId": "رقم المعاملة",
+      "transactionIdPlaceholder": "مثال: TXN-0083920145",
+      "status": "الحالة",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "add": "إضافة"
+    }
+  },
+  "addresses": {
+    "list": {
+      "searchPlaceholder": "البحث في العناوين…",
+      "columns": {
+        "recipient": "المستلم",
+        "type": "النوع",
+        "location": "الموقع",
+        "phone": "الهاتف",
+        "address": "العنوان"
+      }
+    },
+    "types": {
+      "home": "منزل",
+      "office": "مكتب",
+      "other": "أخرى"
+    },
+    "dialog": {
+      "isDefault": "عنوان افتراضي"
+    }
+  },
+  "reviews": {
+    "topbarTitle": "التقييمات",
+    "list": {
+      "title": "التقييمات",
+      "description": "مراجعة وإدارة تقييمات المنتجات المرسلة من العملاء.",
+      "searchPlaceholder": "بحث في التقييمات...",
+      "addReview": "إضافة تقييم",
+      "filterStatus": "الحالة",
+      "filterRating": "التقييم",
+      "verifiedPurchase": "شراء موثّق",
+      "emptyTitle": "لا توجد تقييمات",
+      "emptyDescription": "حاول تعديل البحث أو الفلاتر.",
+      "columns": {
+        "review": "التقييم",
+        "product": "المنتج",
+        "reviewer": "المُقيّم",
+        "rating": "التقييم",
+        "verified": "موثّق",
+        "status": "الحالة",
+        "date": "التاريخ"
+      },
+      "stats": {
+        "total": "إجمالي التقييمات",
+        "pending": "بانتظار المراجعة",
+        "approved": "معتمدة",
+        "avgRating": "متوسط التقييم"
+      },
+      "confirm": {
+        "deleteTitle": "حذف التقييم؟",
+        "deleteDescription": "سيتم حذف التقييم \"{{title}}\" نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+        "deleteSelectedTitle": "حذف {{count}} تقييمات؟",
+        "deleteSelectedDescription": "سيتم حذف التقييمات المحددة نهائيًا. لا يمكن التراجع عن هذا الإجراء."
+      },
+      "toasts": {
+        "created": "تمت إضافة التقييم \"{{title}}\".",
+        "edited": "تم تحديث التقييم \"{{title}}\".",
+        "deleted": "تم حذف التقييم \"{{title}}\".",
+        "deletedSelected": "تم حذف {{count}} تقييمات.",
+        "approvedTitle": "تم اعتماد التقييم",
+        "approvedBody": "\"{{title}}\" أصبح مرئيًا للعملاء الآن.",
+        "rejectedTitle": "تم رفض التقييم",
+        "rejectedBody": "تم رفض \"{{title}}\" وإخفاؤه عن العملاء."
+      }
+    },
+    "dialog": {
+      "addTitle": "إضافة تقييم",
+      "addDescription": "أضف تقييم منتج يدويًا.",
+      "editTitle": "تعديل التقييم",
+      "editDescription": "تعديل \"{{title}}\"",
+      "product": "المنتج",
+      "productPlaceholder": "اختر منتجًا",
+      "order": "الطلب",
+      "orderPlaceholder": "اختر طلبًا",
+      "reviewer": "المُقيّم",
+      "reviewerPlaceholder": "اختر مُقيّمًا",
+      "rating": "التقييم",
+      "titleEnglish": "العنوان (إنجليزي)",
+      "titleEnglishPlaceholder": "مثال: Excellent quality",
+      "titleArabic": "العنوان (عربي)",
+      "titleArabicPlaceholder": "مثال: جودة ممتازة",
+      "commentEnglish": "التعليق (إنجليزي)",
+      "commentEnglishPlaceholder": "اكتب تعليق المراجعة بالإنجليزية",
+      "commentArabic": "التعليق (عربي)",
+      "commentArabicPlaceholder": "اكتب تعليق المراجعة بالعربية",
+      "verifiedPurchase": "شراء موثّق",
+      "status": "الحالة",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "add": "إضافة"
+    }
+  },
+  "vendors": {
+    "topbarTitle": "الموردون",
+    "tabs": {
+      "pending": "قيد الانتظار",
+      "approved": "موافق عليه"
+    },
+    "pending": {
+      "title": "الطلبات قيد الانتظار",
+      "description": "راجع تسجيلات الموردين الجدد ووافق عليها أو ارفضها.",
+      "emptyTitle": "لا توجد طلبات قيد الانتظار",
+      "emptyDescription": "ستظهر تسجيلات الموردين الجدد هنا للمراجعة."
+    },
+    "approved": {
+      "title": "الموردون المعتمدون",
+      "description": "الموردون النشطون حاليًا على المنصة.",
+      "emptyTitle": "لا يوجد موردون معتمدون",
+      "emptyDescription": "وافق على مورد قيد الانتظار ليظهر هنا."
+    },
+    "searchPlaceholder": "البحث بالنشاط التجاري أو المالك…",
+    "filterCategory": "الفئة",
+    "filterStatus": "الحالة",
+    "columns": {
+      "vendor": "المورد",
+      "category": "الفئة",
+      "city": "المدينة",
+      "documents": "المستندات",
+      "documentsCount": "{{count}} ملفات",
+      "submitted": "تاريخ التقديم",
+      "joined": "تاريخ الانضمام",
+      "rating": "التقييم",
+      "status": "الحالة",
+      "providerName": "اسم المزود",
+      "type": "النوع",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "approvalStatus": "حالة الموافقة",
+      "accountStatus": "حالة الحساب",
+      "actions": "الإجراءات"
+    },
+    "stats": {
+      "pendingReview": "قيد المراجعة",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض",
+      "totalVendors": "إجمالي الموردين",
+      "liveVendors": "الموردون النشطون",
+      "suspended": "معلّق"
+    },
+    "toasts": {
+      "approvedTitle": "تمت الموافقة على المورد",
+      "approvedBody": "تمت الموافقة على {{name}}.",
+      "rejectedTitle": "تم رفض المورد",
+      "rejectedBody": "تم رفض {{name}}.",
+      "suspendedTitle": "تم تعليق المورد",
+      "suspendedBody": "تم تعليق {{name}}.",
+      "reinstatedTitle": "تمت إعادة تفعيل المورد",
+      "reinstatedBody": "تمت إعادة تفعيل {{name}}.",
+      "updatedTitle": "تم تحديث المورد",
+      "updatedBody": "تم تحديث \"{{name}}\".",
+      "passwordChangedTitle": "تم تغيير كلمة المرور",
+      "passwordChangedBody": "تم تحديث كلمة مرور \"{{name}}\".",
+      "deletedTitle": "تم حذف المورد",
+      "deletedBody": "تمت إزالة \"{{name}}\"."
+    },
+    "typeCompany": "شركة",
+    "typeIndividual": "فرد",
+    "filterType": "النوع",
+    "actions": {
+      "changePassword": "تغيير كلمة المرور"
+    },
+    "dialog": {
+      "viewDescription": "تفاصيل حساب المورد",
+      "editTitle": "تعديل المورد",
+      "editDescription": "تعديل \"{{name}}\"",
+      "businessName": "اسم النشاط التجاري",
+      "businessNameEnglish": "اسم النشاط التجاري (إنجليزي)",
+      "businessNameArabic": "اسم النشاط التجاري (عربي)",
+      "ownerName": "اسم المالك",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "category": "الفئة",
+      "city": "المدينة",
+      "type": "النوع",
+      "approvalStatus": "حالة الموافقة",
+      "accountStatus": "حالة الحساب",
+      "commission": "العمولة",
+      "rating": "التقييم",
+      "documents": "المستندات",
+      "changePasswordTitle": "تغيير كلمة المرور",
+      "changePasswordDescription": "تعيين كلمة مرور جديدة لـ \"{{name}}\"",
+      "newPassword": "كلمة المرور الجديدة",
+      "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور الجديدة",
+      "changePasswordButton": "تحديث كلمة المرور",
+      "deleteTitle": "حذف المورد؟",
+      "deleteDescription": "سيؤدي هذا إلى إزالة \"{{name}}\" من المنصة نهائيًا. لا يمكن التراجع عن هذا الإجراء."
+    },
+    "view": {
+      "tabs": {
+        "details": "التفاصيل",
+        "products": "المنتجات",
+        "orders": "الطلبات",
+        "reviews": "التقييمات",
+        "documents": "المستندات"
+      },
+      "basicInfo": "المعلومات الأساسية",
+      "businessLicense": "الرخصة التجارية",
+      "taxId": "الرقم الضريبي",
+      "joined": "تاريخ الانضمام",
+      "approvedOn": "تاريخ الموافقة",
+      "columns": {
+        "documentType": "نوع المستند",
+        "uploadedAt": "تاريخ الرفع"
+      },
+      "empty": {
+        "products": "لا توجد منتجات مدرجة بعد",
+        "orders": "لا توجد طلبات بعد",
+        "reviews": "لا توجد تقييمات بعد",
+        "documents": "لم يتم رفع أي مستندات"
+      }
+    }
+  },
+  "analytics": {
+    "stats": {
+      "totalOrders": "إجمالي الطلبات",
+      "newCustomers": "عملاء جدد",
+      "avgOrderValue": "متوسط قيمة الطلب"
+    },
+    "revenueTrend": {
+      "title": "اتجاه الإيرادات",
+      "description": "الإيرادات الشهرية عبر السوق"
+    },
+    "ordersByStatus": {
+      "title": "الطلبات حسب الحالة",
+      "description": "تفصيل مسار الطلبات الحالي"
+    },
+    "customerGrowth": {
+      "title": "نمو العملاء",
+      "description": "العملاء الجدد مقابل العملاء العائدين",
+      "new": "جديد",
+      "returning": "عائد"
+    },
+    "topVendors": {
+      "title": "أفضل الموردين حسب الإيرادات",
+      "description": "الموردون الأعلى ربحًا هذا الشهر"
+    }
+  },
+  "notifications": {
+    "topbarTitle": "الإشعارات",
+    "title": "البريد الوارد",
+    "description": "جميع الإشعارات المرسلة إلى حسابك.",
+    "searchPlaceholder": "البحث في الإشعارات…",
+    "filterType": "النوع",
+    "filterPriority": "الأولوية",
+    "filterStatus": "الحالة",
+    "emptyTitle": "لا توجد إشعارات",
+    "emptyDescription": "لقد اطلعت على كل شيء.",
+    "columns": {
+      "notification": "الإشعار",
+      "type": "النوع",
+      "priority": "الأولوية",
+      "received": "تاريخ الاستلام",
+      "status": "الحالة"
+    },
+    "stats": {
+      "total": "الإجمالي",
+      "unread": "غير مقروء",
+      "high": "مرتفع",
+      "critical": "حرج",
+      "needAttention": "يتطلب الاهتمام",
+      "actionRequired": "يتطلب إجراءً"
+    }
+  },
+  "notificationsSend": {
+    "topbarTitle": "إرسال إشعار",
+    "compose": {
+      "title": "إنشاء إشعار",
+      "description": "أرسل إشعارًا إلى مجموعة واحدة أو أكثر من المستخدمين.",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "عنوان الإشعار…",
+      "messageLabel": "الرسالة",
+      "messagePlaceholder": "اكتب رسالتك هنا…",
+      "recipients": "المستلمون",
+      "recipientOptions": {
+        "all": "جميع المستخدمين",
+        "admins": "المسؤولون فقط",
+        "users": "المستخدمون العاديون فقط",
+        "editors": "المحررون فقط"
+      },
+      "type": "النوع",
+      "priority": "الأولوية",
+      "submit": "إرسال الإشعار",
+      "sentConfirmation": "✓ تم إرسال الإشعار بنجاح"
+    },
+    "history": {
+      "title": "سجل الإرسال",
+      "description": "الإشعارات المرسلة سابقًا.",
+      "searchPlaceholder": "البحث في الإشعارات المرسلة…",
+      "filterType": "النوع",
+      "filterPriority": "الأولوية",
+      "emptyTitle": "لم يتم إرسال أي إشعارات بعد",
+      "columns": {
+        "title": "العنوان",
+        "recipients": "المستلمون",
+        "type": "النوع",
+        "priority": "الأولوية",
+        "delivered": "تم التسليم",
+        "sentAt": "تاريخ الإرسال"
+      },
+      "stats": {
+        "totalSent": "إجمالي المرسل",
+        "totalDelivered": "إجمالي المُسلَّم",
+        "highPriority": "أولوية مرتفعة",
+        "criticalSent": "حرج مُرسَل"
+      }
+    }
+  },
+  "settings": {
+    "topbarTitle": "الإعدادات",
+    "title": "الإعدادات",
+    "description": "إدارة إعدادات المنصة والتفضيلات",
+    "saveChanges": "حفظ التغييرات",
+    "savedToast": {
+      "title": "تم حفظ الإعدادات",
+      "body": "تم حفظ تغييراتك."
+    },
+    "tabs": {
+      "general": "عام",
+      "notifications": "الإشعارات",
+      "security": "الأمان",
+      "appearance": "المظهر"
+    },
+    "general": {
+      "title": "الإعدادات العامة",
+      "description": "تكوين معلومات المنصة الأساسية",
+      "platformName": "اسم المنصة",
+      "supportEmail": "البريد الإلكتروني للدعم",
+      "supportPhone": "هاتف الدعم",
+      "defaultLanguage": "اللغة الافتراضية",
+      "timezone": "المنطقة الزمنية",
+      "languages": {
+        "english": "الإنجليزية",
+        "arabic": "العربية",
+        "french": "الفرنسية",
+        "spanish": "الإسبانية"
+      }
+    },
+    "notifications": {
+      "title": "إعدادات الإشعارات",
+      "description": "التحكم في كيفية ووقت تسليم الإشعارات",
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "pushNotifications": "الإشعارات الفورية",
+      "digestFrequency": "تكرار الملخص",
+      "alertEmail": "بريد التنبيهات",
+      "enabled": "مفعّل",
+      "disabled": "معطّل",
+      "frequencies": {
+        "realtime": "فوري",
+        "hourly": "كل ساعة",
+        "daily": "يوميًا",
+        "weekly": "أسبوعيًا"
+      }
+    },
+    "security": {
+      "title": "إعدادات الأمان",
+      "description": "إدارة أمان الحساب والمصادقة",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور"
+    },
+    "appearance": {
+      "title": "إعدادات المظهر",
+      "description": "تخصيص شكل ومظهر المنصة",
+      "theme": "السمة",
+      "direction": "اتجاه النص",
+      "dateFormat": "تنسيق التاريخ",
+      "timeFormat": "تنسيق الوقت",
+      "fontSize": "حجم الخط",
+      "themes": {
+        "light": "فاتح",
+        "dark": "داكن",
+        "system": "النظام"
+      },
+      "directions": {
+        "ltr": "من اليسار إلى اليمين",
+        "rtl": "من اليمين إلى اليسار"
+      },
+      "timeFormats": {
+        "12h": "12 ساعة (ص/م)",
+        "24h": "24 ساعة"
+      },
+      "fontSizes": {
+        "small": "صغير",
+        "medium": "متوسط (افتراضي)",
+        "large": "كبير"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "مرحبًا بعودتك",
+      "subtitle": "يرجى تسجيل الدخول للمتابعة",
+      "emailLabel": "البريد الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "noAccount": "ليس لديك حساب؟",
+      "register": "إنشاء حساب",
+      "successTitle": "تم تسجيل الدخول بنجاح",
+      "successBody": "مرحبًا بعودتك!",
+      "failTitle": "فشل تسجيل الدخول"
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "nameLabel": "الاسم",
+      "emailLabel": "البريد الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "submit": "إنشاء حساب",
+      "strength": {
+        "weak": "ضعيفة",
+        "medium": "متوسطة",
+        "strong": "قوية"
+      },
+      "passwordsDontMatch": "كلمتا المرور غير متطابقتين",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "forgotOldOne": "نسيت كلمة المرور القديمة؟",
+      "resetPassword": "إعادة تعيين كلمة المرور"
+    },
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور",
+      "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
+      "emailLabel": "البريد الإلكتروني",
+      "submit": "إرسال رابط إعادة التعيين",
+      "backToLogin": "العودة لتسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "register": "إنشاء حساب"
+    }
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "backHome": "العودة إلى الرئيسية"
   }
 }

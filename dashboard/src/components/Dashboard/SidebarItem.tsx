@@ -52,8 +52,10 @@ export default function SidebarItem({ item }: SidebarItemProps) {
     <Link
       to={item?.path || "#"}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent",
-        "path" in item && isActive(item.path) && "bg-accent",
+        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+        "path" in item &&
+          isActive(item.path) &&
+          "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
         isPartial && "justify-center px-0"
       )}
     >
@@ -75,8 +77,8 @@ export default function SidebarItem({ item }: SidebarItemProps) {
     return (
       <div
         className={cn(
-          "flex justify-center px-0 py-2 rounded-md transition-colors hover:bg-accent cursor-pointer",
-          isParentActive && "bg-accent"
+          "flex justify-center px-0 py-2 rounded-md transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground cursor-pointer",
+          isParentActive && "bg-sidebar-accent text-sidebar-foreground"
         )}
       >
         <item.icon className="h-4 w-4 shrink-0" />
@@ -89,8 +91,8 @@ export default function SidebarItem({ item }: SidebarItemProps) {
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex w-full items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent",
-          isParentActive && "bg-accent"
+          "flex w-full items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+          isParentActive && "bg-sidebar-accent text-sidebar-foreground"
         )}
       >
         <span className="flex items-center gap-3">
@@ -103,17 +105,17 @@ export default function SidebarItem({ item }: SidebarItemProps) {
         />
       </button>
       {open && (
-        <div className="ml-7 border-l pl-3 mt-1 space-y-1">
+        <div className="ml-7 border-l border-sidebar-border pl-3 mt-1 space-y-1">
           {item.children.map((child) =>
             isDesktop ? (
               <Link
                 key={child.label}
                 to={child.path}
                 className={cn(
-                  "block text-sm py-1.5 px-2 rounded-md transition-colors hover:text-primary",
+                  "block text-sm py-1.5 px-2 rounded-md transition-colors hover:text-sidebar-primary",
                   isActive(child.path, true)
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground"
+                    ? "text-sidebar-primary font-semibold"
+                    : "text-sidebar-foreground/60"
                 )}
               >
                 {label(child.labelKey, child.label)}
@@ -123,10 +125,10 @@ export default function SidebarItem({ item }: SidebarItemProps) {
                 <Link
                   to={child.path}
                   className={cn(
-                    "block text-sm py-1.5 px-2 rounded-md transition-colors hover:text-primary",
+                    "block text-sm py-1.5 px-2 rounded-md transition-colors hover:text-sidebar-primary",
                     isActive(child.path, true)
-                      ? "text-primary font-semibold"
-                      : "text-muted-foreground"
+                      ? "text-sidebar-primary font-semibold"
+                      : "text-sidebar-foreground/60"
                   )}
                 >
                   {label(child.labelKey, child.label)}

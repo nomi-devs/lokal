@@ -1,28 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Globe, Bell, ShieldCheck, Paintbrush, Save, ChevronDown } from "lucide-react";
-import type { RefObject, ReactElement } from "react";
+import { Save, ChevronDown } from "lucide-react";
 
 import type { RootState } from "@/store";
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-
-// ── Tabs ───────────────────────────────────────────────────────────────────────
-
-const TABS = [
-  { id: "general", label: "General", icon: Globe },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: ShieldCheck },
-  { id: "appearance", label: "Appearance", icon: Paintbrush },
-] as const;
-
-type TabId = (typeof TABS)[number]["id"];
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
 
@@ -87,444 +76,184 @@ function SectionHeader({ title, description }: { title: string; description: str
   );
 }
 
-// ── General ────────────────────────────────────────────────────────────────────
+// ── Combined General + Security schema ──────────────────────────────────────────
 
-const generalSchema = z.object({
-  platformName: z.string().min(1, "Required"),
-  supportEmail: z.email("Invalid email"),
-  supportPhone: z.string().min(1, "Required"),
-  language: z.string(),
-  timezone: z.string(),
-  currency: z.string(),
-});
-
-function GeneralSettings({
-  formRef,
-  onSuccess,
-}: {
-  formRef: RefObject<HTMLFormElement | null>;
-  onSuccess: () => void;
-}) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(generalSchema),
-    defaultValues: {
-      platformName: "Dashboard Kit",
-      supportEmail: "support@example.com",
-      supportPhone: "+1 000 000 0000",
-      language: "en",
-      timezone: "UTC",
-      currency: "USD",
-    },
-  });
-
-  return (
-    <form ref={formRef} onSubmit={handleSubmit(onSuccess)}>
-      <SectionHeader title="General Settings" description="Configure basic platform information" />
-      <div className="grid grid-cols-2 gap-5">
-        <Field label="Platform Name" error={errors.platformName?.message} className="col-span-2">
-          <input className={inputCls} {...register("platformName")} />
-        </Field>
-
-        <Field label="Support Email" error={errors.supportEmail?.message}>
-          <input type="email" className={inputCls} {...register("supportEmail")} />
-        </Field>
-
-        <Field label="Support Phone" error={errors.supportPhone?.message}>
-          <input className={inputCls} {...register("supportPhone")} />
-        </Field>
-
-        <SelectField
-          label="Default Language"
-          options={[
-            { label: "English", value: "en" },
-            { label: "Arabic", value: "ar" },
-            { label: "French", value: "fr" },
-            { label: "Spanish", value: "es" },
-          ]}
-          {...register("language")}
-        />
-
-        <SelectField
-          label="Timezone"
-          options={[
-            { label: "UTC (GMT+0)", value: "UTC" },
-            { label: "Asia/Riyadh (GMT+3)", value: "Asia/Riyadh" },
-            { label: "Asia/Dubai (GMT+4)", value: "Asia/Dubai" },
-            { label: "Europe/London (GMT+1)", value: "Europe/London" },
-            { label: "America/New_York (GMT-5)", value: "America/New_York" },
-          ]}
-          {...register("timezone")}
-        />
-
-        <SelectField
-          label="Currency"
-          className="col-span-2"
-          options={[
-            { label: "USD — US Dollar", value: "USD" },
-            { label: "SAR — Saudi Riyal", value: "SAR" },
-            { label: "EUR — Euro", value: "EUR" },
-            { label: "GBP — British Pound", value: "GBP" },
-            { label: "AED — UAE Dirham", value: "AED" },
-          ]}
-          {...register("currency")}
-        />
-      </div>
-    </form>
-  );
-}
-
-// ── Notifications ──────────────────────────────────────────────────────────────
-
-const notifSchema = z.object({
-  emailNotifs: z.string(),
-  pushNotifs: z.string(),
-  digestFrequency: z.string(),
-  alertEmail: z.email("Invalid email"),
-});
-
-function NotificationSettings({
-  formRef,
-  onSuccess,
-}: {
-  formRef: RefObject<HTMLFormElement | null>;
-  onSuccess: () => void;
-}) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(notifSchema),
-    defaultValues: {
-      emailNotifs: "enabled",
-      pushNotifs: "enabled",
-      digestFrequency: "daily",
-      alertEmail: "alerts@example.com",
-    },
-  });
-
-  const toggleOptions = [
-    { label: "Enabled", value: "enabled" },
-    { label: "Disabled", value: "disabled" },
-  ];
-
-  return (
-    <form ref={formRef} onSubmit={handleSubmit(onSuccess)}>
-      <SectionHeader
-        title="Notification Settings"
-        description="Control how and when notifications are delivered"
-      />
-      <div className="grid grid-cols-2 gap-5">
-        <SelectField
-          label="Email Notifications"
-          options={toggleOptions}
-          {...register("emailNotifs")}
-        />
-
-        <SelectField
-          label="Push Notifications"
-          options={toggleOptions}
-          {...register("pushNotifs")}
-        />
-
-        <SelectField
-          label="Digest Frequency"
-          className="col-span-2"
-          options={[
-            { label: "Real-time", value: "realtime" },
-            { label: "Hourly", value: "hourly" },
-            { label: "Daily", value: "daily" },
-            { label: "Weekly", value: "weekly" },
-          ]}
-          {...register("digestFrequency")}
-        />
-
-        <Field label="Alert Email" error={errors.alertEmail?.message} className="col-span-2">
-          <input type="email" className={inputCls} {...register("alertEmail")} />
-        </Field>
-      </div>
-    </form>
-  );
-}
-
-// ── Security ───────────────────────────────────────────────────────────────────
-
-const securitySchema = z
+const settingsSchema = z
   .object({
+    platformName: z.string().min(1, "Required"),
+    supportEmail: z.email("Invalid email"),
+    supportPhone: z.string().min(1, "Required"),
+    language: z.string(),
+    timezone: z.string(),
     currentPassword: z.string().min(1, "Required"),
     newPassword: z.string().min(8, "Minimum 8 characters"),
     confirmPassword: z.string().min(1, "Required"),
-    sessionTimeout: z.string(),
-    twoFactor: z.string(),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
 
-function SecuritySettings({
-  formRef,
-  onSuccess,
-}: {
-  formRef: RefObject<HTMLFormElement | null>;
-  onSuccess: () => void;
-}) {
+// ── Page ───────────────────────────────────────────────────────────────────────
+
+export default function SettingsPage() {
+  const { t } = useTranslation();
   const userEmail = useSelector((state: RootState) => state.auth.user?.email ?? "");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(securitySchema),
+    resolver: zodResolver(settingsSchema),
     defaultValues: {
+      platformName: "LOKAL ",
+      supportEmail: "support@example.com",
+      supportPhone: "+1 000 000 0000",
+      language: "en",
+      timezone: "UTC",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-      sessionTimeout: "30",
-      twoFactor: "disabled",
     },
   });
-
-  return (
-    <form ref={formRef} onSubmit={handleSubmit(onSuccess)}>
-      <input
-        type="text"
-        autoComplete="username"
-        value={userEmail}
-        readOnly
-        aria-hidden="true"
-        tabIndex={-1}
-        className="sr-only"
-      />
-      <SectionHeader
-        title="Security Settings"
-        description="Manage account security and authentication"
-      />
-      <div className="grid grid-cols-2 gap-5">
-        <Field
-          label="Current Password"
-          error={errors.currentPassword?.message}
-          className="col-span-2"
-        >
-          <input
-            type="password"
-            className={inputCls}
-            placeholder="••••••••"
-            autoComplete="current-password"
-            {...register("currentPassword")}
-          />
-        </Field>
-
-        <Field label="New Password" error={errors.newPassword?.message}>
-          <input
-            type="password"
-            className={inputCls}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            {...register("newPassword")}
-          />
-        </Field>
-
-        <Field label="Confirm Password" error={errors.confirmPassword?.message}>
-          <input
-            type="password"
-            className={inputCls}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            {...register("confirmPassword")}
-          />
-        </Field>
-
-        <SelectField
-          label="Session Timeout"
-          options={[
-            { label: "15 minutes", value: "15" },
-            { label: "30 minutes", value: "30" },
-            { label: "1 hour", value: "60" },
-            { label: "4 hours", value: "240" },
-            { label: "Never", value: "0" },
-          ]}
-          {...register("sessionTimeout")}
-        />
-
-        <SelectField
-          label="Two-Factor Authentication"
-          options={[
-            { label: "Disabled", value: "disabled" },
-            { label: "Email OTP", value: "email" },
-            { label: "Authenticator App", value: "app" },
-          ]}
-          {...register("twoFactor")}
-        />
-      </div>
-    </form>
-  );
-}
-
-// ── Appearance ─────────────────────────────────────────────────────────────────
-
-const appearanceSchema = z.object({
-  theme: z.string(),
-  direction: z.string(),
-  dateFormat: z.string(),
-  timeFormat: z.string(),
-  fontSize: z.string(),
-});
-
-function AppearanceSettings({
-  formRef,
-  onSuccess,
-}: {
-  formRef: RefObject<HTMLFormElement | null>;
-  onSuccess: () => void;
-}) {
-  const { register, handleSubmit } = useForm({
-    resolver: zodResolver(appearanceSchema),
-    defaultValues: {
-      theme: "light",
-      direction: "ltr",
-      dateFormat: "MM/DD/YYYY",
-      timeFormat: "12h",
-      fontSize: "medium",
-    },
-  });
-
-  return (
-    <form ref={formRef} onSubmit={handleSubmit(onSuccess)}>
-      <SectionHeader
-        title="Appearance Settings"
-        description="Customize the look and feel of the platform"
-      />
-      <div className="grid grid-cols-2 gap-5">
-        <SelectField
-          label="Theme"
-          options={[
-            { label: "Light", value: "light" },
-            { label: "Dark", value: "dark" },
-            { label: "System", value: "system" },
-          ]}
-          {...register("theme")}
-        />
-
-        <SelectField
-          label="Text Direction"
-          options={[
-            { label: "Left to Right (LTR)", value: "ltr" },
-            { label: "Right to Left (RTL)", value: "rtl" },
-          ]}
-          {...register("direction")}
-        />
-
-        <SelectField
-          label="Date Format"
-          options={[
-            { label: "MM/DD/YYYY", value: "MM/DD/YYYY" },
-            { label: "DD/MM/YYYY", value: "DD/MM/YYYY" },
-            { label: "YYYY-MM-DD", value: "YYYY-MM-DD" },
-          ]}
-          {...register("dateFormat")}
-        />
-
-        <SelectField
-          label="Time Format"
-          options={[
-            { label: "12-hour (AM/PM)", value: "12h" },
-            { label: "24-hour", value: "24h" },
-          ]}
-          {...register("timeFormat")}
-        />
-
-        <SelectField
-          label="Font Size"
-          className="col-span-2"
-          options={[
-            { label: "Small", value: "small" },
-            { label: "Medium (default)", value: "medium" },
-            { label: "Large", value: "large" },
-          ]}
-          {...register("fontSize")}
-        />
-      </div>
-    </form>
-  );
-}
-
-// ── Page ───────────────────────────────────────────────────────────────────────
-
-const TAB_CONTENT: Record<
-  TabId,
-  (props: { formRef: RefObject<HTMLFormElement | null>; onSuccess: () => void }) => ReactElement
-> = {
-  general: GeneralSettings,
-  notifications: NotificationSettings,
-  security: SecuritySettings,
-  appearance: AppearanceSettings,
-};
-
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabId>("general");
-  const formRef = useRef<HTMLFormElement>(null);
 
   function handleSave() {
     formRef.current?.requestSubmit();
   }
 
   function onSuccess() {
-    toast.success("Your changes have been saved.", { title: "Settings Saved" });
+    toast.success(t("settings.savedToast.body"), { title: t("settings.savedToast.title") });
   }
 
-  const ActiveSection = TAB_CONTENT[activeTab];
-
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle="Settings">
+    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("settings.topbarTitle")}>
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage platform configuration and preferences
-          </p>
+          <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("settings.description")}</p>
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 h-10 px-5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors"
+          className="flex items-center gap-2 h-10 px-5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors"
         >
           <Save className="w-4 h-4" />
-          Save Changes
+          {t("settings.saveChanges")}
         </button>
       </div>
 
       {/* Body */}
-      <div className="flex gap-5 items-start">
-        {/* Sidebar */}
-        <div className="w-52 shrink-0 bg-card rounded-xl border p-2 flex flex-col gap-0.5">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors text-start",
-                activeTab === tab.id
-                  ? "bg-[#1e2d3d] text-white dark:bg-primary dark:text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit(onSuccess)}
+        className="bg-card rounded-xl border p-6 flex flex-col gap-8"
+      >
+        <input
+          type="text"
+          autoComplete="username"
+          value={userEmail}
+          readOnly
+          aria-hidden="true"
+          tabIndex={-1}
+          className="sr-only"
+        />
+
+        {/* General */}
+        <div>
+          <SectionHeader
+            title={t("settings.general.title")}
+            description={t("settings.general.description")}
+          />
+          <div className="grid grid-cols-2 gap-5">
+            <Field
+              label={t("settings.general.platformName")}
+              error={errors.platformName?.message}
+              className="col-span-2"
             >
-              <tab.icon className="w-4 h-4 shrink-0" />
-              {tab.label}
-            </button>
-          ))}
+              <input className={inputCls} {...register("platformName")} />
+            </Field>
+
+            <Field label={t("settings.general.supportEmail")} error={errors.supportEmail?.message}>
+              <input type="email" className={inputCls} {...register("supportEmail")} />
+            </Field>
+
+            <Field label={t("settings.general.supportPhone")} error={errors.supportPhone?.message}>
+              <input className={inputCls} {...register("supportPhone")} />
+            </Field>
+
+            <SelectField
+              label={t("settings.general.defaultLanguage")}
+              options={[
+                { label: t("settings.general.languages.english"), value: "en" },
+                { label: t("settings.general.languages.arabic"), value: "ar" },
+                { label: t("settings.general.languages.french"), value: "fr" },
+                { label: t("settings.general.languages.spanish"), value: "es" },
+              ]}
+              {...register("language")}
+            />
+
+            <SelectField
+              label={t("settings.general.timezone")}
+              options={[
+                { label: "UTC (GMT+0)", value: "UTC" },
+                { label: "Asia/Riyadh (GMT+3)", value: "Asia/Riyadh" },
+                { label: "Asia/Dubai (GMT+4)", value: "Asia/Dubai" },
+                { label: "Europe/London (GMT+1)", value: "Europe/London" },
+                { label: "America/New_York (GMT-5)", value: "America/New_York" },
+              ]}
+              {...register("timezone")}
+            />
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 bg-card rounded-xl border p-6">
-          <ActiveSection formRef={formRef} onSuccess={onSuccess} />
+        {/* Security */}
+        <div>
+          <SectionHeader
+            title={t("settings.security.title")}
+            description={t("settings.security.description")}
+          />
+          <div className="grid grid-cols-2 gap-5">
+            <Field
+              label={t("settings.security.currentPassword")}
+              error={errors.currentPassword?.message}
+              className="col-span-2"
+            >
+              <input
+                type="password"
+                className={inputCls}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                {...register("currentPassword")}
+              />
+            </Field>
+
+            <Field label={t("settings.security.newPassword")} error={errors.newPassword?.message}>
+              <input
+                type="password"
+                className={inputCls}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                {...register("newPassword")}
+              />
+            </Field>
+
+            <Field
+              label={t("settings.security.confirmPassword")}
+              error={errors.confirmPassword?.message}
+            >
+              <input
+                type="password"
+                className={inputCls}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                {...register("confirmPassword")}
+              />
+            </Field>
+          </div>
         </div>
-      </div>
+      </form>
     </DashboardLayout>
   );
 }

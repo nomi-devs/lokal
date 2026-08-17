@@ -20,92 +20,82 @@
  * ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* ── Brand colors (light mode) ────────────────────────────────────────── */
-  --primary: oklch(0.208 0.042 265.755); /* main accent — buttons, links */
-  --primary-foreground: oklch(0.984 0.003 247.858); /* text on primary bg */
+  /* ── LOKAL brand colors (light mode) ──────────────────────────────────── */
+  --primary: #2c3e50; /* dark navy — primary CTA, buttons, highlights */
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: #4a9b8e; /* teal — secondary CTA, links, success actions */
+  --secondary-foreground: #ffffff;
 
-  --destructive: oklch(0.577 0.245 27.325); /* red — delete, error */
+  --destructive: #ef4444; /* error / delete */
 
   /* ── Surface colors (light mode) ─────────────────────────────────────── */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --background: #f5f5f5; /* page background */
+  --foreground: #1f2937; /* primary text */
+  --card: #ffffff; /* card / content background */
+  --card-foreground: #1f2937;
+  --popover: #ffffff;
+  --popover-foreground: #1f2937;
+  --muted: #f5f5f5;
+  --muted-foreground: #6b7280; /* secondary text — labels, descriptions */
+  --accent: #f3f4f6;
+  --accent-foreground: #1f2937;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #4a9b8e;
 
   /* ── Border radius ────────────────────────────────────────────────────── */
   --radius: 0.625rem; /* base radius — all other radii derive from this */
 
   /* ── Chart palette ────────────────────────────────────────────────────── */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #2c3e50; /* dark navy */
+  --chart-2: #4a9b8e; /* teal */
+  --chart-3: #9ca3af; /* neutral gray */
+  --chart-4: #f59e0b; /* warning amber */
+  --chart-5: #3b82f6; /* info blue */
 
-  /* ── Sidebar (mirrors primary surface by default) ─────────────────────── */
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  /* ── Sidebar — brand-constant dark navy, same in light & dark mode ────── */
+  --sidebar: #2c3e50;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #4a9b8e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #3a4e63;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #4a9b8e;
 }
 
 .dark {
-  /* ── Brand colors (dark mode) ─────────────────────────────────────────── */
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
+  /* ── LOKAL brand colors (dark mode) ───────────────────────────────────── */
+  --primary: #4a6580; /* lighter navy — stays visible against the navy card surface below */
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: #4a9b8e;
+  --secondary-foreground: #ffffff;
 
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: #f87171;
 
   /* ── Surface colors (dark mode) ──────────────────────────────────────── */
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
+  --background: #1b2530;
+  --foreground: #f5f5f5;
+  --card: #2c3e50;
+  --card-foreground: #ffffff;
+  --popover: #2c3e50;
+  --popover-foreground: #ffffff;
+  --muted: #34495e;
+  --muted-foreground: #9ca3af;
+  --accent: #34495e;
+  --accent-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #4a9b8e;
 
   /* ── Chart palette (dark mode) ────────────────────────────────────────── */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-
-  /* ── Sidebar (dark mode) ──────────────────────────────────────────────── */
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --chart-1: #4a6580;
+  --chart-2: #4a9b8e;
+  --chart-3: #9ca3af;
+  --chart-4: #f59e0b;
+  --chart-5: #3b82f6;
 }
 
 /* ─── Tailwind v4 theme bridge ───────────────────────────────────────────────
@@ -161,6 +151,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;

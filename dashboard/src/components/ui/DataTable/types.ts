@@ -23,7 +23,7 @@ export interface RowAction<T extends RowData> {
   label: string;
   icon?: LucideIcon;
   onClick: (row: T) => void;
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "warning";
   /** Return true to hide this action for a specific row */
   hidden?: (row: T) => boolean;
 }
@@ -108,6 +108,10 @@ export interface DataTableProps<T extends RowData> {
 
   // Actions
   rowActions?: RowAction<T>[];
+  /** "menu" (default) shows a "…" dropdown; "inline" renders each action as its own icon button. */
+  rowActionsVariant?: "menu" | "inline";
+  /** Header label for the row-actions column. Defaults to the translated "Actions". */
+  rowActionsLabel?: string;
   toolbarActions?: ToolbarAction<T>[];
 
   // Pagination  (pass false to disable entirely)

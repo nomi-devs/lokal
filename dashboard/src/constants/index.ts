@@ -8,7 +8,9 @@ import {
   FolderTree,
   Store,
   ShoppingCart,
-  BarChart3,
+  Package,
+  CreditCard,
+  Star,
 } from "lucide-react";
 
 import type { SidebarItem } from "@/components/Dashboard/types";
@@ -24,10 +26,12 @@ export const sidebarItems: SidebarItem[] = [
   { label: "Overview", labelKey: "sidebar.overview", icon: LayoutDashboard, path: "/overview" },
   { label: "Banners", labelKey: "sidebar.banners", icon: Image, path: "/banners" },
   { label: "Categories", labelKey: "sidebar.categories", icon: FolderTree, path: "/categories" },
+  { label: "Products", labelKey: "sidebar.products", icon: Package, path: "/products" },
   { label: "Users", labelKey: "sidebar.userManagement", icon: Users, path: "/users" },
   { label: "Vendors", labelKey: "sidebar.vendors", icon: Store, path: "/vendors" },
   { label: "Orders", labelKey: "sidebar.orders", icon: ShoppingCart, path: "/orders" },
-  { label: "Analytics", labelKey: "sidebar.analytics", icon: BarChart3, path: "/analytics" },
+  { label: "Payments", labelKey: "sidebar.payments", icon: CreditCard, path: "/payments" },
+  { label: "Reviews", labelKey: "sidebar.reviews", icon: Star, path: "/reviews" },
   {
     label: "Notifications",
     labelKey: "sidebar.notifications",

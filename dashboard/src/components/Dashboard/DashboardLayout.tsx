@@ -9,7 +9,7 @@ function DashboardContent({ sidebarItems, topbarTitle, children }: DashboardLayo
   return (
     <div className="flex h-screen overflow-hidden">
       {isDesktop && sidebarState !== "collapsed" && <DesktopSidebar items={sidebarItems} />}
-      <div className="flex flex-col flex-1 overflow-y-auto min-w-0">
+      <div className="flex flex-col flex-1 overflow-y-auto min-w-0 overscroll-y-contain">
         <Topbar title={topbarTitle} items={sidebarItems} />
         <main className="flex-1 p-4 bg-background">{children}</main>
       </div>

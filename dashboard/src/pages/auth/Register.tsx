@@ -2,6 +2,7 @@ import { z } from "zod";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { AppDispatch } from "@/store";
 import { register } from "@/store/slices/authSlice";
@@ -22,45 +23,46 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-const registerFields: FieldConfig[] = [
-  {
-    name: "name",
-    label: "Name",
-    type: "text",
-    placeholder: "John Doe",
-    autocomplete: "name",
-    col: 12,
-  },
-  {
-    name: "email",
-    label: "Email",
-    type: "email",
-    placeholder: "you@example.com",
-    autocomplete: "email",
-    col: 12,
-  },
-  {
-    name: "password",
-    label: "Password",
-    type: "password",
-    placeholder: "••••••••",
-    autocomplete: "new-password",
-    col: 12,
-  },
-  {
-    name: "confirmPassword",
-    label: "Confirm Password",
-    type: "password",
-    placeholder: "••••••••",
-    autocomplete: "new-password",
-    col: 12,
-  },
-];
-
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const registerFields: FieldConfig[] = [
+    {
+      name: "name",
+      label: t("auth.register.nameLabel"),
+      type: "text",
+      placeholder: "John Doe",
+      autocomplete: "name",
+      col: 12,
+    },
+    {
+      name: "email",
+      label: t("auth.register.emailLabel"),
+      type: "email",
+      placeholder: "you@example.com",
+      autocomplete: "email",
+      col: 12,
+    },
+    {
+      name: "password",
+      label: t("auth.register.passwordLabel"),
+      type: "password",
+      placeholder: "••••••••",
+      autocomplete: "new-password",
+      col: 12,
+    },
+    {
+      name: "confirmPassword",
+      label: t("auth.register.confirmPasswordLabel"),
+      type: "password",
+      placeholder: "••••••••",
+      autocomplete: "new-password",
+      col: 12,
+    },
+  ];
 
   function onSubmit(values: z.infer<typeof registerSchema>) {
     console.log("Register attempt:", values);
@@ -73,14 +75,14 @@ export default function RegisterPage() {
     }
 
     if (pw.length < 6) {
-      return { label: "Weak", color: "bg-red-500" };
+      return { label: t("auth.register.strength.weak"), color: "bg-red-500" };
     }
 
     if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw) || !/[!@#$%^&*]/.test(pw)) {
-      return { label: "Medium", color: "bg-yellow-500" };
+      return { label: t("auth.register.strength.medium"), color: "bg-yellow-500" };
     }
 
-    return { label: "Strong", color: "bg-green-500" };
+    return { label: t("auth.register.strength.strong"), color: "bg-green-500" };
   }
 
   const strength = getStrength(password);
@@ -92,7 +94,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <h1 className="text-2xl font-bold mb-3 text-primary dark:text-white">
-            Create an Account
+            {t("auth.register.title")}
           </h1>
 
           <DynamicForm
@@ -105,7 +107,7 @@ export default function RegisterPage() {
               confirmPassword: "",
             }}
             onSubmit={onSubmit}
-            submitText="Sign Up"
+            submitText={t("auth.register.submit")}
             // Track password values for live feedback
             onChange={(name, value) => {
               if (name === "password") {
@@ -131,22 +133,22 @@ export default function RegisterPage() {
           {/* Confirm password live check */}
           <div className="mt-1 min-h-[10px]">
             {confirmPassword && !passwordsMatch && (
-              <p className="text-xs text-red-500">Passwords do not match</p>
+              <p className="text-xs text-red-500">{t("auth.register.passwordsDontMatch")}</p>
             )}
           </div>
 
           {/* Links Section */}
           <div className="mt-2 flex flex-col sm:flex-row sm:justify-between text-sm text-center sm:text-left">
             <Link to="/login" className="text-blue-500 hover:underline dark:text-blue-400">
-              Back to Login
+              {t("auth.register.backToLogin")}
             </Link>
             <span className="mt-2 sm:mt-0">
-              Forgot old one?{" "}
+              {t("auth.register.forgotOldOne")}{" "}
               <Link
                 to="/forgot-password"
                 className="text-blue-500 hover:underline dark:text-blue-400"
               >
-                Reset Password
+                {t("auth.register.resetPassword")}
               </Link>
             </span>
           </div>
