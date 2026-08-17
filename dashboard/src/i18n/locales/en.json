@@ -1,0 +1,15 @@
+{
+  "sidebar": {
+    "overview": "Overview",
+    "banners": "Banners",
+    "categories": "Categories",
+    "userManagement": "Users",
+    "vendors": "Vendors",
+    "orders": "Orders",
+    "analytics": "Analytics",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "send": "Send",
+    "inbox": "Inbox"
+  }
+}

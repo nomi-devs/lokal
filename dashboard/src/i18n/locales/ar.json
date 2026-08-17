@@ -1,0 +1,15 @@
+{
+  "sidebar": {
+    "overview": "نظرة عامة",
+    "banners": "البانرات",
+    "categories": "الفئات",
+    "userManagement": "المستخدمون",
+    "vendors": "الموردون",
+    "orders": "الطلبات",
+    "analytics": "التحليلات",
+    "notifications": "الإشعارات",
+    "settings": "الإعدادات",
+    "send": "إرسال",
+    "inbox": "البريد الوارد"
+  }
+}
