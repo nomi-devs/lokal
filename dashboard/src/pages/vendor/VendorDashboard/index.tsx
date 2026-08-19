@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ShoppingCart, Package, DollarSign, Clock, TrendingUp, Star } from "lucide-react";
+import type { ChartData, ChartOptions } from "chart.js";
 
 import { getVendorOrders } from "../utils";
 
@@ -107,7 +107,7 @@ export default function VendorDashboard() {
     count: rows.filter((r) => r.status === status).length,
   }));
 
-  const revenueChartData: any = {
+  const revenueChartData: ChartData<"bar"> = {
     labels: rows.map((r) => r.order.orderNumber.replace("ORD-2026-", "#")),
     datasets: [
       {
@@ -120,7 +120,7 @@ export default function VendorDashboard() {
     ],
   };
 
-  const revenueChartOptions: any = {
+  const revenueChartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
@@ -129,12 +129,12 @@ export default function VendorDashboard() {
       y: {
         border: { display: false },
         grid: { color: "rgba(156,163,175,0.15)" },
-        ticks: { callback: (v: number) => `${v} KWD` },
+        ticks: { callback: (v) => `${v} KWD` },
       },
     },
   };
 
-  const doughnutData: any = {
+  const doughnutData: ChartData<"doughnut"> = {
     labels: statusCounts.map((s) => s.status),
     datasets: [
       {
@@ -146,7 +146,7 @@ export default function VendorDashboard() {
     ],
   };
 
-  const doughnutOptions: any = {
+  const doughnutOptions: ChartOptions<"doughnut"> = {
     responsive: true,
     maintainAspectRatio: false,
     cutout: "68%",

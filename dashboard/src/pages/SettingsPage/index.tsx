@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -54,9 +53,7 @@ function SelectField({
   label: string;
   error?: string;
   options: { label: string; value: string }[];
-  className?: string;
-  [key: string]: any;
-}) {
+} & React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <Field label={label} error={error} className={className}>
       <div className="relative">

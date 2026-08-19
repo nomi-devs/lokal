@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -40,18 +39,20 @@ export type ChartProps = (
   className?: string;
 };
 
-export default function Chart({ type, data, options, plugins, className }: ChartProps) {
-  const props = { data, options, plugins, className } as any;
+export default function Chart(props: ChartProps) {
+  const { plugins, className } = props;
 
-  switch (type) {
+  switch (props.type) {
     case "bar":
-      return <Bar {...props} />;
+      return <Bar data={props.data} options={props.options} plugins={plugins} className={className} />;
     case "line":
-      return <Line {...props} />;
+      return <Line data={props.data} options={props.options} plugins={plugins} className={className} />;
     case "pie":
-      return <Pie {...props} />;
+      return <Pie data={props.data} options={props.options} plugins={plugins} className={className} />;
     case "doughnut":
-      return <Doughnut {...props} />;
+      return (
+        <Doughnut data={props.data} options={props.options} plugins={plugins} className={className} />
+      );
     default:
       return null;
   }

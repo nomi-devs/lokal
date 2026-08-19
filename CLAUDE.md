@@ -25,7 +25,33 @@ No test runner is configured.
 
 Started as a dashboard template/boilerplate (every page still doubles as a working example of the shared components) and is being built out as two role-gated dashboards for a marketplace — an admin back office and a vendor self-service dashboard — with mock data modeled directly on the product's ERD. When adding features, keep the template-friendly patterns: shared constants, single config file, no page-specific duplication.
 
+## Design source of truth
+
+[Local-App.pdf](Local-App.pdf) (repo root) is the client-approved, final design — the source of truth for both the backend and this dashboard. New pages, flows, fields, and entities should match what it specifies; when it conflicts with existing mock data/ERD assumptions in this repo, the PDF wins and the code should be updated to match it, not the other way around.
+
 ## Architecture
+
+### Naming conventions
+
+Follow these exactly — never mix conventions within a category, and never introduce a new one without updating this table.
+
+| Type | Convention | Example |
+|---|---|---|
+| Page folders (admin) | PascalCase + `Page` suffix, `index.tsx` inside | `UserManagementPage/index.tsx` |
+| Page folders (vendor) | PascalCase, `Vendor` prefix, no `Page` suffix, `index.tsx` inside | `vendor/VendorProducts/index.tsx` |
+| Auth/misc page folders | PascalCase, `index.tsx` inside (same folder-per-page rule as above) | `auth/Login/index.tsx` |
+| React components | PascalCase | `StatsCard.tsx`, `DashboardLayout.tsx` |
+| shadcn/ui primitives (`components/ui/`, unwrapped) | lowercase (shadcn CLI default — don't rename) | `button.tsx`, `dialog.tsx` |
+| Hooks | camelCase + `use` prefix | `useAuth.ts` |
+| Utilities (`lib/`) | camelCase | `utils.ts`, `ratings.ts` |
+| Data/mock modules (`data/`) | camelCase | `products.ts` |
+| Types | lowercase `types.ts`, co-located with its component/module | `DataTable/types.ts` |
+| Constants | single file, no fragmentation | `constants/index.ts` |
+| Redux slices | camelCase + `Slice` suffix | `authSlice.ts` |
+| Contexts/providers | PascalCase + `Provider` suffix | `ThemeProvider.tsx` |
+| Tests (when added) | co-located, same name + `.test` | `StatsCard.test.tsx` |
+
+Every page — admin, vendor, or auth — lives in its own folder with `index.tsx`, never a bare `PageName.tsx` file. This was inconsistent in `pages/auth/*` and `pages/Dashboard/Dashboard.tsx`; both were normalized to the folder/`index.tsx` form.
 
 ### Stack
 - **React 19 + TypeScript 6**, bundled with **Vite 8**

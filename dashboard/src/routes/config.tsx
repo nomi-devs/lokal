@@ -6,7 +6,7 @@ import RoleHomeRedirect from "./RoleHomeRedirect";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
-import Dashboard from "@/pages/Dashboard/Dashboard";
+import Dashboard from "@/pages/Dashboard";
 import BannersPage from "@/pages/BannersPage";
 import CategoriesPage from "@/pages/CategoriesPage";
 import ProductsPage from "@/pages/ProductsPage";
