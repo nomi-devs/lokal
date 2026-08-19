@@ -1,6 +1,18 @@
 // Mock data — replace with an API call (e.g. `useQuery`) when wiring up a real backend.
 // Shape mirrors the ORDERS collection in the ERD (items/vendorOrders are denormalized, as specified).
-export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+// Timeline mirrors the mobile app's Order Tracking screen (Order Confirmed → Preparing → Pick Up →
+// In Transit → Delivered). Vendors may only advance an order as far as "ready_for_pickup" — everything
+// from "in_transit" onward is owned by admin/dispatch (see VendorOrderStatusDialog).
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "ready_for_pickup"
+  | "in_transit"
+  | "delivered"
+  | "cancelled";
+
+export type CancelledBy = "customer" | "vendor" | "admin";
 
 export type OrderItem = {
   productNameEn: string;
@@ -40,6 +52,11 @@ export type Order = {
   createdAt: string;
   updatedAt: string;
   deliveredAt?: string;
+  cancelReason?: string;
+  cancelledBy?: CancelledBy;
+  cancelledAt?: string;
+  /** Lightweight delivery-tracking field — no dedicated Driver entity yet, just who's carrying it. */
+  assignedRider?: { name: string; phone: string };
 };
 
 export const orders: Order[] = [
@@ -140,11 +157,12 @@ export const orders: Order[] = [
     subtotal: 192.5,
     shippingFee: 3,
     total: 195.5,
-    status: "shipped",
+    status: "in_transit",
     vendorOrders: [
-      { vendorId: 4, status: "shipped", totalAmount: 18.5 },
-      { vendorId: 10, status: "shipped", totalAmount: 174 },
+      { vendorId: 4, status: "in_transit", totalAmount: 18.5 },
+      { vendorId: 10, status: "in_transit", totalAmount: 174 },
     ],
+    assignedRider: { name: "Samuel Jack", phone: "+96560999111" },
     createdAt: "2026-08-08",
     updatedAt: "2026-08-10",
   },
@@ -241,6 +259,9 @@ export const orders: Order[] = [
     total: 25,
     status: "cancelled",
     vendorOrders: [{ vendorId: 7, status: "cancelled", totalAmount: 25 }],
+    cancelReason: "Customer changed their mind before dispatch.",
+    cancelledBy: "customer",
+    cancelledAt: "2026-07-23",
     createdAt: "2026-07-22",
     updatedAt: "2026-07-23",
   },
@@ -315,4 +336,4 @@ export const orders: Order[] = [
 // (Orders, Overview, Analytics) should import it rather than recompute its own.
 export const totalRevenue = orders
   .filter((o) => o.status !== "cancelled")
-  .reduce((sum, o) => sum + o.total, 0); 
+  .reduce((sum, o) => sum + o.total, 0);

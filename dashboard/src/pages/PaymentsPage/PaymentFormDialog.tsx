@@ -39,7 +39,7 @@ const paymentSchema = z.object({
   method: z.enum(["knet", "credit_card", "debit_card"]),
   gateway: z.enum(["myfatoorah", "tap"]),
   transactionId: z.string().min(1, "Transaction ID is required"),
-  status: z.enum(["pending", "success", "failed"]),
+  status: z.enum(["pending", "success", "failed", "refunded"]),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentSchema>;
@@ -256,6 +256,7 @@ export default function PaymentFormDialog({
                 <option value="pending">{t("common.status.pending")}</option>
                 <option value="success">{t("common.status.success")}</option>
                 <option value="failed">{t("common.status.failed")}</option>
+                <option value="refunded">{t("common.status.refunded")}</option>
               </select>
             </div>
           </DialogBody>

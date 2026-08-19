@@ -1,6 +1,7 @@
 // /routers/config.tsx
 import type { ReactElement } from "react";
-import { Navigate } from "react-router-dom";
+
+import RoleHomeRedirect from "./RoleHomeRedirect";
 
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
@@ -17,29 +18,62 @@ import PaymentsPage from "@/pages/PaymentsPage";
 import ReviewsPage from "@/pages/ReviewsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import SendNotificationsPage from "@/pages/NotificationsPage/Send";
+import VendorDashboard from "@/pages/vendor/VendorDashboard";
+import VendorProducts from "@/pages/vendor/VendorProducts";
+import VendorOrders from "@/pages/vendor/VendorOrders";
+import VendorStore from "@/pages/vendor/VendorStore";
+import VendorEarnings from "@/pages/vendor/VendorEarnings";
+import VendorNotifications from "@/pages/vendor/VendorNotifications";
 
 export interface AppRoute {
   path: string;
   element: ReactElement;
   protected?: boolean;
   publicOnly?: boolean;
+  /** Restricts a protected route to a single role; mismatched roles are redirected to their own home. */
+  role?: "admin" | "vendor";
 }
 
 export const routes: AppRoute[] = [
-  { path: "/", element: <Navigate to="/overview" replace /> },
+  { path: "/", element: <RoleHomeRedirect /> },
   { path: "/login", element: <Login />, publicOnly: true },
   { path: "/register", element: <Register />, publicOnly: true },
   { path: "/forgot-password", element: <ForgotPassword />, publicOnly: true },
-  { path: "/overview", element: <Dashboard />, protected: true },
-  { path: "/banners", element: <BannersPage />, protected: true },
-  { path: "/categories", element: <CategoriesPage />, protected: true },
-  { path: "/products", element: <ProductsPage />, protected: true },
-  { path: "/users", element: <UserManagementPage />, protected: true },
-  { path: "/vendors", element: <VendorsPage />, protected: true },
-  { path: "/orders", element: <OrdersPage />, protected: true },
-  { path: "/payments", element: <PaymentsPage />, protected: true },
-  { path: "/reviews", element: <ReviewsPage />, protected: true },
-  { path: "/notifications", element: <NotificationsPage />, protected: true },
-  { path: "/notifications/send", element: <SendNotificationsPage />, protected: true },
-  { path: "/settings", element: <SettingsPage />, protected: true },
+
+  // ── Admin ──────────────────────────────────────────────────────────────────
+  { path: "/admin/overview", element: <Dashboard />, protected: true, role: "admin" },
+  { path: "/admin/banners", element: <BannersPage />, protected: true, role: "admin" },
+  { path: "/admin/categories", element: <CategoriesPage />, protected: true, role: "admin" },
+  { path: "/admin/products", element: <ProductsPage />, protected: true, role: "admin" },
+  { path: "/admin/users", element: <UserManagementPage />, protected: true, role: "admin" },
+  { path: "/admin/vendors", element: <VendorsPage />, protected: true, role: "admin" },
+  { path: "/admin/orders", element: <OrdersPage />, protected: true, role: "admin" },
+  { path: "/admin/payments", element: <PaymentsPage />, protected: true, role: "admin" },
+  { path: "/admin/reviews", element: <ReviewsPage />, protected: true, role: "admin" },
+  {
+    path: "/admin/notifications",
+    element: <NotificationsPage />,
+    protected: true,
+    role: "admin",
+  },
+  {
+    path: "/admin/notifications/send",
+    element: <SendNotificationsPage />,
+    protected: true,
+    role: "admin",
+  },
+  { path: "/admin/settings", element: <SettingsPage />, protected: true, role: "admin" },
+
+  // ── Vendor ─────────────────────────────────────────────────────────────────
+  { path: "/vendor/dashboard", element: <VendorDashboard />, protected: true, role: "vendor" },
+  { path: "/vendor/products", element: <VendorProducts />, protected: true, role: "vendor" },
+  { path: "/vendor/orders", element: <VendorOrders />, protected: true, role: "vendor" },
+  {
+    path: "/vendor/notifications",
+    element: <VendorNotifications />,
+    protected: true,
+    role: "vendor",
+  },
+  { path: "/vendor/store", element: <VendorStore />, protected: true, role: "vendor" },
+  { path: "/vendor/earnings", element: <VendorEarnings />, protected: true, role: "vendor" },
 ];

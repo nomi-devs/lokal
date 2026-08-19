@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import {
   Package,
   Image as ImageIcon,
-  Store,
   FolderTree,
   Coins,
   Boxes,
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 
 import type { Product } from "@/data/products";
-import { initialVendors } from "@/data/vendors";
 import { categories } from "@/data/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +42,6 @@ const productSchema = z.object({
   descriptionEn: z.string().optional(),
   descriptionAr: z.string().optional(),
   image: z.string().optional(),
-  vendorId: z.string().min(1, "Vendor is required"),
   categoryId: z.string().min(1, "Category is required"),
   department: z.enum(["men", "women", "kids", "unisex"]),
   price: z.object({
@@ -59,15 +56,14 @@ const productSchema = z.object({
   status: z.enum(["active", "inactive", "out_of_stock"]),
 });
 
-export type ProductFormValues = z.infer<typeof productSchema>;
+export type VendorProductFormValues = z.infer<typeof productSchema>;
 
-const emptyValues: ProductFormValues = {
+const emptyValues: VendorProductFormValues = {
   nameEn: "",
   nameAr: "",
   descriptionEn: "",
   descriptionAr: "",
   image: "",
-  vendorId: "",
   categoryId: "",
   department: "unisex",
   price: { base: 0, currency: "KWD", compareAt: undefined },
@@ -152,20 +148,20 @@ function ImageDropField({
   );
 }
 
-export interface ProductFormDialogProps {
+export interface VendorProductFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Pass a product to edit it; omit/null to add a new one. Same dialog handles both. */
   product?: Product | null;
-  onSubmit: (values: ProductFormValues, editingId: number | null) => void;
+  onSubmit: (values: VendorProductFormValues, editingId: number | null) => void;
 }
 
-export default function ProductFormDialog({
+export default function VendorProductFormDialog({
   open,
   onOpenChange,
   product,
   onSubmit,
-}: ProductFormDialogProps) {
+}: VendorProductFormDialogProps) {
   const { t } = useTranslation();
   const isEdit = !!product;
 
@@ -177,7 +173,7 @@ export default function ProductFormDialog({
     control,
     reset,
     formState: { errors },
-  } = useForm<ProductFormValues>({
+  } = useForm<VendorProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: emptyValues,
   });
@@ -201,7 +197,6 @@ export default function ProductFormDialog({
             descriptionEn: product.descriptionEn ?? "",
             descriptionAr: product.descriptionAr ?? "",
             image: product.images[0] ?? "",
-            vendorId: String(product.vendorId),
             categoryId: String(product.categoryId),
             department: product.department,
             price: {
@@ -267,7 +262,7 @@ export default function ProductFormDialog({
     };
   }, []);
 
-  function submit(values: ProductFormValues) {
+  function submit(values: VendorProductFormValues) {
     const stock = values.variants?.length
       ? values.variants.reduce((sum, v) => sum + v.stock, 0)
       : values.stock;
@@ -285,12 +280,14 @@ export default function ProductFormDialog({
           </div>
           <div className="min-w-0">
             <DialogTitle>
-              {isEdit ? t("products.dialog.editTitle") : t("products.dialog.addTitle")}
+              {isEdit
+                ? t("vendor.products.dialog.editTitle")
+                : t("vendor.products.dialog.addTitle")}
             </DialogTitle>
             <DialogDescription>
               {isEdit
-                ? t("products.dialog.editDescription", { name: product!.nameEn })
-                : t("products.dialog.addDescription")}
+                ? t("vendor.products.dialog.editDescription", { name: product!.nameEn })
+                : t("vendor.products.dialog.addDescription")}
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -301,11 +298,12 @@ export default function ProductFormDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>
-                  {t("products.dialog.nameEnglish")} <span className="text-destructive">*</span>
+                  {t("vendor.products.dialog.nameEnglish")}{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   className={inputCls}
-                  placeholder={t("products.dialog.nameEnglishPlaceholder")}
+                  placeholder={t("vendor.products.dialog.nameEnglishPlaceholder")}
                   {...register("nameEn")}
                 />
                 {errors.nameEn && (
@@ -315,11 +313,12 @@ export default function ProductFormDialog({
 
               <div>
                 <Label className={labelRowCls}>
-                  {t("products.dialog.nameArabic")} <span className="text-destructive">*</span>
+                  {t("vendor.products.dialog.nameArabic")}{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   className={inputCls}
-                  placeholder={t("products.dialog.nameArabicPlaceholder")}
+                  placeholder={t("vendor.products.dialog.nameArabicPlaceholder")}
                   dir="rtl"
                   {...register("nameAr")}
                 />
@@ -331,64 +330,39 @@ export default function ProductFormDialog({
 
             {/* Description EN */}
             <div>
-              <Label className={labelRowCls}>{t("products.dialog.descriptionEnglish")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("products.dialog.descriptionEnglishPlaceholder")}
-                {...register("descriptionEn")}
-              />
+              <Label className={labelRowCls}>
+                {t("vendor.products.dialog.descriptionEnglish")}
+              </Label>
+              <textarea className={textareaCls} {...register("descriptionEn")} />
             </div>
 
             {/* Description AR */}
             <div>
-              <Label className={labelRowCls}>{t("products.dialog.descriptionArabic")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("products.dialog.descriptionArabicPlaceholder")}
-                dir="rtl"
-                {...register("descriptionAr")}
-              />
+              <Label className={labelRowCls}>{t("vendor.products.dialog.descriptionArabic")}</Label>
+              <textarea className={textareaCls} dir="rtl" {...register("descriptionAr")} />
             </div>
 
             {/* Product Image */}
             <ImageDropField
-              label={t("products.dialog.productImage")}
+              label={t("vendor.products.dialog.productImage")}
               icon={ImageIcon}
               value={imagePreview}
-              placeholder={t("products.dialog.chooseImage")}
+              placeholder={t("vendor.products.dialog.chooseImage")}
               onChange={(url) => {
                 trackObjectUrl(url);
                 setValue("image", url, { shouldValidate: true });
               }}
             />
 
-            {/* Vendor + Category + Department */}
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label className={labelRowCls}>
-                  <Store className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.vendor")} <span className="text-destructive">*</span>
-                </Label>
-                <select className={selectCls} {...register("vendorId")}>
-                  <option value="">{t("products.dialog.selectVendor")}</option>
-                  {initialVendors.map((v) => (
-                    <option key={v.id} value={String(v.id)}>
-                      {v.nameEn}
-                    </option>
-                  ))}
-                </select>
-                {errors.vendorId && (
-                  <p className="text-xs text-destructive mt-1">{errors.vendorId.message}</p>
-                )}
-              </div>
-
+            {/* Category + Department */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>
                   <FolderTree className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.category")} <span className="text-destructive">*</span>
+                  {t("vendor.products.dialog.category")} <span className="text-destructive">*</span>
                 </Label>
                 <select className={selectCls} {...register("categoryId")}>
-                  <option value="">{t("products.dialog.selectCategory")}</option>
+                  <option value="">{t("vendor.products.dialog.selectCategory")}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={String(c.id)}>
                       {c.nameEn}
@@ -403,7 +377,7 @@ export default function ProductFormDialog({
               <div>
                 <Label className={labelRowCls}>
                   <Users2 className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.department")}
+                  {t("vendor.products.dialog.department")}
                 </Label>
                 <select className={selectCls} {...register("department")}>
                   <option value="unisex">{t("common.departments.unisex")}</option>
@@ -419,7 +393,7 @@ export default function ProductFormDialog({
               <div>
                 <Label className={labelRowCls}>
                   <Coins className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.price")}
+                  {t("vendor.products.dialog.price")}
                 </Label>
                 <Input
                   className={inputCls}
@@ -436,28 +410,28 @@ export default function ProductFormDialog({
               <div>
                 <Label className={labelRowCls}>
                   <Tag className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.compareAtPrice")}
+                  {t("vendor.products.dialog.compareAtPrice")}
                 </Label>
                 <Input
                   className={inputCls}
                   type="number"
                   min={0}
                   step="0.01"
-                  placeholder={t("products.dialog.compareAtPricePlaceholder")}
+                  placeholder={t("vendor.products.dialog.compareAtPricePlaceholder")}
                   {...register("price.compareAt", {
                     setValueAs: (v) => (v === "" ? undefined : Number(v)),
                   })}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("products.dialog.compareAtPriceHint")}
+                  {t("vendor.products.dialog.compareAtPriceHint")}
                 </p>
               </div>
 
               <div>
-                <Label className={labelRowCls}>{t("products.dialog.currency")}</Label>
+                <Label className={labelRowCls}>{t("vendor.products.dialog.currency")}</Label>
                 <select className={selectCls} {...register("price.currency")}>
-                  <option value="KWD">{t("products.dialog.currencyKWD")}</option>
-                  <option value="SAR">{t("products.dialog.currencySAR")}</option>
+                  <option value="KWD">{t("vendor.products.dialog.currencyKWD")}</option>
+                  <option value="SAR">{t("vendor.products.dialog.currencySAR")}</option>
                 </select>
               </div>
             </div>
@@ -465,19 +439,19 @@ export default function ProductFormDialog({
             {/* Sizes + Colors */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className={labelRowCls}>{t("products.dialog.sizes")}</Label>
+                <Label className={labelRowCls}>{t("vendor.products.dialog.sizes")}</Label>
                 <Input
                   className={inputCls}
-                  placeholder={t("products.dialog.sizesPlaceholder")}
+                  placeholder={t("vendor.products.dialog.sizesPlaceholder")}
                   {...register("sizes")}
                 />
               </div>
 
               <div>
-                <Label className={labelRowCls}>{t("products.dialog.colors")}</Label>
+                <Label className={labelRowCls}>{t("vendor.products.dialog.colors")}</Label>
                 <Input
                   className={inputCls}
-                  placeholder={t("products.dialog.colorsPlaceholder")}
+                  placeholder={t("vendor.products.dialog.colorsPlaceholder")}
                   {...register("colors")}
                 />
               </div>
@@ -486,7 +460,9 @@ export default function ProductFormDialog({
             {/* Per-variant stock */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <Label className="flex items-center gap-1.5">{t("products.dialog.variants")}</Label>
+                <Label className="flex items-center gap-1.5">
+                  {t("vendor.products.dialog.variants")}
+                </Label>
                 <button
                   type="button"
                   onClick={generateVariants}
@@ -494,7 +470,7 @@ export default function ProductFormDialog({
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:opacity-50 disabled:hover:no-underline"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
-                  {t("products.dialog.generateVariants")}
+                  {t("vendor.products.dialog.generateVariants")}
                 </button>
               </div>
               {variantFields.length > 0 ? (
@@ -514,7 +490,9 @@ export default function ProductFormDialog({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">{t("products.dialog.variantsHint")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("vendor.products.dialog.variantsHint")}
+                </p>
               )}
             </div>
 
@@ -523,7 +501,7 @@ export default function ProductFormDialog({
               <div>
                 <Label className={labelRowCls}>
                   <Boxes className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.stock")}
+                  {t("vendor.products.dialog.stock")}
                 </Label>
                 <Input
                   className={inputCls}
@@ -534,7 +512,7 @@ export default function ProductFormDialog({
                 />
                 {variantFields.length > 0 ? (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t("products.dialog.stockDerivedHint")}
+                    {t("vendor.products.dialog.stockDerivedHint")}
                   </p>
                 ) : (
                   errors.stock && (
@@ -544,11 +522,13 @@ export default function ProductFormDialog({
               </div>
 
               <div>
-                <Label className={labelRowCls}>{t("products.dialog.status")}</Label>
+                <Label className={labelRowCls}>{t("vendor.products.dialog.status")}</Label>
                 <select className={selectCls} {...register("status")}>
-                  <option value="active">{t("products.list.status.active")}</option>
-                  <option value="inactive">{t("products.list.status.inactive")}</option>
-                  <option value="out_of_stock">{t("products.list.status.outOfStock")}</option>
+                  <option value="active">{t("vendor.products.list.status.active")}</option>
+                  <option value="inactive">{t("vendor.products.list.status.inactive")}</option>
+                  <option value="out_of_stock">
+                    {t("vendor.products.list.status.outOfStock")}
+                  </option>
                 </select>
               </div>
             </div>
@@ -556,10 +536,10 @@ export default function ProductFormDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {t("products.dialog.close")}
+              {t("vendor.products.dialog.close")}
             </Button>
             <Button type="submit">
-              {isEdit ? t("products.dialog.save") : t("products.dialog.add")}
+              {isEdit ? t("vendor.products.dialog.save") : t("vendor.products.dialog.add")}
             </Button>
           </DialogFooter>
         </form>

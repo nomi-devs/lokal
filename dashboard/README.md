@@ -24,10 +24,13 @@ npm run dev       # http://localhost:5173
 
 **Demo credentials** (defined in `src/constants/index.ts`):
 
-| Email | Password | Role |
-|---|---|---|
-| admin@gmail.com | admin123 | admin |
-| user@gmail.com | user123 | user |
+| Email | Password | Role | Lands on |
+|---|---|---|---|
+| admin@gmail.com | admin123 | admin | `/admin/overview` |
+| vendor@gmail.com | vendor123 | vendor | `/vendor/dashboard` |
+| user@gmail.com | user123 | user | — (no dashboard yet) |
+
+The vendor account logs in as **Studio Line Interiors** (`vendorId: 5` in `src/data/vendors.ts`), which has the richest mock data (products, orders).
 
 ## Rename / rebrand
 
@@ -46,26 +49,49 @@ export const AUTH_CONFIG = {
 };
 ```
 
-## Marketplace modules
+## Two dashboards, one app
+
+The app serves two role-gated dashboards from the same boilerplate, split by URL prefix:
+
+- **Admin** (`/admin/*`, role `admin`) — the full marketplace back office described below.
+- **Vendor** (`/vendor/*`, role `vendor`) — a scoped-down dashboard a vendor uses to manage their own store (see [Vendor dashboard](#vendor-dashboard)).
+
+`ProtectedRoute` (`src/routes/ProtectedRoute.tsx`) enforces the split: each route in `src/routes/config.tsx` declares a `role`, and a logged-in user hitting a route for the other role is redirected to their own home (`src/routes/roleHome.ts`). The root path `/` and post-login/logout redirects all resolve through the same helper, so there's a single source of truth for "where does this user belong."
+
+## Admin marketplace modules
 
 Each page under `src/pages/` manages one collection from the ERD, backed by matching mock data in `src/data/`. Every list page follows the same shape: `DataTable` (search, filter, sort, pagination, stats) + one dialog component that handles both add and edit.
 
 | Page | Route | Data file | Entity |
 |---|---|---|---|
-| Overview | `/overview` | `dashboardUsers.ts`, `analytics.ts` | dashboard widgets |
-| Banners | `/banners` | `banners.ts` | `CONTENT` (type: `banner`) |
-| Categories | `/categories` | `categories.ts` | `CATEGORIES` |
-| Products | `/products` | `products.ts` | `PRODUCTS` |
-| Users | `/users` | `users.ts` | `USERS` |
-| Vendors | `/vendors` | `vendors.ts` | `VENDORS` |
-| Orders | `/orders` | `orders.ts` | `ORDERS` |
-| Payments | `/payments` | `payments.ts` | `PAYMENTS` |
-| Addresses | `/addresses` | `addresses.ts` | `ADDRESSES` |
-| Wishlists | `/wishlists` | `wishlists.ts` | `WISHLISTS` |
-| Reviews | `/reviews` | `reviews.ts` | `REVIEWS` |
-| Analytics | `/analytics` | `analytics.ts` | derived charts |
-| Notifications | `/notifications` | `notifications.ts` | admin-only, not in ERD |
-| Settings | `/settings` | `adminSettings.ts` | `ADMIN_SETTINGS` |
+| Overview | `/admin/overview` | `dashboardUsers.ts`, `analytics.ts` | dashboard widgets |
+| Banners | `/admin/banners` | `banners.ts` | `CONTENT` (type: `banner`) |
+| Categories | `/admin/categories` | `categories.ts` | `CATEGORIES` |
+| Products | `/admin/products` | `products.ts` | `PRODUCTS` |
+| Users | `/admin/users` | `users.ts` | `USERS` |
+| Vendors | `/admin/vendors` | `vendors.ts` | `VENDORS` |
+| Orders | `/admin/orders` | `orders.ts` | `ORDERS` |
+| Payments | `/admin/payments` | `payments.ts` | `PAYMENTS` |
+| Addresses | `/admin/addresses` | `addresses.ts` | `ADDRESSES` |
+| Wishlists | `/admin/wishlists` | `wishlists.ts` | `WISHLISTS` |
+| Reviews | `/admin/reviews` | `reviews.ts` | `REVIEWS` |
+| Analytics | `/admin/analytics` | `analytics.ts` | derived charts |
+| Notifications | `/admin/notifications` | `notifications.ts` | admin-only, not in ERD |
+| Settings | `/admin/settings` | `adminSettings.ts` | `ADMIN_SETTINGS` |
+
+## Vendor dashboard
+
+`src/pages/vendor/` — everything a vendor sees, scoped to their own `vendorId` (read from `state.auth.user.vendorId`, set at login). It reuses the same `DataTable`/`DynamicForm`/`DashboardLayout` primitives as the admin side rather than duplicating them.
+
+| Page | Route | Scoped from |
+|---|---|---|
+| Dashboard | `/vendor/dashboard` | `products.ts` + `orders.ts`, filtered by `vendorId` |
+| Products | `/vendor/products` | `products.ts` — add/edit/delete, `vendorId` implicit (not user-editable) |
+| Orders | `/vendor/orders` | `orders.ts` — status update only affects this vendor's split of an order, not the whole order (see `vendorOrders` below) |
+| Store Profile | `/vendor/store` | `vendors.ts` — the vendor's own business record |
+| Analytics | `/vendor/analytics` | `products.ts` + `orders.ts`, derived (no separate mock file — see below) |
+
+`src/pages/vendor/utils.ts` exports `getVendorOrders(vendorId)`, the shared helper that resolves one vendor's split of an order (`order.vendorOrders.find(vo => vo.vendorId === vendorId)`) — every vendor page that needs order data uses it instead of re-deriving the lookup. There's no separate vendor-analytics mock file: numbers are computed live from `orders.ts`/`products.ts` so they stay consistent with what the Orders/Products pages show. Order line items are only denormalized by name (no per-item `vendorId`), so "top selling products" falls back to the vendor's own product list sorted by rating count rather than exact units sold.
 
 ## Data layer
 
@@ -76,35 +102,40 @@ Each page under `src/pages/` manages one collection from the ERD, backed by matc
 ```
 src/
 ├── config.ts               ← app name/logo, auth redirects
-├── constants/index.ts      ← sidebarItems, mockUsers
-├── routes/config.tsx       ← add/remove routes here
+├── constants/index.ts      ← sidebarItems (admin), vendorSidebarItems, mockUsers
+├── routes/
+│   ├── config.tsx          ← add/remove routes here — each entry declares protected/publicOnly/role
+│   ├── roleHome.ts          ← role → default route ("admin" → /admin/overview, "vendor" → /vendor/dashboard)
+│   ├── RoleHomeRedirect.tsx ← what "/" resolves to
+│   └── ProtectedRoute.tsx   ← auth + role gate
 │
 ├── data/                   ← typed mock collections, one file per ERD entity
 ├── i18n/locales/           ← en.json / ar.json translation trees
 │
 ├── components/
-│   ├── Dashboard/          ← layout system (sidebar, topbar, context)
+│   ├── Dashboard/          ← layout system (sidebar, topbar, context) — shared by both dashboards
 │   └── ui/
 │       ├── StatsCard.tsx   ← configurable KPI card
 │       ├── DataTable/      ← full-featured data table
 │       └── card.tsx        ← base card primitives
 │
-├── pages/                  ← one folder per route (see table above)
+├── pages/                  ← one folder per admin route (see table above)
+│   └── vendor/             ← vendor dashboard pages + utils.ts (getVendorOrders)
 ├── store/slices/           ← Redux slices
 └── providers/              ← ThemeProvider (light/dark)
 ```
 
 ## Adding a new page
 
-1. Create `src/pages/MyPage/index.tsx`
-2. Wrap content in `<DashboardLayout>`
-3. Register in `src/routes/config.tsx`:
+1. Create `src/pages/MyPage/index.tsx` (or `src/pages/vendor/MyPage/index.tsx` for the vendor dashboard).
+2. Wrap content in `<DashboardLayout sidebarItems={sidebarItems | vendorSidebarItems}>`.
+3. Register in `src/routes/config.tsx`, prefixed and role-tagged to match its dashboard:
 
 ```tsx
-{ path: "/my-page", element: <MyPage />, protected: true }
+{ path: "/admin/my-page", element: <MyPage />, protected: true, role: "admin" }
 ```
 
-4. Add it to `sidebarItems` in `src/constants/index.ts`.
+4. Add it to `sidebarItems` (admin) or `vendorSidebarItems` (vendor) in `src/constants/index.ts`.
 5. Add any new `t("myPage....")` strings to **both** `src/i18n/locales/en.json` and `ar.json` — every user-facing string in this app goes through `useTranslation()`.
 
 ## Key components

@@ -425,12 +425,19 @@ export default function UserManagementPage() {
           onClick={() => setTab("active")}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-            tab === "active" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            tab === "active"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           <Users className="w-4 h-4" />
           {t("users.tabs.active")}
-          <span className={cn("text-xs px-1.5 py-0.5 rounded-full font-bold", tab === "active" ? "bg-white/20" : "bg-muted text-muted-foreground")}>
+          <span
+            className={cn(
+              "text-xs px-1.5 py-0.5 rounded-full font-bold",
+              tab === "active" ? "bg-white/20" : "bg-muted text-muted-foreground"
+            )}
+          >
             {activeUsers.length}
           </span>
         </button>
@@ -438,12 +445,19 @@ export default function UserManagementPage() {
           onClick={() => setTab("deleted")}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-            tab === "deleted" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            tab === "deleted"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           <UserMinus className="w-4 h-4" />
           {t("users.tabs.deleted")}
-          <span className={cn("text-xs px-1.5 py-0.5 rounded-full font-bold", tab === "deleted" ? "bg-white/20" : "bg-muted text-muted-foreground")}>
+          <span
+            className={cn(
+              "text-xs px-1.5 py-0.5 rounded-full font-bold",
+              tab === "deleted" ? "bg-white/20" : "bg-muted text-muted-foreground"
+            )}
+          >
             {deletedUsers.length}
           </span>
         </button>

@@ -53,6 +53,10 @@ export default function UserMenu() {
   const displayName = titleCase(localPart);
   const roleLabel = titleCase(user.role);
   const initials = localPart.slice(0, 2).toUpperCase();
+  const settingsPath = user.role === "vendor" ? "/vendor/store" : "/admin/settings";
+
+  const settingsLabel =
+    user.role === "vendor" ? t("vendor.sidebar.profile") : t("sidebar.settings");
 
   return (
     <div className="relative" ref={rootRef}>
@@ -89,13 +93,13 @@ export default function UserMenu() {
           </div>
           <div className="border-t" />
           <Link
-            to="/settings"
+            to={settingsPath}
             role="menuitem"
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted transition-colors"
           >
             <Settings className="w-4 h-4 text-muted-foreground" />
-            {t("sidebar.settings")}
+            {settingsLabel}
           </Link>
           <div className="border-t" />
           <button

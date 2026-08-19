@@ -21,6 +21,7 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { recomputeProductRating } from "@/lib/ratings";
 import { reviews as initialReviews, type Review, type ReviewStatus } from "@/data/reviews";
 import { products } from "@/data/products";
 import { orders } from "@/data/orders";
@@ -148,11 +149,15 @@ export default function ReviewsPage() {
 
   function approve(review: Review) {
     const now = new Date().toISOString();
-    setReviewList((prev) =>
-      prev.map((r) =>
-        r.id === review.id ? { ...r, status: "approved", approvedAt: now, updatedAt: now } : r
-      )
+
+    const updated = reviewList.map((r) =>
+      r.id === review.id
+        ? { ...r, status: "approved" as ReviewStatus, approvedAt: now, updatedAt: now }
+        : r
     );
+
+    setReviewList(updated);
+    recomputeProductRating(review.productId, updated);
     toast.success(t("reviews.list.toasts.approvedBody", { title: review.titleEn }), {
       title: t("reviews.list.toasts.approvedTitle"),
     });
@@ -160,9 +165,13 @@ export default function ReviewsPage() {
 
   function reject(review: Review) {
     const now = new Date().toISOString();
-    setReviewList((prev) =>
-      prev.map((r) => (r.id === review.id ? { ...r, status: "rejected", updatedAt: now } : r))
+
+    const updated = reviewList.map((r) =>
+      r.id === review.id ? { ...r, status: "rejected" as ReviewStatus, updatedAt: now } : r
     );
+
+    setReviewList(updated);
+    recomputeProductRating(review.productId, updated);
     toast.error(t("reviews.list.toasts.rejectedBody", { title: review.titleEn }), {
       title: t("reviews.list.toasts.rejectedTitle"),
     });
@@ -175,13 +184,19 @@ export default function ReviewsPage() {
 
     if (pendingAction.type === "delete") {
       const { review } = pendingAction;
+      const updated = reviewList.filter((r) => r.id !== review.id);
 
-      setReviewList((prev) => prev.filter((r) => r.id !== review.id));
+      setReviewList(updated);
+      recomputeProductRating(review.productId, updated);
       toast.error(t("reviews.list.toasts.deleted", { title: review.titleEn }));
     } else if (pendingAction.type === "deleteSelected") {
       const ids = new Set(pendingAction.reviews.map((r) => r.id));
+      const updated = reviewList.filter((r) => !ids.has(r.id));
 
-      setReviewList((prev) => prev.filter((r) => !ids.has(r.id)));
+      setReviewList(updated);
+
+      const affectedProductIds = new Set(pendingAction.reviews.map((r) => r.productId));
+      affectedProductIds.forEach((productId) => recomputeProductRating(productId, updated));
       toast.error(
         t("reviews.list.toasts.deletedSelected", { count: pendingAction.reviews.length })
       );

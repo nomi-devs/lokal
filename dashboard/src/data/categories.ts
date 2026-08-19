@@ -1,5 +1,7 @@
 // Mock data — replace with an API call (e.g. `useQuery`) when wiring up a real backend.
 // Shape mirrors the CATEGORIES collection in the ERD.
+import type { Department } from "./products";
+
 export type Category = {
   id: number;
   nameEn: string;
@@ -8,6 +10,8 @@ export type Category = {
   descriptionAr?: string;
   image?: string;
   parentId: number | null;
+  /** Audience facet — see Department in products.ts (same Male/Female/Kids tabs as the mobile app). */
+  department: Department;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;
@@ -22,6 +26,7 @@ export const categories: Category[] = [
     nameEn: "Construction",
     nameAr: "البناء والمقاولات",
     parentId: null,
+    department: "unisex",
     isActive: true,
     sortOrder: 1,
     itemsCount: 128,
@@ -33,6 +38,7 @@ export const categories: Category[] = [
     nameEn: "Design & Architecture",
     nameAr: "التصميم والعمارة",
     parentId: null,
+    department: "unisex",
     isActive: true,
     sortOrder: 2,
     itemsCount: 74,
@@ -44,6 +50,7 @@ export const categories: Category[] = [
     nameEn: "Plumbing",
     nameAr: "السباكة",
     parentId: null,
+    department: "unisex",
     isActive: true,
     sortOrder: 3,
     itemsCount: 96,
@@ -55,6 +62,7 @@ export const categories: Category[] = [
     nameEn: "Electricity",
     nameAr: "الكهرباء",
     parentId: null,
+    department: "unisex",
     isActive: true,
     sortOrder: 4,
     itemsCount: 61,
@@ -66,6 +74,7 @@ export const categories: Category[] = [
     nameEn: "Landscaping",
     nameAr: "تنسيق الحدائق",
     parentId: null,
+    department: "unisex",
     isActive: true,
     sortOrder: 5,
     itemsCount: 42,
@@ -77,6 +86,7 @@ export const categories: Category[] = [
     nameEn: "Interior Painting",
     nameAr: "الدهانات الداخلية",
     parentId: 2,
+    department: "unisex",
     isActive: true,
     sortOrder: 6,
     itemsCount: 23,
@@ -88,6 +98,7 @@ export const categories: Category[] = [
     nameEn: "HVAC",
     nameAr: "التكييف والتهوية",
     parentId: null,
+    department: "unisex",
     isActive: false,
     sortOrder: 7,
     itemsCount: 18,
@@ -99,6 +110,7 @@ export const categories: Category[] = [
     nameEn: "Residential Wiring",
     nameAr: "أسلاك المنازل",
     parentId: 4,
+    department: "unisex",
     isActive: true,
     sortOrder: 8,
     itemsCount: 29,
@@ -110,6 +122,7 @@ export const categories: Category[] = [
     nameEn: "Seasonal Decor",
     nameAr: "الديكور الموسمي",
     parentId: 5,
+    department: "unisex",
     isActive: false,
     sortOrder: 9,
     itemsCount: 7,

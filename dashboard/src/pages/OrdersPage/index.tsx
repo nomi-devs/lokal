@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ShoppingCart,
@@ -11,7 +11,14 @@ import {
   CreditCard,
   Package,
   Check,
+  Pencil,
+  Truck,
+  Ban,
 } from "lucide-react";
+
+import OrderStatusDialog from "./OrderStatusDialog";
+import OrderCancelDialog from "./OrderCancelDialog";
+import { ORDER_TIMELINE } from "./orderTimeline";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
@@ -25,15 +32,15 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-import { orders, totalRevenue, type Order, type OrderStatus } from "@/data/orders";
+import { orders as initialOrders, type Order, type OrderStatus } from "@/data/orders";
 import { users } from "@/data/users";
 import { initialVendors } from "@/data/vendors";
-import { payments, type PaymentStatus } from "@/data/payments";
+import { payments, type Payment, type PaymentStatus } from "@/data/payments";
 
 const userById = new Map(users.map((u) => [u.id, u]));
 const vendorById = new Map(initialVendors.map((v) => [v.id, v]));
-const paymentById = new Map(payments.map((p) => [p.id, p]));
 
 const customerName = (o: Order) => {
   const u = userById.get(o.userId);
@@ -44,7 +51,9 @@ const customerEmail = (o: Order) => userById.get(o.userId)?.email ?? "—";
 
 const vendorNames = (o: Order) =>
   o.vendorOrders.map((vo) => vendorById.get(vo.vendorId)?.nameEn ?? "—").join(", ");
-const orderPayment = (o: Order) => (o.paymentId ? paymentById.get(o.paymentId) : undefined);
+
+const orderPayment = (o: Order) =>
+  o.paymentId ? payments.find((p) => p.id === o.paymentId) : undefined;
 
 // ── Style maps ────────────────────────────────────────────────────────────────
 const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }> = {
@@ -58,7 +67,17 @@ const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }
     bg: "bg-sky-100 dark:bg-sky-900/30",
     dot: "bg-sky-500",
   },
-  shipped: {
+  preparing: {
+    text: "text-indigo-700 dark:text-indigo-400",
+    bg: "bg-indigo-100 dark:bg-indigo-900/30",
+    dot: "bg-indigo-500",
+  },
+  ready_for_pickup: {
+    text: "text-fuchsia-700 dark:text-fuchsia-400",
+    bg: "bg-fuchsia-100 dark:bg-fuchsia-900/30",
+    dot: "bg-fuchsia-500",
+  },
+  in_transit: {
     text: "text-violet-700 dark:text-violet-400",
     bg: "bg-violet-100 dark:bg-violet-900/30",
     dot: "bg-violet-500",
@@ -79,9 +98,8 @@ const paymentStyle: Record<PaymentStatus, string> = {
   success: "text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30",
   pending: "text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30",
   failed: "text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30",
+  refunded: "text-slate-700 bg-slate-100 dark:text-slate-300 dark:bg-slate-800",
 };
-
-const ORDER_TIMELINE: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered"];
 
 // ── Order details drawer ──────────────────────────────────────────────────────
 function OrderDetails({ order }: { order: Order }) {
@@ -171,6 +189,36 @@ function OrderDetails({ order }: { order: Order }) {
         </p>
       </div>
 
+      {/* Rider */}
+      {order.assignedRider && (
+        <div className="bg-muted/50 rounded-lg p-4 flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Truck className="w-4 h-4" />
+            {t("orders.details.assignedRider")}
+          </div>
+          <p className="text-sm">{order.assignedRider.name}</p>
+          <p className="text-xs text-muted-foreground">{order.assignedRider.phone}</p>
+        </div>
+      )}
+
+      {/* Cancellation */}
+      {order.status === "cancelled" && order.cancelReason && (
+        <div className="bg-destructive/5 border border-destructive/30 rounded-lg p-4 flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+            <Ban className="w-4 h-4" />
+            {t("orders.details.cancellation")}
+          </div>
+          <p className="text-sm text-muted-foreground">{order.cancelReason}</p>
+          {order.cancelledBy && (
+            <p className="text-xs text-muted-foreground">
+              {t("orders.details.cancelledBy", {
+                actor: t(`orders.cancelledByActor.${order.cancelledBy}`, order.cancelledBy),
+              })}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Items */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm font-semibold">
@@ -220,12 +268,88 @@ function OrderDetails({ order }: { order: Order }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-const pending = orders.filter((o) => o.status === "pending").length;
-const cancelled = orders.filter((o) => o.status === "cancelled").length;
-
 export default function OrdersPage() {
   const { t } = useTranslation();
+  const [orderList, setOrderList] = useState<Order[]>(initialOrders);
   const [selected, setSelected] = useState<Order | null>(null);
+  const [statusTarget, setStatusTarget] = useState<Order | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
+
+  const pending = orderList.filter((o) => o.status === "pending").length;
+  const cancelled = orderList.filter((o) => o.status === "cancelled").length;
+
+  const revenue = useMemo(
+    () => orderList.filter((o) => o.status !== "cancelled").reduce((sum, o) => sum + o.total, 0),
+    [orderList]
+  );
+
+  function markPaymentRefunded(payment: Payment) {
+    // Mutated in place on the shared array — PaymentsPage re-derives its own state on mount,
+    // matching the mock-data convention used for review→rating sync elsewhere in the app.
+    payment.status = "refunded";
+    payment.updatedAt = new Date().toISOString();
+  }
+
+  function saveStatus(
+    orderId: number,
+    status: OrderStatus,
+    rider?: { name: string; phone: string }
+  ) {
+    const now = new Date().toISOString();
+
+    setOrderList((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status,
+              assignedRider: rider ?? o.assignedRider,
+              updatedAt: now,
+              deliveredAt: status === "delivered" ? now : o.deliveredAt,
+            }
+          : o
+      )
+    );
+    toast.success(
+      t("orders.statusDialog.toastBody", {
+        order: orderList.find((o) => o.id === orderId)?.orderNumber ?? `#${orderId}`,
+        status: t(`common.status.${status}`, status),
+      }),
+      { title: t("orders.statusDialog.toastTitle") }
+    );
+  }
+
+  function confirmCancel(orderId: number, reason: string) {
+    const now = new Date().toISOString();
+    const order = orderList.find((o) => o.id === orderId);
+
+    setOrderList((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status: "cancelled",
+              cancelReason: reason,
+              cancelledBy: "admin",
+              cancelledAt: now,
+              updatedAt: now,
+              vendorOrders: o.vendorOrders.map((vo) => ({ ...vo, status: "cancelled" })),
+            }
+          : o
+      )
+    );
+
+    const payment = order?.paymentId ? payments.find((p) => p.id === order.paymentId) : undefined;
+
+    if (payment && payment.status === "success") {
+      markPaymentRefunded(payment);
+    }
+
+    toast.error(
+      t("orders.cancelDialog.toastBody", { order: order?.orderNumber ?? `#${orderId}` }),
+      { title: t("orders.cancelDialog.toastTitle") }
+    );
+  }
 
   const columns: ColumnDef<Order>[] = [
     {
@@ -313,6 +437,19 @@ export default function OrdersPage() {
 
   const rowActions: RowAction<Order>[] = [
     { label: t("common.actions.viewDetails"), icon: Eye, onClick: setSelected },
+    {
+      label: t("orders.actions.updateStatus"),
+      icon: Pencil,
+      onClick: setStatusTarget,
+      hidden: (r) => r.status === "cancelled",
+    },
+    {
+      label: t("orders.actions.cancel"),
+      icon: Ban,
+      variant: "destructive",
+      onClick: setCancelTarget,
+      hidden: (r) => r.status === "cancelled" || r.status === "delivered",
+    },
   ];
 
   return (
@@ -320,7 +457,7 @@ export default function OrdersPage() {
       <DataTable<Order>
         title={t("orders.title")}
         description={t("orders.description")}
-        data={orders}
+        data={orderList}
         columns={columns}
         rowKey="id"
         searchable
@@ -333,7 +470,9 @@ export default function OrdersPage() {
             options: [
               { label: t("common.status.pending"), value: "pending" },
               { label: t("common.status.confirmed"), value: "confirmed" },
-              { label: t("common.status.shipped"), value: "shipped" },
+              { label: t("common.status.preparing"), value: "preparing" },
+              { label: t("common.status.ready_for_pickup"), value: "ready_for_pickup" },
+              { label: t("common.status.in_transit"), value: "in_transit" },
               { label: t("common.status.delivered"), value: "delivered" },
               { label: t("common.status.cancelled"), value: "cancelled" },
             ],
@@ -347,13 +486,13 @@ export default function OrdersPage() {
         stats={[
           {
             title: t("orders.stats.total"),
-            value: orders.length,
+            value: orderList.length,
             icon: ShoppingCart,
             variant: "primary",
           },
           {
             title: t("orders.stats.revenue"),
-            value: totalRevenue.toLocaleString(),
+            value: revenue.toLocaleString(),
             suffix: " KWD",
             icon: DollarSign,
             variant: "success",
@@ -372,6 +511,20 @@ export default function OrdersPage() {
           title: t("orders.emptyTitle"),
           description: t("orders.emptyDescription"),
         }}
+      />
+
+      <OrderStatusDialog
+        open={!!statusTarget}
+        onOpenChange={(open) => !open && setStatusTarget(null)}
+        order={statusTarget}
+        onSave={saveStatus}
+      />
+
+      <OrderCancelDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+        order={cancelTarget}
+        onConfirm={confirmCancel}
       />
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>

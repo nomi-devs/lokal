@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { categories as initialCategories, type Category } from "@/data/categories";
+import type { Department } from "@/data/products";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
 const catStatusStyle: Record<"Active" | "Hidden", string> = {
@@ -147,6 +148,12 @@ export default function CategoriesPage() {
       },
     },
     {
+      key: "department",
+      header: t("categories.list.columns.department"),
+      sortable: true,
+      render: (v) => t(`common.departments.${v as Department}`),
+    },
+    {
       key: "itemsCount",
       header: t("categories.list.columns.listings"),
       sortable: true,
@@ -243,6 +250,14 @@ export default function CategoriesPage() {
               { label: t("common.status.active"), value: "true" },
               { label: t("common.status.hidden"), value: "false" },
             ],
+          },
+          {
+            key: "department",
+            label: t("categories.list.filterDepartment"),
+            options: (["men", "women", "kids", "unisex"] as Department[]).map((d) => ({
+              label: t(`common.departments.${d}`),
+              value: d,
+            })),
           },
         ]}
         selectable

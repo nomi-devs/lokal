@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { FolderTree, Image as ImageIcon, Layers, ListOrdered } from "lucide-react";
+import { FolderTree, Image as ImageIcon, Layers, ListOrdered, Users2 } from "lucide-react";
 
 import type { Category } from "@/data/categories";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ const categorySchema = z.object({
   descriptionAr: z.string().optional(),
   image: z.string().optional(),
   parentId: z.string(),
+  department: z.enum(["men", "women", "kids", "unisex"]),
   sortOrder: z.number().int().min(0),
 });
 
@@ -39,6 +40,7 @@ const emptyValues: CategoryFormValues = {
   descriptionAr: "",
   image: "",
   parentId: "",
+  department: "unisex",
   sortOrder: 0,
 };
 
@@ -158,6 +160,7 @@ export default function CategoryFormDialog({
             descriptionAr: category.descriptionAr ?? "",
             image: category.image ?? "",
             parentId: category.parentId != null ? String(category.parentId) : "",
+            department: category.department,
             sortOrder: category.sortOrder,
           }
         : emptyValues
@@ -268,8 +271,8 @@ export default function CategoryFormDialog({
               }}
             />
 
-            {/* Parent + Order */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Parent + Department + Order */}
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className={labelRowCls}>
                   <Layers className="w-3.5 h-3.5 text-primary" />
@@ -288,6 +291,25 @@ export default function CategoryFormDialog({
                       {p.name}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <Label className={labelRowCls}>
+                  <Users2 className="w-3.5 h-3.5 text-primary" />
+                  {t("categories.dialog.department")}
+                </Label>
+                <select
+                  className={cn(
+                    inputCls,
+                    "w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
+                  )}
+                  {...register("department")}
+                >
+                  <option value="unisex">{t("common.departments.unisex")}</option>
+                  <option value="men">{t("common.departments.men")}</option>
+                  <option value="women">{t("common.departments.women")}</option>
+                  <option value="kids">{t("common.departments.kids")}</option>
                 </select>
               </div>
 

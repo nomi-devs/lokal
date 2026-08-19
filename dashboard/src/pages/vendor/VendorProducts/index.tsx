@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import {
   Package,
@@ -12,25 +13,19 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-import ProductFormDialog, { type ProductFormValues } from "./ProductFormDialog";
+import VendorProductFormDialog, { type VendorProductFormValues } from "./VendorProductFormDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
-import { sidebarItems } from "@/constants";
+import { vendorSidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
-import {
-  products as initialProducts,
-  type Product,
-  type ProductStatus,
-  type Department,
-} from "@/data/products";
-import { initialVendors } from "@/data/vendors";
+import type { RootState } from "@/store";
+import { products, type Product, type ProductStatus, type Department } from "@/data/products";
 import { categories } from "@/data/categories";
 
-// ── Style maps ────────────────────────────────────────────────────────────────
 const statusStyle: Record<ProductStatus, { text: string; bg: string; dot: string }> = {
   active: {
     text: "text-emerald-700 dark:text-emerald-400",
@@ -55,16 +50,18 @@ const statusKey: Record<ProductStatus, string> = {
   out_of_stock: "outOfStock",
 };
 
-// ── Confirm dialog state ───────────────────────────────────────────────────────
 type PendingAction =
   | { type: "delete"; product: Product }
   | { type: "deleteSelected"; products: Product[] }
   | null;
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-export default function ProductsPage() {
+export default function VendorProducts() {
   const { t } = useTranslation();
-  const [productList, setProductList] = useState<Product[]>(initialProducts);
+  const vendorId = useSelector((state: RootState) => state.auth.user?.vendorId ?? 0);
+
+  const [productList, setProductList] = useState<Product[]>(() =>
+    products.filter((p) => p.vendorId === vendorId)
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -73,7 +70,6 @@ export default function ProductsPage() {
   const outOfStockProducts = productList.filter((p) => p.status === "out_of_stock").length;
   const totalStockUnits = productList.reduce((sum, p) => sum + p.stock, 0);
 
-  const vendorName = (id: number) => initialVendors.find((v) => v.id === id)?.nameEn ?? null;
   const categoryName = (id: number) => categories.find((c) => c.id === id)?.nameEn ?? null;
 
   function openAddDialog() {
@@ -86,8 +82,7 @@ export default function ProductsPage() {
     setDialogOpen(true);
   }
 
-  function handleFormSubmit(values: ProductFormValues, editingId: number | null) {
-    const vendorId = Number(values.vendorId);
+  function handleFormSubmit(values: VendorProductFormValues, editingId: number | null) {
     const categoryId = Number(values.categoryId);
 
     const sizes = values.sizes
@@ -118,7 +113,6 @@ export default function ProductsPage() {
                 descriptionEn: values.descriptionEn ?? "",
                 descriptionAr: values.descriptionAr ?? "",
                 images: images.length ? images : p.images,
-                vendorId,
                 categoryId,
                 department: values.department,
                 price: values.price,
@@ -132,12 +126,12 @@ export default function ProductsPage() {
             : p
         )
       );
-      toast.success(t("products.list.toasts.edited", { name: values.nameEn }));
+      toast.success(t("vendor.products.list.toasts.edited", { name: values.nameEn }));
 
       return;
     }
 
-    const nextId = Math.max(0, ...productList.map((p) => p.id)) + 1;
+    const nextId = Math.max(0, ...products.map((p) => p.id)) + 1;
 
     setProductList((prev) => [
       ...prev,
@@ -162,7 +156,7 @@ export default function ProductsPage() {
         updatedAt: now,
       },
     ]);
-    toast.success(t("products.list.toasts.created", { name: values.nameEn }));
+    toast.success(t("vendor.products.list.toasts.created", { name: values.nameEn }));
   }
 
   function confirmPendingAction() {
@@ -174,21 +168,21 @@ export default function ProductsPage() {
       const { product } = pendingAction;
 
       setProductList((prev) => prev.filter((p) => p.id !== product.id));
-      toast.error(t("products.list.toasts.deleted", { name: product.nameEn }));
+      toast.error(t("vendor.products.list.toasts.deleted", { name: product.nameEn }));
     } else if (pendingAction.type === "deleteSelected") {
       const ids = new Set(pendingAction.products.map((p) => p.id));
 
       setProductList((prev) => prev.filter((p) => !ids.has(p.id)));
       toast.error(
-        t("products.list.toasts.deletedSelected", { count: pendingAction.products.length })
+        t("vendor.products.list.toasts.deletedSelected", { count: pendingAction.products.length })
       );
     }
   }
 
-  const productColumns: ColumnDef<Product>[] = [
+  const columns: ColumnDef<Product>[] = [
     {
       key: "nameEn",
-      header: t("products.list.columns.product"),
+      header: t("vendor.products.list.columns.product"),
       sortable: true,
       render: (_, row) => (
         <div className="flex items-center gap-3 min-w-0">
@@ -213,26 +207,20 @@ export default function ProductsPage() {
       ),
     },
     {
-      key: "vendorId",
-      header: t("products.list.columns.vendor"),
-      sortable: true,
-      render: (v) => vendorName(v as number) ?? "—",
-    },
-    {
       key: "categoryId",
-      header: t("products.list.columns.category"),
+      header: t("vendor.products.list.columns.category"),
       sortable: true,
       render: (v) => categoryName(v as number) ?? "—",
     },
     {
       key: "department",
-      header: t("products.list.columns.department"),
+      header: t("vendor.products.list.columns.department"),
       sortable: true,
       render: (v) => t(`common.departments.${v as Department}`),
     },
     {
       key: "price",
-      header: t("products.list.columns.price"),
+      header: t("vendor.products.list.columns.price"),
       render: (_, row) => {
         const { base, currency, compareAt } = row.price;
         const hasDiscount = compareAt != null && compareAt > base;
@@ -259,7 +247,7 @@ export default function ProductsPage() {
     },
     {
       key: "stock",
-      header: t("products.list.columns.stock"),
+      header: t("vendor.products.list.columns.stock"),
       sortable: true,
       align: "right",
       render: (v, row) => (
@@ -267,7 +255,7 @@ export default function ProductsPage() {
           <span className="font-medium">{(v as number).toLocaleString()}</span>
           {row.variants?.length ? (
             <span className="text-xs text-muted-foreground">
-              {t("products.list.variantsCount", { count: row.variants.length })}
+              {t("vendor.products.list.variantsCount", { count: row.variants.length })}
             </span>
           ) : null}
         </div>
@@ -275,7 +263,7 @@ export default function ProductsPage() {
     },
     {
       key: "status",
-      header: t("products.list.columns.status"),
+      header: t("vendor.products.list.columns.status"),
       sortable: true,
       render: (v) => {
         const status = v as ProductStatus;
@@ -290,14 +278,14 @@ export default function ProductsPage() {
             )}
           >
             <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
-            {t(`products.list.status.${statusKey[status]}`)}
+            {t(`vendor.products.list.status.${statusKey[status]}`)}
           </span>
         );
       },
     },
     {
       key: "ratings",
-      header: t("products.list.columns.rating"),
+      header: t("vendor.products.list.columns.rating"),
       render: (_, row) => (
         <span className="inline-flex items-center gap-1.5 text-sm">
           <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
@@ -308,12 +296,8 @@ export default function ProductsPage() {
     },
   ];
 
-  const productRowActions: RowAction<Product>[] = [
-    {
-      label: t("common.actions.edit"),
-      icon: Pencil,
-      onClick: openEditDialog,
-    },
+  const rowActions: RowAction<Product>[] = [
+    { label: t("common.actions.edit"), icon: Pencil, onClick: openEditDialog },
     {
       label: t("common.actions.delete"),
       icon: Trash2,
@@ -322,7 +306,7 @@ export default function ProductsPage() {
     },
   ];
 
-  const productToolbarActions: ToolbarAction<Product>[] = [
+  const toolbarActions: ToolbarAction<Product>[] = [
     {
       label: t("common.actions.deleteSelected"),
       icon: Trash2,
@@ -331,7 +315,7 @@ export default function ProductsPage() {
       onClick: (rows) => setPendingAction({ type: "deleteSelected", products: rows }),
     },
     {
-      label: t("products.list.addProduct"),
+      label: t("vendor.products.list.addProduct"),
       icon: Plus,
       variant: "default",
       requiresSelection: false,
@@ -340,34 +324,32 @@ export default function ProductsPage() {
   ];
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("products.topbarTitle")}>
+    <DashboardLayout
+      sidebarItems={vendorSidebarItems}
+      topbarTitle={t("vendor.products.topbarTitle")}
+    >
       <DataTable<Product>
-        title={t("products.list.title")}
-        description={t("products.list.description")}
+        title={t("vendor.products.list.title")}
+        description={t("vendor.products.list.description")}
         data={productList}
-        columns={productColumns}
+        columns={columns}
         rowKey="id"
         searchable
-        searchPlaceholder={t("products.list.searchPlaceholder")}
+        searchPlaceholder={t("vendor.products.list.searchPlaceholder")}
         searchKeys={["nameEn", "nameAr"]}
         filters={[
           {
             key: "status",
-            label: t("products.list.filterStatus"),
+            label: t("vendor.products.list.filterStatus"),
             options: [
-              { label: t("products.list.status.active"), value: "active" },
-              { label: t("products.list.status.inactive"), value: "inactive" },
-              { label: t("products.list.status.outOfStock"), value: "out_of_stock" },
+              { label: t("vendor.products.list.status.active"), value: "active" },
+              { label: t("vendor.products.list.status.inactive"), value: "inactive" },
+              { label: t("vendor.products.list.status.outOfStock"), value: "out_of_stock" },
             ],
           },
           {
-            key: "categoryId",
-            label: t("products.list.filterCategory"),
-            options: categories.map((c) => ({ label: c.nameEn, value: String(c.id) })),
-          },
-          {
             key: "department",
-            label: t("products.list.filterDepartment"),
+            label: t("vendor.products.list.filterDepartment"),
             options: (["men", "women", "kids", "unisex"] as Department[]).map((d) => ({
               label: t(`common.departments.${d}`),
               value: d,
@@ -375,45 +357,45 @@ export default function ProductsPage() {
           },
         ]}
         selectable
-        rowActions={productRowActions}
+        rowActions={rowActions}
         rowActionsVariant="inline"
-        toolbarActions={productToolbarActions}
+        toolbarActions={toolbarActions}
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "updatedAt", direction: "desc" }}
         striped
         stats={[
           {
-            title: t("products.list.stats.total"),
+            title: t("vendor.products.list.stats.total"),
             value: productList.length,
             icon: Package,
             variant: "primary",
           },
           {
-            title: t("products.list.stats.active"),
+            title: t("vendor.products.list.stats.active"),
             value: activeProducts,
             icon: CheckCircle2,
             variant: "success",
           },
           {
-            title: t("products.list.stats.outOfStock"),
+            title: t("vendor.products.list.stats.outOfStock"),
             value: outOfStockProducts,
             icon: XCircle,
             variant: "danger",
           },
           {
-            title: t("products.list.stats.totalStockUnits"),
+            title: t("vendor.products.list.stats.totalStockUnits"),
             value: totalStockUnits.toLocaleString(),
             icon: Boxes,
             variant: "warning",
           },
         ]}
         emptyState={{
-          title: t("products.list.emptyTitle"),
-          description: t("products.list.emptyDescription"),
+          title: t("vendor.products.list.emptyTitle"),
+          description: t("vendor.products.list.emptyDescription"),
         }}
       />
 
-      <ProductFormDialog
+      <VendorProductFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         product={editingProduct}
@@ -426,18 +408,20 @@ export default function ProductsPage() {
         variant="destructive"
         title={
           pendingAction?.type === "delete"
-            ? t("products.list.confirm.deleteTitle")
+            ? t("vendor.products.list.confirm.deleteTitle")
             : pendingAction?.type === "deleteSelected"
-              ? t("products.list.confirm.deleteSelectedTitle", {
+              ? t("vendor.products.list.confirm.deleteSelectedTitle", {
                   count: pendingAction.products.length,
                 })
               : ""
         }
         description={
           pendingAction?.type === "delete"
-            ? t("products.list.confirm.deleteDescription", { name: pendingAction.product.nameEn })
+            ? t("vendor.products.list.confirm.deleteDescription", {
+                name: pendingAction.product.nameEn,
+              })
             : pendingAction?.type === "deleteSelected"
-              ? t("products.list.confirm.deleteSelectedDescription")
+              ? t("vendor.products.list.confirm.deleteSelectedDescription")
               : undefined
         }
         confirmLabel={t("common.actions.delete")}

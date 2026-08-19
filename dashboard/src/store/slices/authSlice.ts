@@ -6,7 +6,7 @@ import { mockUsers } from "../../constants";
 
 interface AuthState {
   isAuthenticated: boolean;
-  user: { id: string; email: string; role: "admin" | "user" } | null;
+  user: { id: string; email: string; role: "admin" | "user" | "vendor"; vendorId?: number } | null;
   error: string | null;
 }
 
@@ -30,7 +30,8 @@ const authSlice = createSlice({
         state.user = {
           id: foundUser.id,
           email: foundUser.email,
-          role: foundUser.role as "admin" | "user",
+          role: foundUser.role,
+          vendorId: foundUser.vendorId,
         };
         state.error = null;
       } else {

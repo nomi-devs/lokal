@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 const composeSchema = z.object({
   title: z.string().min(1, "Title is required"),
   message: z.string().min(1, "Message is required"),
-  recipients: z.enum(["all", "admins", "users", "editors"]),
+  recipients: z.enum(["all", "admins", "vendors", "users"]),
   type: z.enum(["Info", "Warning", "Alert", "System"]),
   priority: z.enum(["Normal", "High", "Critical"]),
 });
@@ -133,11 +133,11 @@ export default function ComposeNotificationDialog({
                   <option value="admins">
                     {t("notificationsSend.compose.recipientOptions.admins")}
                   </option>
+                  <option value="vendors">
+                    {t("notificationsSend.compose.recipientOptions.vendors")}
+                  </option>
                   <option value="users">
                     {t("notificationsSend.compose.recipientOptions.users")}
-                  </option>
-                  <option value="editors">
-                    {t("notificationsSend.compose.recipientOptions.editors")}
                   </option>
                 </select>
               </div>

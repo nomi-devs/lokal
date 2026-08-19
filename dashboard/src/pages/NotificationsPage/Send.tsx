@@ -21,8 +21,8 @@ const typeStyle: Record<string, string> = {
 const recipientLabel: Record<ComposeFormValues["recipients"], string> = {
   all: "All Users",
   admins: "Admins",
+  vendors: "Vendors",
   users: "Users",
-  editors: "Editors",
 };
 
 export default function SendNotificationsPage() {

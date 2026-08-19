@@ -3,19 +3,31 @@
 export type ProductStatus = "active" | "inactive" | "out_of_stock";
 export type Currency = "KWD" | "SAR";
 
+// Audience facet shown as Male/Female/Kids tabs across Home/Trending/Search/Filter in the mobile
+// app. "unisex" covers listings that aren't naturally gendered (most of this catalog).
+export type Department = "men" | "women" | "kids" | "unisex";
+
+// Per size×color inventory (mobile requires picking Size then Color independently on Add to Cart).
+// Optional — products without both sizes and colors set just keep using the flat `stock` field.
+export type ProductVariant = { size?: string; color?: string; stock: number; sku?: string };
+
 export type Product = {
   id: number;
   vendorId: number;
   categoryId: number;
+  department: Department;
   nameEn: string;
   nameAr: string;
   descriptionEn: string;
   descriptionAr: string;
   images: string[];
-  price: { base: number; currency: Currency };
+  /** `compareAt`, when set and greater than `base`, is the pre-discount price shown struck through. */
+  price: { base: number; currency: Currency; compareAt?: number };
   sizes: string[];
   colors: string[];
+  /** Total stock. When `variants` is set, this is the derived sum of variant stocks. */
   stock: number;
+  variants?: ProductVariant[];
   status: ProductStatus;
   ratings: { average: number; count: number };
   createdAt: string;
@@ -29,12 +41,13 @@ export const products: Product[] = [
     id: 1,
     vendorId: 5,
     categoryId: 2,
+    department: "unisex",
     nameEn: "Modular Sofa Set",
     nameAr: "طقم كنب معياري",
     descriptionEn: "3-seat modular sofa with washable covers.",
     descriptionAr: "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
     images: [img("sofa1"), img("sofa2")],
-    price: { base: 620, currency: "KWD" },
+    price: { base: 620, currency: "KWD", compareAt: 780 },
     sizes: [],
     colors: ["Beige", "Charcoal", "Sand"],
     stock: 14,
@@ -47,6 +60,7 @@ export const products: Product[] = [
     id: 2,
     vendorId: 5,
     categoryId: 2,
+    department: "unisex",
     nameEn: "Oak Dining Table",
     nameAr: "طاولة طعام بلوط",
     descriptionEn: "Solid oak dining table, seats six.",
@@ -65,6 +79,7 @@ export const products: Product[] = [
     id: 3,
     vendorId: 7,
     categoryId: 6,
+    department: "unisex",
     nameEn: "Interior Wall Paint 10L",
     nameAr: "دهان جدران داخلي 10 لتر",
     descriptionEn: "Low-VOC matte interior paint, 10-litre can.",
@@ -83,6 +98,7 @@ export const products: Product[] = [
     id: 4,
     vendorId: 4,
     categoryId: 3,
+    department: "unisex",
     nameEn: "Chrome Bathroom Faucet",
     nameAr: "خلاط حمام كروم",
     descriptionEn: "Single-lever chrome faucet with ceramic cartridge.",
@@ -101,6 +117,7 @@ export const products: Product[] = [
     id: 5,
     vendorId: 2,
     categoryId: 8,
+    department: "unisex",
     nameEn: "LED Panel Light 60x60",
     nameAr: "لوح إضاءة LED 60×60",
     descriptionEn: "Recessed LED ceiling panel, 40W, daylight white.",
@@ -119,6 +136,7 @@ export const products: Product[] = [
     id: 6,
     vendorId: 3,
     categoryId: 5,
+    department: "unisex",
     nameEn: "Artificial Grass Roll 2x5m",
     nameAr: "رول عشب صناعي 2×5م",
     descriptionEn: "UV-resistant artificial turf, 30mm pile height.",
@@ -128,6 +146,10 @@ export const products: Product[] = [
     sizes: ["2x5m", "2x10m"],
     colors: ["Green"],
     stock: 32,
+    variants: [
+      { size: "2x5m", color: "Green", stock: 20 },
+      { size: "2x10m", color: "Green", stock: 12 },
+    ],
     status: "active",
     ratings: { average: 4.4, count: 12 },
     createdAt: "2026-06-01",
@@ -137,12 +159,13 @@ export const products: Product[] = [
     id: 7,
     vendorId: 6,
     categoryId: 7,
+    department: "unisex",
     nameEn: "Split AC Unit 18000 BTU",
     nameAr: "مكيف سبليت 18000 وحدة",
     descriptionEn: "Energy-efficient inverter split AC with remote.",
     descriptionAr: "مكيف سبليت انفرتر موفر للطاقة مع جهاز تحكم.",
     images: [img("ac1"), img("ac2")],
-    price: { base: 195, currency: "KWD" },
+    price: { base: 195, currency: "KWD", compareAt: 230 },
     sizes: [],
     colors: ["White"],
     stock: 9,
@@ -155,6 +178,7 @@ export const products: Product[] = [
     id: 8,
     vendorId: 10,
     categoryId: 1,
+    department: "unisex",
     nameEn: "Steel Rebar Bundle 12mm",
     nameAr: "حزمة حديد تسليح 12مم",
     descriptionEn: "Grade 60 steel rebar, 12mm x 6m, bundle of 10.",
@@ -173,12 +197,13 @@ export const products: Product[] = [
     id: 9,
     vendorId: 5,
     categoryId: 2,
+    department: "unisex",
     nameEn: "Linen Curtain Panel",
     nameAr: "ستارة كتان",
     descriptionEn: "140x260cm linen-blend curtain panel.",
     descriptionAr: "ستارة مزيج كتان مقاس 140×260 سم.",
     images: [img("curtain1")],
-    price: { base: 16, currency: "KWD" },
+    price: { base: 16, currency: "KWD", compareAt: 20 },
     sizes: ["140x260cm", "140x300cm"],
     colors: ["Ivory", "Taupe", "Blush"],
     stock: 75,
@@ -191,6 +216,7 @@ export const products: Product[] = [
     id: 10,
     vendorId: 2,
     categoryId: 4,
+    department: "unisex",
     nameEn: "Circuit Breaker 32A",
     nameAr: "قاطع كهرباء 32 أمبير",
     descriptionEn: "Single-pole MCB circuit breaker, 32A.",

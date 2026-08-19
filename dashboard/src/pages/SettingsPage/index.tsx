@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -12,6 +12,11 @@ import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+import {
+  adminSettings as initialAdminSettings,
+  type AdminSetting,
+  type SettingCategory,
+} from "@/data/adminSettings";
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
 
@@ -76,6 +81,61 @@ function SectionHeader({ title, description }: { title: string; description: str
   );
 }
 
+// ── Platform configuration (driven by src/data/adminSettings.ts) ────────────────
+
+const SETTING_CATEGORIES: SettingCategory[] = [
+  "general",
+  "shipping",
+  "commission",
+  "payment",
+  "sms",
+  "auth",
+];
+
+function SettingControl({
+  setting,
+  onChange,
+}: {
+  setting: AdminSetting;
+  onChange: (value: AdminSetting["value"]) => void;
+}) {
+  if (setting.type === "boolean") {
+    return (
+      <label className="inline-flex items-center gap-2 h-10">
+        <input
+          type="checkbox"
+          className="h-4 w-4 rounded border accent-primary"
+          checked={setting.value === true}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className="text-sm text-muted-foreground">
+          {setting.value ? "Enabled" : "Disabled"}
+        </span>
+      </label>
+    );
+  }
+
+  if (setting.type === "number") {
+    return (
+      <input
+        type="number"
+        className={inputCls}
+        value={setting.value as number}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    );
+  }
+
+  return (
+    <input
+      type="text"
+      className={inputCls}
+      value={String(setting.value)}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}
+
 // ── Combined General + Security schema ──────────────────────────────────────────
 
 const settingsSchema = z
@@ -100,6 +160,7 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const userEmail = useSelector((state: RootState) => state.auth.user?.email ?? "");
   const formRef = useRef<HTMLFormElement>(null);
+  const [platformSettings, setPlatformSettings] = useState<AdminSetting[]>(initialAdminSettings);
 
   const {
     register,
@@ -119,6 +180,14 @@ export default function SettingsPage() {
     },
   });
 
+  function updateSetting(id: number, value: AdminSetting["value"]) {
+    const now = new Date().toISOString();
+
+    setPlatformSettings((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, value, updatedAt: now } : s))
+    );
+  }
+
   function handleSave() {
     formRef.current?.requestSubmit();
   }
@@ -137,123 +206,167 @@ export default function SettingsPage() {
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 h-10 px-5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors"
+          className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary  text-white text-sm font-semibold transition-colors"
         >
           <Save className="w-4 h-4" />
           {t("settings.saveChanges")}
         </button>
       </div>
 
-      {/* Body */}
-      <form
-        ref={formRef}
-        onSubmit={handleSubmit(onSuccess)}
-        className="bg-card rounded-xl border p-6 flex flex-col gap-8"
-      >
-        <input
-          type="text"
-          autoComplete="username"
-          value={userEmail}
-          readOnly
-          aria-hidden="true"
-          tabIndex={-1}
-          className="sr-only"
-        />
-
-        {/* General */}
-        <div>
+      <div className="flex flex-col gap-6">
+        {/* Platform configuration — driven by adminSettings.ts, grouped by category */}
+        <div className="bg-card rounded-xl border p-6">
           <SectionHeader
-            title={t("settings.general.title")}
-            description={t("settings.general.description")}
+            title={t("settings.platformConfig.title")}
+            description={t("settings.platformConfig.description")}
           />
-          <div className="grid grid-cols-2 gap-5">
-            <Field
-              label={t("settings.general.platformName")}
-              error={errors.platformName?.message}
-              className="col-span-2"
-            >
-              <input className={inputCls} {...register("platformName")} />
-            </Field>
+          <div className="flex flex-col gap-8">
+            {SETTING_CATEGORIES.map((category) => {
+              const rows = platformSettings.filter((s) => s.category === category);
 
-            <Field label={t("settings.general.supportEmail")} error={errors.supportEmail?.message}>
-              <input type="email" className={inputCls} {...register("supportEmail")} />
-            </Field>
+              if (!rows.length) {
+                return null;
+              }
 
-            <Field label={t("settings.general.supportPhone")} error={errors.supportPhone?.message}>
-              <input className={inputCls} {...register("supportPhone")} />
-            </Field>
-
-            <SelectField
-              label={t("settings.general.defaultLanguage")}
-              options={[
-                { label: t("settings.general.languages.english"), value: "en" },
-                { label: t("settings.general.languages.arabic"), value: "ar" },
-                { label: t("settings.general.languages.french"), value: "fr" },
-                { label: t("settings.general.languages.spanish"), value: "es" },
-              ]}
-              {...register("language")}
-            />
-
-            <SelectField
-              label={t("settings.general.timezone")}
-              options={[
-                { label: "UTC (GMT+0)", value: "UTC" },
-                { label: "Asia/Riyadh (GMT+3)", value: "Asia/Riyadh" },
-                { label: "Asia/Dubai (GMT+4)", value: "Asia/Dubai" },
-                { label: "Europe/London (GMT+1)", value: "Europe/London" },
-                { label: "America/New_York (GMT-5)", value: "America/New_York" },
-              ]}
-              {...register("timezone")}
-            />
+              return (
+                <div key={category}>
+                  <h3 className="text-sm font-semibold mb-3">
+                    {t(`settings.categories.${category}`)}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-5">
+                    {rows.map((setting) => (
+                      <Field key={setting.id} label={setting.key} className="col-span-1">
+                        <SettingControl
+                          setting={setting}
+                          onChange={(value) => updateSetting(setting.id, value)}
+                        />
+                        <p className="text-xs text-muted-foreground">{setting.descriptionEn}</p>
+                      </Field>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Security */}
-        <div>
-          <SectionHeader
-            title={t("settings.security.title")}
-            description={t("settings.security.description")}
+        {/* General + Security */}
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit(onSuccess)}
+          className="bg-card rounded-xl border p-6 flex flex-col gap-8"
+        >
+          <input
+            type="text"
+            autoComplete="username"
+            value={userEmail}
+            readOnly
+            aria-hidden="true"
+            tabIndex={-1}
+            className="sr-only"
           />
-          <div className="grid grid-cols-2 gap-5">
-            <Field
-              label={t("settings.security.currentPassword")}
-              error={errors.currentPassword?.message}
-              className="col-span-2"
-            >
-              <input
-                type="password"
-                className={inputCls}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                {...register("currentPassword")}
-              />
-            </Field>
 
-            <Field label={t("settings.security.newPassword")} error={errors.newPassword?.message}>
-              <input
-                type="password"
-                className={inputCls}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                {...register("newPassword")}
-              />
-            </Field>
+          {/* General */}
+          <div>
+            <SectionHeader
+              title={t("settings.general.title")}
+              description={t("settings.general.description")}
+            />
+            <div className="grid grid-cols-2 gap-5">
+              <Field
+                label={t("settings.general.platformName")}
+                error={errors.platformName?.message}
+                className="col-span-2"
+              >
+                <input className={inputCls} {...register("platformName")} />
+              </Field>
 
-            <Field
-              label={t("settings.security.confirmPassword")}
-              error={errors.confirmPassword?.message}
-            >
-              <input
-                type="password"
-                className={inputCls}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                {...register("confirmPassword")}
+              <Field
+                label={t("settings.general.supportEmail")}
+                error={errors.supportEmail?.message}
+              >
+                <input type="email" className={inputCls} {...register("supportEmail")} />
+              </Field>
+
+              <Field
+                label={t("settings.general.supportPhone")}
+                error={errors.supportPhone?.message}
+              >
+                <input className={inputCls} {...register("supportPhone")} />
+              </Field>
+
+              <SelectField
+                label={t("settings.general.defaultLanguage")}
+                options={[
+                  { label: t("settings.general.languages.english"), value: "en" },
+                  { label: t("settings.general.languages.arabic"), value: "ar" },
+                  { label: t("settings.general.languages.french"), value: "fr" },
+                  { label: t("settings.general.languages.spanish"), value: "es" },
+                ]}
+                {...register("language")}
               />
-            </Field>
+
+              <SelectField
+                label={t("settings.general.timezone")}
+                options={[
+                  { label: "UTC (GMT+0)", value: "UTC" },
+                  { label: "Asia/Riyadh (GMT+3)", value: "Asia/Riyadh" },
+                  { label: "Asia/Dubai (GMT+4)", value: "Asia/Dubai" },
+                  { label: "Europe/London (GMT+1)", value: "Europe/London" },
+                  { label: "America/New_York (GMT-5)", value: "America/New_York" },
+                ]}
+                {...register("timezone")}
+              />
+            </div>
           </div>
-        </div>
-      </form>
+
+          {/* Security */}
+          <div>
+            <SectionHeader
+              title={t("settings.security.title")}
+              description={t("settings.security.description")}
+            />
+            <div className="grid grid-cols-2 gap-5">
+              <Field
+                label={t("settings.security.currentPassword")}
+                error={errors.currentPassword?.message}
+                className="col-span-2"
+              >
+                <input
+                  type="password"
+                  className={inputCls}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  {...register("currentPassword")}
+                />
+              </Field>
+
+              <Field label={t("settings.security.newPassword")} error={errors.newPassword?.message}>
+                <input
+                  type="password"
+                  className={inputCls}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  {...register("newPassword")}
+                />
+              </Field>
+
+              <Field
+                label={t("settings.security.confirmPassword")}
+                error={errors.confirmPassword?.message}
+              >
+                <input
+                  type="password"
+                  className={inputCls}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  {...register("confirmPassword")}
+                />
+              </Field>
+            </div>
+          </div>
+        </form>
+      </div>
     </DashboardLayout>
   );
 }

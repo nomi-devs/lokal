@@ -1,7 +1,7 @@
 // src/components/form/DynamicForm.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Zod generic inference cannot bridge to react-hook-form's FieldValues without `any` casts here.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { z } from "zod";
 import type { ZodTypeAny } from "zod";
 import { useForm } from "react-hook-form";
@@ -61,6 +61,8 @@ interface DynamicFormProps<Schema extends ZodTypeAny> {
   onSubmit: (values: z.infer<Schema>) => void;
   submitText?: string;
   onChange?: (name: string, value: any) => void; // ADDED: New optional onChange prop
+  /** When this object changes (new reference), the form is reset to these values — e.g. a "fill demo credentials" action. */
+  values?: Partial<z.infer<Schema>>;
 }
 
 /**
@@ -77,6 +79,7 @@ export default function DynamicForm<Schema extends ZodTypeAny>({
   onSubmit,
   submitText = "Submit",
   onChange, // ADDED: Destructure the new prop
+  values,
 }: DynamicFormProps<Schema>) {
   // Infer form value type and ensure it extends FieldValues
   type Inferred = NormalizeZodInfer<z.infer<Schema>>;
@@ -86,6 +89,12 @@ export default function DynamicForm<Schema extends ZodTypeAny>({
     resolver: zodResolver(schema as any),
     defaultValues: defaultValues as any,
   });
+
+  useEffect(() => {
+    if (values) {
+      form.reset(values as any);
+    }
+  }, [values]);
 
   // Cast so that the ShadCN Form component (which expects UseFormReturn<FieldValues>) accepts it.
   const formForProvider = form as unknown as UseFormReturn<FieldValues, any>;

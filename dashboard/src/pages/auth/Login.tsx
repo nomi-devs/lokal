@@ -1,8 +1,10 @@
 // src/pages/auth/Login.tsx
+import { useState } from "react";
 import { z } from "zod";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { ShieldCheck, Store } from "lucide-react";
 
 import type { AppDispatch, RootState } from "@/store";
 import { store } from "@/store";
@@ -18,9 +20,25 @@ const loginSchema = z.object({
   password: z.string().min(4, "Password must be at least 4 characters"),
 });
 
+const DEMO_ACCOUNTS = [
+  {
+    role: "admin" as const,
+    icon: ShieldCheck,
+    email: "admin@gmail.com",
+    password: "admin123",
+  },
+  {
+    role: "vendor" as const,
+    icon: Store,
+    email: "vendor@gmail.com",
+    password: "vendor123",
+  },
+];
+
 export default function LoginPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
+  const [quickFill, setQuickFill] = useState<{ email: string; password: string } | null>(null);
 
   const loginFields: FieldConfig[] = [
     {
@@ -72,9 +90,35 @@ export default function LoginPage() {
               email: "admin@gmail.com",
               password: "admin123",
             }}
+            values={quickFill ?? undefined}
             onSubmit={onSubmit}
             submitText={t("auth.login.submit")}
           />
+
+          {/* Demo accounts */}
+          <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">
+              {t("auth.login.demoAccounts")}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((account) => (
+                <button
+                  key={account.role}
+                  type="button"
+                  onClick={() => setQuickFill({ email: account.email, password: account.password })}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2.5 text-center transition-colors hover:bg-primary/5 hover:border-primary/40"
+                >
+                  <account.icon className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold">
+                    {t(`auth.login.demoRole.${account.role}`)}
+                  </span>
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate w-full">
+                    {account.email}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Links */}
           <div className="mt-4 flex flex-col sm:flex-row sm:justify-between text-sm text-center sm:text-left">

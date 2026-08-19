@@ -5,15 +5,17 @@ import { useSelector } from "react-redux";
 
 import type { RootState } from "../store";
 
+import { roleHome } from "./roleHome";
+
 interface Props {
   children: React.ReactNode;
 }
 
 const PublicRoute: React.FC<Props> = ({ children }) => {
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
   if (isAuthenticated) {
-    return <Navigate to="/overview" replace />;
+    return <Navigate to={roleHome(user?.role)} replace />;
   }
 
   return <>{children}</>;

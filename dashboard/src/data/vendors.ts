@@ -12,6 +12,8 @@ export type Vendor = {
   logoUrl?: string;
   email: string;
   phone: string;
+  description?: string;
+  address?: string;
   businessLicense?: string;
   taxId?: string;
   bankAccount?: { accountHolder: string; accountNumber: string; bankName: string };
@@ -121,6 +123,15 @@ export const initialVendors: Vendor[] = [
     ownerName: "Omar Nasser",
     email: "omar@studioline.com",
     phone: "+96560009900",
+    description: "Interior design studio and furniture retailer serving Kuwait City.",
+    address: "Block 2, Street 7, Sharq, Kuwait City",
+    businessLicense: "BL-KW-2024-0512",
+    taxId: "TX-445982",
+    bankAccount: {
+      accountHolder: "Omar Nasser",
+      accountNumber: "KW71NBOK0000000000123456789",
+      bankName: "National Bank of Kuwait",
+    },
     category: "Design & Architecture",
     city: "Kuwait City",
     status: "approved",

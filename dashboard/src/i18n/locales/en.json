@@ -51,6 +51,9 @@
       "draft": "Draft",
       "archived": "Archived",
       "cancelled": "Cancelled",
+      "preparing": "Preparing",
+      "ready_for_pickup": "Ready for Pickup",
+      "in_transit": "In Transit",
       "delivered": "Delivered",
       "processing": "Processing",
       "shipped": "Shipped",
@@ -73,6 +76,12 @@
       "confirmed": "Confirmed",
       "success": "Success",
       "failed": "Failed"
+    },
+    "departments": {
+      "men": "Men",
+      "women": "Women",
+      "kids": "Kids",
+      "unisex": "Unisex"
     }
   },
   "table": {
@@ -343,6 +352,7 @@
       "description": "Organize how listings are grouped and browsed.",
       "searchPlaceholder": "Search categories…",
       "filterStatus": "Status",
+      "filterDepartment": "Department",
       "topLevel": "— top level —",
       "addCategory": "Add Category",
       "emptyTitle": "No categories found",
@@ -350,6 +360,7 @@
       "columns": {
         "category": "Category",
         "parent": "Parent",
+        "department": "Department",
         "listings": "Listings",
         "status": "Status",
         "order": "Order"
@@ -402,6 +413,7 @@
       "chooseBanner": "Choose a banner…",
       "parentCategory": "Parent Category",
       "topLevel": "— Top level —",
+      "department": "Department",
       "displayOrder": "Display Order",
       "commission": "Commission %",
       "close": "Close",
@@ -451,6 +463,8 @@
       "searchPlaceholder": "Search products…",
       "filterStatus": "Status",
       "filterCategory": "Category",
+      "filterDepartment": "Department",
+      "variantsCount": "{{count}} variants",
       "addProduct": "Add Product",
       "emptyTitle": "No products found",
       "emptyDescription": "Try adjusting your search or filters.",
@@ -458,6 +472,7 @@
         "product": "Product",
         "vendor": "Vendor",
         "category": "Category",
+        "department": "Department",
         "price": "Price",
         "stock": "Stock",
         "status": "Status",
@@ -508,7 +523,11 @@
       "selectVendor": "— Select vendor —",
       "category": "Category",
       "selectCategory": "— Select category —",
+      "department": "Department",
       "price": "Price",
+      "compareAtPrice": "Compare-at price",
+      "compareAtPricePlaceholder": "Original price before discount",
+      "compareAtPriceHint": "Shown struck through with a discount badge when higher than the price.",
       "currency": "Currency",
       "currencyKWD": "KWD",
       "currencySAR": "SAR",
@@ -517,6 +536,10 @@
       "colors": "Colors",
       "colorsPlaceholder": "Beige, Charcoal, Sand",
       "stock": "Stock",
+      "stockDerivedHint": "Derived automatically from the variant stock below.",
+      "variants": "Variant stock",
+      "generateVariants": "Generate from sizes & colors",
+      "variantsHint": "Add sizes and colors, then generate per-variant stock.",
       "status": "Status",
       "close": "Close",
       "save": "Save",
@@ -553,11 +576,47 @@
       "placedOn": "Placed on {{date}}",
       "customer": "Customer",
       "deliveryAddress": "Delivery Address",
+      "assignedRider": "Assigned Rider",
+      "cancellation": "Cancellation",
+      "cancelledBy": "Cancelled by {{actor}}",
       "items": "Items ({{count}})",
       "qty": "Qty {{qty}}",
       "paymentSummary": "Payment Summary",
       "vendor": "Vendor",
       "total": "Total"
+    },
+    "cancelledByActor": {
+      "customer": "customer",
+      "vendor": "vendor",
+      "admin": "admin"
+    },
+    "actions": {
+      "updateStatus": "Update Status",
+      "cancel": "Cancel Order"
+    },
+    "statusDialog": {
+      "title": "Update {{order}}",
+      "description": "Move this order forward or assign a delivery rider.",
+      "newStatus": "New Status",
+      "riderName": "Rider Name",
+      "riderNamePlaceholder": "e.g. Samuel Jack",
+      "riderPhone": "Rider Phone",
+      "riderPhonePlaceholder": "+965 6000 0000",
+      "cancelledNote": "This order was cancelled and can no longer be updated.",
+      "close": "Close",
+      "save": "Save",
+      "toastTitle": "Order Updated",
+      "toastBody": "{{order}} marked as {{status}}."
+    },
+    "cancelDialog": {
+      "title": "Cancel {{order}}",
+      "description": "This cancels the order for the customer and every vendor split. A reason is required.",
+      "reasonLabel": "Cancellation reason",
+      "reasonPlaceholder": "e.g. Vendor out of stock, customer requested cancellation…",
+      "close": "Close",
+      "confirm": "Cancel Order",
+      "toastTitle": "Order Cancelled",
+      "toastBody": "{{order}} has been cancelled."
     }
   },
   "payments": {
@@ -843,6 +902,291 @@
       }
     }
   },
+  "vendor": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "orders": "Orders",
+      "notifications": "Notifications",
+      "profile": "Profile",
+      "earnings": "Earnings"
+    },
+    "dashboard": {
+      "topbarTitle": "Dashboard",
+      "stats": {
+        "totalOrders": "Total Orders",
+        "totalProducts": "Total Products",
+        "totalRevenue": "Total Revenue",
+        "pendingOrders": "Pending Orders",
+        "avgOrderValue": "Avg. Order Value"
+      },
+      "revenueChart": {
+        "title": "Revenue by Order",
+        "description": "Your share of each order placed on the marketplace",
+        "empty": "No orders yet"
+      },
+      "ordersByStatus": {
+        "title": "Orders by Status"
+      },
+      "recentOrders": {
+        "title": "Recent Orders",
+        "description": "Your 5 most recent orders",
+        "empty": "No orders yet"
+      },
+      "topProducts": {
+        "title": "Top Selling Products",
+        "description": "Your best-rated products",
+        "empty": "No products yet"
+      }
+    },
+    "products": {
+      "topbarTitle": "Products",
+      "list": {
+        "title": "My Products",
+        "description": "Manage the products you sell on the marketplace.",
+        "searchPlaceholder": "Search products…",
+        "filterStatus": "Status",
+        "filterDepartment": "Department",
+        "variantsCount": "{{count}} variants",
+        "addProduct": "Add New Product",
+        "emptyTitle": "No products found",
+        "emptyDescription": "Try adjusting your search or filters.",
+        "columns": {
+          "product": "Product",
+          "category": "Category",
+          "department": "Department",
+          "price": "Price",
+          "stock": "Stock",
+          "status": "Status",
+          "rating": "Rating"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "outOfStock": "Out of Stock"
+        },
+        "stats": {
+          "total": "Total Products",
+          "active": "Active",
+          "outOfStock": "Out of Stock",
+          "totalStockUnits": "Total Stock Units"
+        },
+        "toasts": {
+          "created": "\"{{name}}\" created.",
+          "edited": "\"{{name}}\" updated.",
+          "deleted": "\"{{name}}\" deleted.",
+          "deletedSelected_one": "Deleted {{count}} product.",
+          "deletedSelected_other": "Deleted {{count}} products."
+        },
+        "confirm": {
+          "deleteTitle": "Delete product?",
+          "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone.",
+          "deleteSelectedTitle_one": "Delete {{count}} product?",
+          "deleteSelectedTitle_other": "Delete {{count}} products?",
+          "deleteSelectedDescription": "This will permanently remove the selected products and cannot be undone."
+        }
+      },
+      "dialog": {
+        "addTitle": "Add New Product",
+        "editTitle": "Edit Product",
+        "addDescription": "Create a new product for your store.",
+        "editDescription": "Update details for \"{{name}}\".",
+        "nameEnglish": "Name (English)",
+        "nameEnglishPlaceholder": "Modular Sofa Set",
+        "nameArabic": "Name (Arabic)",
+        "nameArabicPlaceholder": "طقم كنب معياري",
+        "descriptionEnglish": "Description (English)",
+        "descriptionArabic": "Description (Arabic)",
+        "productImage": "Product Image",
+        "chooseImage": "Choose an image…",
+        "category": "Category",
+        "selectCategory": "— Select category —",
+        "department": "Department",
+        "price": "Price",
+        "compareAtPrice": "Compare-at price",
+        "compareAtPricePlaceholder": "Original price before discount",
+        "compareAtPriceHint": "Shown struck through with a discount badge when higher than the price.",
+        "currency": "Currency",
+        "currencyKWD": "KWD",
+        "currencySAR": "SAR",
+        "sizes": "Sizes",
+        "sizesPlaceholder": "S, M, L, XL",
+        "colors": "Colors",
+        "colorsPlaceholder": "Beige, Charcoal, Sand",
+        "stock": "Stock",
+        "stockDerivedHint": "Derived automatically from the variant stock below.",
+        "variants": "Variant stock",
+        "generateVariants": "Generate from sizes & colors",
+        "variantsHint": "Add sizes and colors, then generate per-variant stock.",
+        "status": "Status",
+        "close": "Close",
+        "save": "Save",
+        "add": "Add"
+      }
+    },
+    "orders": {
+      "topbarTitle": "Orders",
+      "title": "My Orders",
+      "description": "Orders that include your products.",
+      "searchPlaceholder": "Search by order # or customer…",
+      "filterStatus": "Status",
+      "emptyTitle": "No orders found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "order": "Order",
+        "items": "Items",
+        "total": "Total",
+        "status": "Status",
+        "date": "Date"
+      },
+      "stats": {
+        "total": "Total Orders",
+        "revenue": "Revenue",
+        "pending": "Pending"
+      },
+      "toasts": {
+        "statusUpdated": "Order {{order}} marked as {{status}}."
+      },
+      "details": {
+        "placedOn": "Placed on {{date}}",
+        "customer": "Customer",
+        "deliveryAddress": "Delivery Address",
+        "items": "Items ({{count}})",
+        "qty": "Qty {{qty}}",
+        "yourTotal": "Your Total",
+        "yourStatus": "Your status",
+        "updateStatus": "Update Order Status",
+        "statusLockedNote": "This order has moved past pickup and is now managed by admin/dispatch.",
+        "editTitle": "Edit {{order}}",
+        "save": "Save",
+        "payment": "Payment",
+        "paymentStatus": "Payment Status",
+        "orderSubtotal": "Order Subtotal",
+        "shippingFee": "Shipping Fee",
+        "orderTotal": "Order Total"
+      }
+    },
+    "profile": {
+      "topbarTitle": "Profile",
+      "title": "Profile",
+      "description": "Manage your store, account details, and password.",
+      "save": "Save Changes",
+      "savedToast": {
+        "title": "Profile Updated",
+        "body": "Your profile has been saved."
+      },
+      "sections": {
+        "generalInfo": "General Info",
+        "accountStatus": "Account Status",
+        "verification": "Verification & Documents"
+      },
+      "fields": {
+        "logo": "Store Logo",
+        "nameEnglish": "Store Name (English)",
+        "nameArabic": "Store Name (Arabic)",
+        "description": "Store Description",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "ownerName": "Owner Name",
+        "category": "Category",
+        "city": "City",
+        "commission": "Commission",
+        "memberSince": "Member Since",
+        "approvedOn": "Approved On",
+        "rating": "Rating",
+        "businessLicense": "Business License",
+        "taxId": "Tax ID",
+        "bankName": "Bank Name",
+        "accountNumber": "Account Number",
+        "documents": "Documents"
+      },
+      "security": {
+        "title": "Change Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "updateButton": "Update Password",
+        "updatedToast": {
+          "title": "Password Updated",
+          "body": "Your password has been changed."
+        }
+      }
+    },
+    "notifications": {
+      "topbarTitle": "Notifications",
+      "title": "Notifications",
+      "description": "Updates about your orders and products.",
+      "searchPlaceholder": "Search notifications…",
+      "filterType": "Type",
+      "filterStatus": "Status",
+      "emptyTitle": "No notifications",
+      "emptyDescription": "You're all caught up.",
+      "columns": {
+        "notification": "Notification",
+        "type": "Type",
+        "priority": "Priority",
+        "received": "Received",
+        "status": "Status"
+      },
+      "stats": {
+        "total": "Total",
+        "unread": "Unread",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "toasts": {
+        "deleted": "\"{{title}}\" deleted."
+      },
+      "templates": {
+        "newOrder": {
+          "title": "New order {{orderNumber}}",
+          "message": "You received a new order worth {{amount}} KWD."
+        },
+        "lowStock": {
+          "title": "Low stock: {{name}}",
+          "message": "Only {{stock}} left in stock — consider restocking soon."
+        },
+        "outOfStock": {
+          "title": "Out of stock: {{name}}",
+          "message": "This product is out of stock and hidden from customers."
+        },
+        "welcome": {
+          "title": "Welcome to your vendor dashboard",
+          "message": "Manage your products, orders, and store profile from here."
+        }
+      }
+    },
+    "earnings": {
+      "topbarTitle": "Earnings",
+      "title": "Earnings",
+      "description": "Your payout breakdown, order by order.",
+      "searchPlaceholder": "Search by order #…",
+      "filterStatus": "Payout Status",
+      "emptyTitle": "No earnings yet",
+      "emptyDescription": "Earnings appear here once you receive orders.",
+      "payoutNote": "Payouts for delivered orders are transferred to {{bankName}} (···{{accountNumber}}) on your platform's regular payout schedule.",
+      "columns": {
+        "order": "Order",
+        "date": "Date",
+        "gross": "Gross Amount",
+        "commission": "Commission",
+        "net": "Net Earning",
+        "payoutStatus": "Payout Status"
+      },
+      "payoutStatus": {
+        "paid": "Paid",
+        "pending": "Pending"
+      },
+      "stats": {
+        "grossEarnings": "Gross Earnings",
+        "commissionDeducted": "Commission Deducted",
+        "commissionRateHint": "at {{rate}} commission rate",
+        "netPayout": "Net Payout",
+        "pendingPayout": "Pending Payout"
+      }
+    }
+  },
   "analytics": {
     "stats": {
       "totalOrders": "Total Orders",
@@ -892,6 +1236,9 @@
       "critical": "Critical",
       "needAttention": "need attention",
       "actionRequired": "action required"
+    },
+    "toasts": {
+      "deleted": "\"{{title}}\" deleted."
     }
   },
   "notificationsSend": {
@@ -907,8 +1254,8 @@
       "recipientOptions": {
         "all": "All Users",
         "admins": "Admins only",
-        "users": "Regular Users only",
-        "editors": "Editors only"
+        "vendors": "Vendors only",
+        "users": "Regular Users only"
       },
       "type": "Type",
       "priority": "Priority",
@@ -952,6 +1299,18 @@
       "notifications": "Notifications",
       "security": "Security",
       "appearance": "Appearance"
+    },
+    "platformConfig": {
+      "title": "Platform Configuration",
+      "description": "Live settings from the ADMIN_SETTINGS store — shipping fee, commission defaults, payment gateway, OTP/session expiry, and more."
+    },
+    "categories": {
+      "general": "General",
+      "shipping": "Shipping",
+      "commission": "Commission",
+      "payment": "Payment",
+      "sms": "SMS",
+      "auth": "Authentication"
     },
     "general": {
       "title": "General Settings",
@@ -1031,7 +1390,12 @@
       "register": "Register",
       "successTitle": "Login Successful",
       "successBody": "Welcome back!",
-      "failTitle": "Login Failed"
+      "failTitle": "Login Failed",
+      "demoAccounts": "Or try a demo account",
+      "demoRole": {
+        "admin": "Admin",
+        "vendor": "Vendor"
+      }
     },
     "register": {
       "title": "Create an Account",

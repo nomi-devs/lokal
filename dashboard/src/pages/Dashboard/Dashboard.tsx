@@ -66,12 +66,28 @@ const revenueOptions: any = {
 // ── Orders by status ─────────────────────────────────────────────────────────
 function buildOrdersByStatusData(label: string): any {
   return {
-    labels: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+    labels: [
+      "Pending",
+      "Confirmed",
+      "Preparing",
+      "Ready for Pickup",
+      "In Transit",
+      "Delivered",
+      "Cancelled",
+    ],
     datasets: [
       {
         label,
-        data: [42, 68, 55, 312, 18],
-        backgroundColor: ["#f59e0b", "#3b82f6", "#4a9b8e", "#10b981", "#ef4444"],
+        data: [42, 68, 51, 39, 55, 312, 18],
+        backgroundColor: [
+          "#f59e0b",
+          "#3b82f6",
+          "#6366f1",
+          "#d946ef",
+          "#8b5cf6",
+          "#10b981",
+          "#ef4444",
+        ],
         borderRadius: 6,
         maxBarThickness: 40,
       },

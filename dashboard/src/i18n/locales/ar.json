@@ -51,6 +51,9 @@
       "draft": "مسودة",
       "archived": "مؤرشف",
       "cancelled": "ملغي",
+      "preparing": "قيد التحضير",
+      "ready_for_pickup": "جاهز للاستلام",
+      "in_transit": "في الطريق",
       "delivered": "تم التوصيل",
       "processing": "قيد المعالجة",
       "shipped": "تم الشحن",
@@ -73,6 +76,12 @@
       "confirmed": "مؤكد",
       "success": "نجاح",
       "failed": "فشل"
+    },
+    "departments": {
+      "men": "رجال",
+      "women": "نساء",
+      "kids": "أطفال",
+      "unisex": "للجميع"
     }
   },
   "table": {
@@ -343,6 +352,7 @@
       "description": "تنظيم كيفية تجميع العناصر وتصفحها.",
       "searchPlaceholder": "البحث في الفئات…",
       "filterStatus": "الحالة",
+      "filterDepartment": "القسم",
       "topLevel": "— المستوى الأعلى —",
       "addCategory": "إضافة فئة",
       "emptyTitle": "لم يتم العثور على فئات",
@@ -350,6 +360,7 @@
       "columns": {
         "category": "الفئة",
         "parent": "الفئة الأم",
+        "department": "القسم",
         "listings": "العناصر",
         "status": "الحالة",
         "order": "الترتيب"
@@ -402,6 +413,7 @@
       "chooseBanner": "اختر بانر…",
       "parentCategory": "الفئة الأم",
       "topLevel": "— المستوى الأعلى —",
+      "department": "القسم",
       "displayOrder": "ترتيب العرض",
       "commission": "نسبة العمولة %",
       "close": "إغلاق",
@@ -451,6 +463,8 @@
       "searchPlaceholder": "بحث عن منتجات…",
       "filterStatus": "الحالة",
       "filterCategory": "الفئة",
+      "filterDepartment": "القسم",
+      "variantsCount": "{{count}} متغيرات",
       "addProduct": "إضافة منتج",
       "emptyTitle": "لا توجد منتجات",
       "emptyDescription": "حاول تعديل البحث أو الفلاتر.",
@@ -458,6 +472,7 @@
         "product": "المنتج",
         "vendor": "البائع",
         "category": "الفئة",
+        "department": "القسم",
         "price": "السعر",
         "stock": "المخزون",
         "status": "الحالة",
@@ -508,7 +523,11 @@
       "selectVendor": "— اختر بائعًا —",
       "category": "الفئة",
       "selectCategory": "— اختر فئة —",
+      "department": "القسم",
       "price": "السعر",
+      "compareAtPrice": "السعر قبل الخصم",
+      "compareAtPricePlaceholder": "السعر الأصلي قبل الخصم",
+      "compareAtPriceHint": "يُعرض بخط مشطوب مع شارة خصم عند أن يكون أعلى من السعر الحالي.",
       "currency": "العملة",
       "currencyKWD": "دينار كويتي",
       "currencySAR": "ريال سعودي",
@@ -517,6 +536,10 @@
       "colors": "الألوان",
       "colorsPlaceholder": "بيج، رمادي غامق، رملي",
       "stock": "المخزون",
+      "stockDerivedHint": "يُحسب تلقائيًا من مخزون المتغيرات أدناه.",
+      "variants": "مخزون المتغيرات",
+      "generateVariants": "إنشاء من المقاسات والألوان",
+      "variantsHint": "أضف المقاسات والألوان، ثم أنشئ مخزون كل متغير.",
       "status": "الحالة",
       "close": "إغلاق",
       "save": "حفظ",
@@ -553,11 +576,47 @@
       "placedOn": "تم الطلب في {{date}}",
       "customer": "العميل",
       "deliveryAddress": "عنوان التوصيل",
+      "assignedRider": "المندوب المعيّن",
+      "cancellation": "الإلغاء",
+      "cancelledBy": "أُلغي بواسطة {{actor}}",
       "items": "العناصر ({{count}})",
       "qty": "الكمية {{qty}}",
       "paymentSummary": "ملخص الدفع",
       "vendor": "المورد",
       "total": "الإجمالي"
+    },
+    "cancelledByActor": {
+      "customer": "العميل",
+      "vendor": "المورد",
+      "admin": "المسؤول"
+    },
+    "actions": {
+      "updateStatus": "تحديث الحالة",
+      "cancel": "إلغاء الطلب"
+    },
+    "statusDialog": {
+      "title": "تحديث {{order}}",
+      "description": "قدّم هذا الطلب خطوة أخرى أو عيّن مندوب توصيل.",
+      "newStatus": "الحالة الجديدة",
+      "riderName": "اسم المندوب",
+      "riderNamePlaceholder": "مثال: سامويل جاك",
+      "riderPhone": "هاتف المندوب",
+      "riderPhonePlaceholder": "+965 6000 0000",
+      "cancelledNote": "تم إلغاء هذا الطلب ولا يمكن تحديثه بعد الآن.",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "toastTitle": "تم تحديث الطلب",
+      "toastBody": "تم تحديد {{order}} كـ {{status}}."
+    },
+    "cancelDialog": {
+      "title": "إلغاء {{order}}",
+      "description": "سيؤدي هذا إلى إلغاء الطلب للعميل ولكل حصة مورد فيه. السبب مطلوب.",
+      "reasonLabel": "سبب الإلغاء",
+      "reasonPlaceholder": "مثال: نفدت الكمية لدى المورد، طلب العميل الإلغاء…",
+      "close": "إغلاق",
+      "confirm": "إلغاء الطلب",
+      "toastTitle": "تم إلغاء الطلب",
+      "toastBody": "تم إلغاء {{order}}."
     }
   },
   "payments": {
@@ -843,6 +902,291 @@
       }
     }
   },
+  "vendor": {
+    "sidebar": {
+      "dashboard": "لوحة التحكم",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "notifications": "الإشعارات",
+      "profile": "الملف الشخصي",
+      "earnings": "الأرباح"
+    },
+    "dashboard": {
+      "topbarTitle": "لوحة التحكم",
+      "stats": {
+        "totalOrders": "إجمالي الطلبات",
+        "totalProducts": "إجمالي المنتجات",
+        "totalRevenue": "إجمالي الإيرادات",
+        "pendingOrders": "الطلبات المعلّقة",
+        "avgOrderValue": "متوسط قيمة الطلب"
+      },
+      "revenueChart": {
+        "title": "الإيرادات حسب الطلب",
+        "description": "حصتك من كل طلب تم تقديمه في السوق",
+        "empty": "لا توجد طلبات بعد"
+      },
+      "ordersByStatus": {
+        "title": "الطلبات حسب الحالة"
+      },
+      "recentOrders": {
+        "title": "أحدث الطلبات",
+        "description": "آخر 5 طلبات لك",
+        "empty": "لا توجد طلبات بعد"
+      },
+      "topProducts": {
+        "title": "المنتجات الأكثر مبيعًا",
+        "description": "منتجاتك الأعلى تقييمًا",
+        "empty": "لا توجد منتجات بعد"
+      }
+    },
+    "products": {
+      "topbarTitle": "المنتجات",
+      "list": {
+        "title": "منتجاتي",
+        "description": "إدارة المنتجات التي تبيعها في السوق.",
+        "searchPlaceholder": "بحث عن منتجات…",
+        "filterStatus": "الحالة",
+        "filterDepartment": "القسم",
+        "variantsCount": "{{count}} متغيرات",
+        "addProduct": "إضافة منتج",
+        "emptyTitle": "لا توجد منتجات",
+        "emptyDescription": "حاول تعديل البحث أو الفلاتر.",
+        "columns": {
+          "product": "المنتج",
+          "category": "الفئة",
+          "department": "القسم",
+          "price": "السعر",
+          "stock": "المخزون",
+          "status": "الحالة",
+          "rating": "التقييم"
+        },
+        "status": {
+          "active": "نشط",
+          "inactive": "غير نشط",
+          "outOfStock": "نفدت الكمية"
+        },
+        "stats": {
+          "total": "إجمالي المنتجات",
+          "active": "نشط",
+          "outOfStock": "نفدت الكمية",
+          "totalStockUnits": "إجمالي وحدات المخزون"
+        },
+        "toasts": {
+          "created": "تم إنشاء \"{{name}}\".",
+          "edited": "تم تحديث \"{{name}}\".",
+          "deleted": "تم حذف \"{{name}}\".",
+          "deletedSelected_one": "تم حذف {{count}} منتج.",
+          "deletedSelected_other": "تم حذف {{count}} منتجات."
+        },
+        "confirm": {
+          "deleteTitle": "حذف المنتج؟",
+          "deleteDescription": "سيتم حذف \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك.",
+          "deleteSelectedTitle_one": "حذف {{count}} منتج؟",
+          "deleteSelectedTitle_other": "حذف {{count}} منتجات؟",
+          "deleteSelectedDescription": "سيتم حذف المنتجات المحددة نهائيًا ولا يمكن التراجع عن ذلك."
+        }
+      },
+      "dialog": {
+        "addTitle": "إضافة منتج جديد",
+        "editTitle": "تعديل المنتج",
+        "addDescription": "إنشاء منتج جديد لمتجرك.",
+        "editDescription": "تحديث تفاصيل \"{{name}}\".",
+        "nameEnglish": "الاسم (إنجليزي)",
+        "nameEnglishPlaceholder": "طقم كنب معياري",
+        "nameArabic": "الاسم (عربي)",
+        "nameArabicPlaceholder": "طقم كنب معياري",
+        "descriptionEnglish": "الوصف (إنجليزي)",
+        "descriptionArabic": "الوصف (عربي)",
+        "productImage": "صورة المنتج",
+        "chooseImage": "اختر صورة…",
+        "category": "الفئة",
+        "selectCategory": "— اختر فئة —",
+        "department": "القسم",
+        "price": "السعر",
+        "compareAtPrice": "السعر قبل الخصم",
+        "compareAtPricePlaceholder": "السعر الأصلي قبل الخصم",
+        "compareAtPriceHint": "يُعرض بخط مشطوب مع شارة خصم عند أن يكون أعلى من السعر الحالي.",
+        "currency": "العملة",
+        "currencyKWD": "دينار كويتي",
+        "currencySAR": "ريال سعودي",
+        "sizes": "المقاسات",
+        "sizesPlaceholder": "S, M, L, XL",
+        "colors": "الألوان",
+        "colorsPlaceholder": "بيج، رمادي غامق، رملي",
+        "stock": "المخزون",
+        "stockDerivedHint": "يُحسب تلقائيًا من مخزون المتغيرات أدناه.",
+        "variants": "مخزون المتغيرات",
+        "generateVariants": "إنشاء من المقاسات والألوان",
+        "variantsHint": "أضف المقاسات والألوان، ثم أنشئ مخزون كل متغير.",
+        "status": "الحالة",
+        "close": "إغلاق",
+        "save": "حفظ",
+        "add": "إضافة"
+      }
+    },
+    "orders": {
+      "topbarTitle": "الطلبات",
+      "title": "طلباتي",
+      "description": "الطلبات التي تحتوي على منتجاتك.",
+      "searchPlaceholder": "البحث برقم الطلب أو العميل…",
+      "filterStatus": "الحالة",
+      "emptyTitle": "لم يتم العثور على طلبات",
+      "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+      "columns": {
+        "order": "الطلب",
+        "items": "العناصر",
+        "total": "الإجمالي",
+        "status": "الحالة",
+        "date": "التاريخ"
+      },
+      "stats": {
+        "total": "إجمالي الطلبات",
+        "revenue": "الإيرادات",
+        "pending": "قيد الانتظار"
+      },
+      "toasts": {
+        "statusUpdated": "تم تحديث حالة الطلب {{order}} إلى {{status}}."
+      },
+      "details": {
+        "placedOn": "تم الطلب في {{date}}",
+        "customer": "العميل",
+        "deliveryAddress": "عنوان التوصيل",
+        "items": "العناصر ({{count}})",
+        "qty": "الكمية {{qty}}",
+        "yourTotal": "إجمالي حصتك",
+        "yourStatus": "حالتك",
+        "updateStatus": "تحديث حالة الطلب",
+        "statusLockedNote": "تجاوز هذا الطلب مرحلة الاستلام وأصبح الآن تحت إدارة المسؤول/التوصيل.",
+        "editTitle": "تعديل {{order}}",
+        "save": "حفظ",
+        "payment": "الدفع",
+        "paymentStatus": "حالة الدفع",
+        "orderSubtotal": "المجموع الفرعي للطلب",
+        "shippingFee": "رسوم الشحن",
+        "orderTotal": "إجمالي الطلب"
+      }
+    },
+    "profile": {
+      "topbarTitle": "الملف الشخصي",
+      "title": "الملف الشخصي",
+      "description": "إدارة بيانات متجرك وحسابك وكلمة المرور.",
+      "save": "حفظ التغييرات",
+      "savedToast": {
+        "title": "تم تحديث الملف الشخصي",
+        "body": "تم حفظ ملفك الشخصي."
+      },
+      "sections": {
+        "generalInfo": "المعلومات العامة",
+        "accountStatus": "حالة الحساب",
+        "verification": "التحقق والمستندات"
+      },
+      "fields": {
+        "logo": "شعار المتجر",
+        "nameEnglish": "اسم المتجر (إنجليزي)",
+        "nameArabic": "اسم المتجر (عربي)",
+        "description": "وصف المتجر",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "address": "العنوان",
+        "ownerName": "اسم المالك",
+        "category": "الفئة",
+        "city": "المدينة",
+        "commission": "العمولة",
+        "memberSince": "عضو منذ",
+        "approvedOn": "تمت الموافقة في",
+        "rating": "التقييم",
+        "businessLicense": "الرخصة التجارية",
+        "taxId": "الرقم الضريبي",
+        "bankName": "اسم البنك",
+        "accountNumber": "رقم الحساب",
+        "documents": "المستندات"
+      },
+      "security": {
+        "title": "تغيير كلمة المرور",
+        "currentPassword": "كلمة المرور الحالية",
+        "newPassword": "كلمة المرور الجديدة",
+        "confirmPassword": "تأكيد كلمة المرور الجديدة",
+        "updateButton": "تحديث كلمة المرور",
+        "updatedToast": {
+          "title": "تم تحديث كلمة المرور",
+          "body": "تم تغيير كلمة المرور الخاصة بك."
+        }
+      }
+    },
+    "notifications": {
+      "topbarTitle": "الإشعارات",
+      "title": "الإشعارات",
+      "description": "تحديثات حول طلباتك ومنتجاتك.",
+      "searchPlaceholder": "بحث في الإشعارات…",
+      "filterType": "النوع",
+      "filterStatus": "الحالة",
+      "emptyTitle": "لا توجد إشعارات",
+      "emptyDescription": "لا يوجد جديد حاليًا.",
+      "columns": {
+        "notification": "الإشعار",
+        "type": "النوع",
+        "priority": "الأولوية",
+        "received": "تاريخ الاستلام",
+        "status": "الحالة"
+      },
+      "stats": {
+        "total": "الإجمالي",
+        "unread": "غير مقروء",
+        "high": "مرتفع",
+        "critical": "حرج"
+      },
+      "toasts": {
+        "deleted": "تم حذف \"{{title}}\"."
+      },
+      "templates": {
+        "newOrder": {
+          "title": "طلب جديد {{orderNumber}}",
+          "message": "استلمت طلبًا جديدًا بقيمة {{amount}} د.ك."
+        },
+        "lowStock": {
+          "title": "مخزون منخفض: {{name}}",
+          "message": "تبقّى {{stock}} فقط في المخزون — يُفضّل إعادة التخزين قريبًا."
+        },
+        "outOfStock": {
+          "title": "نفدت الكمية: {{name}}",
+          "message": "هذا المنتج نفدت كميته وأصبح مخفيًا عن العملاء."
+        },
+        "welcome": {
+          "title": "مرحبًا بك في لوحة تحكم البائع",
+          "message": "أدر منتجاتك وطلباتك وملف متجرك من هنا."
+        }
+      }
+    },
+    "earnings": {
+      "topbarTitle": "الأرباح",
+      "title": "الأرباح",
+      "description": "تفصيل مدفوعاتك، طلبًا بطلب.",
+      "searchPlaceholder": "بحث برقم الطلب…",
+      "filterStatus": "حالة الدفع",
+      "emptyTitle": "لا توجد أرباح بعد",
+      "emptyDescription": "ستظهر الأرباح هنا بمجرد استلامك للطلبات.",
+      "payoutNote": "تُحوَّل مدفوعات الطلبات المُسلَّمة إلى {{bankName}} (···{{accountNumber}}) وفق جدول الدفع المعتمد في المنصة.",
+      "columns": {
+        "order": "الطلب",
+        "date": "التاريخ",
+        "gross": "المبلغ الإجمالي",
+        "commission": "العمولة",
+        "net": "صافي الربح",
+        "payoutStatus": "حالة الدفع"
+      },
+      "payoutStatus": {
+        "paid": "تم الدفع",
+        "pending": "قيد الانتظار"
+      },
+      "stats": {
+        "grossEarnings": "إجمالي الأرباح",
+        "commissionDeducted": "العمولة المخصومة",
+        "commissionRateHint": "بمعدل عمولة {{rate}}",
+        "netPayout": "صافي المدفوعات",
+        "pendingPayout": "مدفوعات قيد الانتظار"
+      }
+    }
+  },
   "analytics": {
     "stats": {
       "totalOrders": "إجمالي الطلبات",
@@ -892,6 +1236,9 @@
       "critical": "حرج",
       "needAttention": "يتطلب الاهتمام",
       "actionRequired": "يتطلب إجراءً"
+    },
+    "toasts": {
+      "deleted": "تم حذف \"{{title}}\"."
     }
   },
   "notificationsSend": {
@@ -907,8 +1254,8 @@
       "recipientOptions": {
         "all": "جميع المستخدمين",
         "admins": "المسؤولون فقط",
-        "users": "المستخدمون العاديون فقط",
-        "editors": "المحررون فقط"
+        "vendors": "الموردون فقط",
+        "users": "المستخدمون العاديون فقط"
       },
       "type": "النوع",
       "priority": "الأولوية",
@@ -952,6 +1299,18 @@
       "notifications": "الإشعارات",
       "security": "الأمان",
       "appearance": "المظهر"
+    },
+    "platformConfig": {
+      "title": "تكوين المنصة",
+      "description": "إعدادات حيّة من مخزن ADMIN_SETTINGS — رسوم الشحن، العمولة الافتراضية، بوابة الدفع، صلاحية رمز التحقق/الجلسة، والمزيد."
+    },
+    "categories": {
+      "general": "عام",
+      "shipping": "الشحن",
+      "commission": "العمولة",
+      "payment": "الدفع",
+      "sms": "الرسائل النصية",
+      "auth": "المصادقة"
     },
     "general": {
       "title": "الإعدادات العامة",
@@ -1031,7 +1390,12 @@
       "register": "إنشاء حساب",
       "successTitle": "تم تسجيل الدخول بنجاح",
       "successBody": "مرحبًا بعودتك!",
-      "failTitle": "فشل تسجيل الدخول"
+      "failTitle": "فشل تسجيل الدخول",
+      "demoAccounts": "أو جرّب حسابًا تجريبيًا",
+      "demoRole": {
+        "admin": "مسؤول",
+        "vendor": "بائع"
+      }
     },
     "register": {
       "title": "إنشاء حساب",

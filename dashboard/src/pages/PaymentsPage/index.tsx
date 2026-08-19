@@ -46,6 +46,7 @@ const statusStyle: Record<PaymentStatus, string> = {
   success: "text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30",
   pending: "text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30",
   failed: "text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30",
+  refunded: "text-slate-700 bg-slate-100 dark:text-slate-300 dark:bg-slate-800",
 };
 
 const methodIcon: Record<PaymentMethod, typeof CreditCard> = {
@@ -235,6 +236,7 @@ export default function PaymentsPage() {
               { label: t("common.status.pending"), value: "pending" },
               { label: t("common.status.success"), value: "success" },
               { label: t("common.status.failed"), value: "failed" },
+              { label: t("common.status.refunded"), value: "refunded" },
             ],
           },
           {

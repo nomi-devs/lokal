@@ -16,8 +16,8 @@ export const APP_CONFIG = {
 };
 
 export const AUTH_CONFIG = {
-  /** Where to land after a successful login */
-  loginRedirect: "/overview",
+  /** Where to land after a successful login — actual redirect is role-based, see src/routes/roleHome.ts */
+  loginRedirect: "/admin/overview",
   /** Where to land after logout (handled by PublicRoute) */
   logoutRedirect: "/login",
 } as const;

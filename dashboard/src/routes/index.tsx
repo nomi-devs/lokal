@@ -11,11 +11,13 @@ import NotFoundPage from "@/pages/NotFoundPage";
 const AppRoutes = () => {
   return (
     <Routes>
-      {routes.map(({ path, element, protected: isProtected, publicOnly }) => {
+      {routes.map(({ path, element, protected: isProtected, publicOnly, role }) => {
         let finalElement = element;
 
         if (isProtected) {
-          finalElement = <ProtectedRoute>{element}</ProtectedRoute>;
+          finalElement = (
+            <ProtectedRoute allowedRoles={role ? [role] : undefined}>{element}</ProtectedRoute>
+          );
         } else if (publicOnly) {
           finalElement = <PublicRoute>{element}</PublicRoute>;
         }

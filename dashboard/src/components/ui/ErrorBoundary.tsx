@@ -66,7 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Try again
             </button>
             <a
-              href="/overview"
+              href="/"
               className="flex-1 flex items-center justify-center gap-2 h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               <Home className="w-4 h-4" />

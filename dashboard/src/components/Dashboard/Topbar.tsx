@@ -1,5 +1,6 @@
 import { Menu, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import type { SidebarItem } from "./types";
 import { useDashboard } from "./context";
@@ -9,9 +10,11 @@ import UserMenu from "./UserMenu";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LanguageToggle } from "@/components/ui/LanguageToggle";
 import { Button } from "@/components/ui/button";
+import type { RootState } from "@/store";
 
 export default function Topbar({ title, items }: { title?: string; items: SidebarItem[] }) {
   const { isDesktop, toggleSidebar } = useDashboard();
+  const role = useSelector((state: RootState) => state.auth.user?.role);
 
   return (
     <div className="flex items-center justify-between bg-sidebar text-sidebar-foreground border-b border-sidebar-border px-4 h-16 min-h-16 shrink-0 sticky top-0 z-10">
@@ -39,7 +42,7 @@ export default function Topbar({ title, items }: { title?: string; items: Sideba
           asChild
           className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
-          <Link to="/notifications">
+          <Link to={role === "vendor" ? "/vendor/notifications" : "/admin/notifications"}>
             <Bell />
           </Link>
         </Button>

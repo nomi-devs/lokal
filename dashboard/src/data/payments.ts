@@ -2,7 +2,7 @@
 // Shape mirrors the PAYMENTS collection in the ERD (1:1 with an order).
 export type PaymentMethod = "knet" | "credit_card" | "debit_card";
 export type PaymentGateway = "myfatoorah" | "tap";
-export type PaymentStatus = "pending" | "success" | "failed";
+export type PaymentStatus = "pending" | "success" | "failed" | "refunded";
 
 export type Payment = {
   id: number;
