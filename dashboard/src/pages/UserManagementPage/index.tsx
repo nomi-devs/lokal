@@ -26,7 +26,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
-import type { ColumnDef } from "@/components/ui/DataTable";
+import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import { users as initialUsers, type User } from "@/data/users";
@@ -71,65 +71,6 @@ const avatarColor = (name: string) => {
 
   return colors[name.charCodeAt(0) % colors.length];
 };
-
-// ── Inline action icons (outside component) ───────────────────────────────────
-interface ActionIconsProps {
-  row: User;
-  onView: (u: User) => void;
-  onEdit: (u: User) => void;
-  onPassword: (u: User) => void;
-  onSuspend: (u: User) => void;
-  onDelete: (u: User) => void;
-}
-
-function ActionIcons({ row, onView, onEdit, onPassword, onSuspend, onDelete }: ActionIconsProps) {
-  const { t } = useTranslation();
-  const isSuspended = row.status === "suspended";
-
-  return (
-    <div className="flex items-center justify-end gap-1">
-      <button
-        title={t("common.actions.view")}
-        onClick={() => onView(row)}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
-      >
-        <Eye className="w-4 h-4" />
-      </button>
-      <button
-        title={t("common.actions.edit")}
-        onClick={() => onEdit(row)}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-      >
-        <Pencil className="w-4 h-4" />
-      </button>
-      <button
-        title={t("users.view.changePasswordTitle")}
-        onClick={() => onPassword(row)}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-      >
-        <KeyRound className="w-4 h-4" />
-      </button>
-      <button
-        title={isSuspended ? t("common.actions.activate") : t("common.actions.suspend")}
-        onClick={() => onSuspend(row)}
-        className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-          isSuspended
-            ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-            : "text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-        }`}
-      >
-        {isSuspended ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
-      </button>
-      <button
-        title={t("users.actions.delete")}
-        onClick={() => onDelete(row)}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function UserManagementPage() {
@@ -326,20 +267,43 @@ export default function UserManagementPage() {
         );
       },
     },
+  ];
+
+  const userRowActions: RowAction<User>[] = [
     {
-      key: "id",
-      header: t("vendors.columns.actions"),
-      align: "right",
-      render: (_, row) => (
-        <ActionIcons
-          row={row}
-          onView={setViewTarget}
-          onEdit={setEditTarget}
-          onPassword={setPasswordTarget}
-          onSuspend={setSuspendTarget}
-          onDelete={setDeleteTarget}
-        />
-      ),
+      label: t("common.actions.view"),
+      icon: Eye,
+      onClick: setViewTarget,
+    },
+    {
+      label: t("common.actions.edit"),
+      icon: Pencil,
+      onClick: setEditTarget,
+    },
+    {
+      label: t("users.view.changePasswordTitle"),
+      icon: KeyRound,
+      onClick: setPasswordTarget,
+    },
+    {
+      label: t("common.actions.activate"),
+      icon: ShieldCheck,
+      variant: "warning",
+      onClick: setSuspendTarget,
+      hidden: (r) => r.status !== "suspended",
+    },
+    {
+      label: t("common.actions.suspend"),
+      icon: ShieldOff,
+      variant: "warning",
+      onClick: setSuspendTarget,
+      hidden: (r) => r.status === "suspended",
+    },
+    {
+      label: t("users.actions.delete"),
+      icon: Trash2,
+      variant: "destructive",
+      onClick: setDeleteTarget,
     },
   ];
 
@@ -469,6 +433,8 @@ export default function UserManagementPage() {
           description={t("users.description")}
           data={activeUsers}
           columns={activeColumns}
+          rowActions={userRowActions}
+          rowActionsVariant="inline"
           rowKey="id"
           searchable
           searchPlaceholder={t("users.searchPlaceholder")}

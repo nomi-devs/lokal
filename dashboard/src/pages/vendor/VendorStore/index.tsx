@@ -31,6 +31,7 @@ import { vendorSidebarItems } from "@/constants";
 import { toast } from "@/components/ui/Toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/store";
 import { initialVendors, type VendorStatus } from "@/data/vendors";
@@ -307,13 +308,10 @@ export default function VendorStore() {
             </div>
 
             <div className="flex justify-end pt-1">
-              <button
-                type="submit"
-                className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-semibold transition-colors shrink-0"
-              >
+              <Button type="submit" size="lg" className="shrink-0">
                 <Save className="w-4 h-4" />
                 {t("vendor.profile.save")}
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -403,13 +401,10 @@ export default function VendorStore() {
             </div>
 
             <div>
-              <button
-                type="submit"
-                className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold transition-colors w-fit"
-              >
+              <Button type="submit" size="lg" className="w-fit">
                 <KeyRound className="w-4 h-4" />
                 {t("vendor.profile.security.updateButton")}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

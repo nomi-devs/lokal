@@ -18,6 +18,8 @@ import type { RowData, ColumnDef, RowAction, DataTableProps } from "./types";
 
 import { cn } from "@/lib/utils";
 import StatsCard from "@/components/ui/StatsCard";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Sort icon ────────────────────────────────────────────────────────────────
 
@@ -236,22 +238,11 @@ function Toolbar<T extends RowData>({
         const disabled = action.requiresSelection && selectedRows.length === 0;
 
         return (
-          <button
+          <Button
             key={action.label}
+            variant={action.variant}
             disabled={disabled}
             onClick={() => action.onClick(selectedRows)}
-            className={cn(
-              "inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium transition-colors",
-              "border focus:outline-none focus:ring-2 focus:ring-ring",
-              action.variant === "destructive"
-                ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90"
-                : action.variant === "ghost"
-                  ? "border-transparent hover:bg-muted"
-                  : action.variant === "outline" || !action.variant
-                    ? "bg-background hover:bg-muted"
-                    : "bg-primary text-primary-foreground border-primary hover:bg-primary/90",
-              disabled && "opacity-40 cursor-not-allowed"
-            )}
           >
             {Icon && <Icon className="h-4 w-4" />}
             {action.label}
@@ -260,7 +251,7 @@ function Toolbar<T extends RowData>({
                 {selectedRows.length}
               </span>
             )}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -273,10 +264,10 @@ function TableSkeleton({ cols, rows }: { cols: number; rows?: number }) {
   return (
     <>
       {Array.from({ length: rows ?? 5 }).map((_, r) => (
-        <tr key={r} className="animate-pulse border-b">
+        <tr key={r} className="border-b">
           {Array.from({ length: cols }).map((_, c) => (
             <td key={c} className="px-4 py-3">
-              <div className="h-4 bg-muted rounded w-3/4" />
+              <Skeleton className="h-4 w-3/4" />
             </td>
           ))}
         </tr>

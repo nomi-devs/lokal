@@ -65,52 +65,6 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
-// ── Inline action icons (outside component to avoid hook issues) ──────────────
-interface ActionIconsProps {
-  row: Vendor;
-  onView: (v: Vendor) => void;
-  onEdit: (v: Vendor) => void;
-  onPassword: (v: Vendor) => void;
-  onDelete: (v: Vendor) => void;
-}
-
-function ActionIcons({ row, onView, onEdit, onPassword, onDelete }: ActionIconsProps) {
-  const { t } = useTranslation();
-
-  return (
-    <div className="flex items-center justify-end gap-1">
-      <button
-        title={t("common.actions.view")}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
-        onClick={() => onView(row)}
-      >
-        <Eye className="w-4 h-4" />
-      </button>
-      <button
-        title={t("common.actions.edit")}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-        onClick={() => onEdit(row)}
-      >
-        <Pencil className="w-4 h-4" />
-      </button>
-      <button
-        title={t("vendors.actions.changePassword")}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-        onClick={() => onPassword(row)}
-      >
-        <KeyRound className="w-4 h-4" />
-      </button>
-      <button
-        title={t("common.actions.delete")}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-        onClick={() => onDelete(row)}
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function VendorsPage() {
   const { t } = useTranslation();
@@ -333,26 +287,28 @@ export default function VendorsPage() {
         );
       },
     },
-    {
-      key: "id",
-      header: t("vendors.columns.actions"),
-      align: "right",
-      render: (_, row) => (
-        <ActionIcons
-          row={row}
-          onView={setViewTarget}
-          onEdit={setEditTarget}
-          onPassword={setPasswordTarget}
-          onDelete={setDeleteTarget}
-        />
-      ),
-    },
   ];
 
   const pendingRowActions: RowAction<Vendor>[] = [
     { label: t("common.actions.view"), icon: Eye, onClick: (r) => setViewTarget(r) },
     { label: t("common.actions.approve"), icon: CheckCircle2, onClick: approve },
     { label: t("common.actions.reject"), icon: XCircle, onClick: reject, variant: "destructive" },
+  ];
+
+  const approvedRowActions: RowAction<Vendor>[] = [
+    { label: t("common.actions.view"), icon: Eye, onClick: setViewTarget },
+    { label: t("common.actions.edit"), icon: Pencil, onClick: setEditTarget },
+    {
+      label: t("vendors.actions.changePassword"),
+      icon: KeyRound,
+      onClick: setPasswordTarget,
+    },
+    {
+      label: t("common.actions.delete"),
+      icon: Trash2,
+      variant: "destructive",
+      onClick: setDeleteTarget,
+    },
   ];
 
   const pendingCount = pendingVendors.length;
@@ -473,6 +429,8 @@ export default function VendorsPage() {
                 })),
               },
             ]}
+            rowActions={approvedRowActions}
+            rowActionsVariant="inline"
             pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 20] }}
             defaultSort={{ key: "createdAt", direction: "desc" }}
             striped

@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -98,18 +99,18 @@ function Trend({ trend }: { trend: StatsCardTrend }) {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function Skeleton({ size }: { size: StatsCardSize }) {
+function StatsCardSkeleton({ size }: { size: StatsCardSize }) {
   const sc = sizeConfig[size];
 
   return (
-    <div className={cn("animate-pulse", sc.padding)}>
+    <div className={sc.padding}>
       <div className="flex items-start justify-between">
         <div className="space-y-2 flex-1">
-          <div className="h-3 w-24 rounded bg-muted" />
-          <div className="h-7 w-32 rounded bg-muted" />
-          <div className="h-3 w-20 rounded bg-muted" />
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="h-3 w-20" />
         </div>
-        <div className={cn("rounded-xl bg-muted shrink-0", sc.iconWrap)} />
+        <Skeleton className={cn("shrink-0 rounded-xl", sc.iconWrap)} />
       </div>
     </div>
   );
@@ -148,7 +149,7 @@ export default function StatsCard({
       )}
     >
       {loading ? (
-        <Skeleton size={size} />
+        <StatsCardSkeleton size={size} />
       ) : (
         <>
           <div className={cn("flex items-start justify-between gap-4", sc.padding)}>

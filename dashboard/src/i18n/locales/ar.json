@@ -220,7 +220,7 @@
       "activeStatus": "الحالة النشطة",
       "cancel": "إلغاء",
       "addButton": "إضافة مستخدم",
-      "saveButton": "حفظ التغييرات"
+      "saveButton": "حفظ"
     },
     "view": {
       "tabs": {
@@ -318,7 +318,7 @@
       "updated": "تم تحديث \"{{title}}\"."
     },
     "dialog": {
-      "addTitle": "إضافة بانر",
+      "addTitle": "إضافة بانر جديد",
       "addDescription": "إنشاء بانر ترويجي لعرضه في الخلاصة.",
       "editTitle": "تعديل البانر",
       "editDescription": "المعرف: {{id}} · تحديث تفاصيل البانر.",
@@ -754,7 +754,7 @@
       }
     },
     "dialog": {
-      "addTitle": "إضافة تقييم",
+      "addTitle": "إضافة تقييم جديد",
       "addDescription": "أضف تقييم منتج يدويًا.",
       "editTitle": "تعديل التقييم",
       "editDescription": "تعديل \"{{title}}\"",

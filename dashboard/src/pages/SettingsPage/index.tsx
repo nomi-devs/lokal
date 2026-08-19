@@ -10,6 +10,7 @@ import { Save, ChevronDown } from "lucide-react";
 import type { RootState } from "@/store";
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import {
@@ -204,13 +205,10 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("settings.description")}</p>
         </div>
-        <button
-          onClick={handleSave}
-          className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary  text-white text-sm font-semibold transition-colors"
-        >
+        <Button size="lg" onClick={handleSave}>
           <Save className="w-4 h-4" />
           {t("settings.saveChanges")}
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-col gap-6">

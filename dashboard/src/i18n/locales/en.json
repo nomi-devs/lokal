@@ -220,7 +220,7 @@
       "activeStatus": "Active Status",
       "cancel": "Cancel",
       "addButton": "Add User",
-      "saveButton": "Save Changes"
+      "saveButton": "Save"
     },
     "view": {
       "tabs": {
@@ -318,7 +318,7 @@
       "updated": "\"{{title}}\" updated."
     },
     "dialog": {
-      "addTitle": "Add Banner",
+      "addTitle": "Add New Banner",
       "addDescription": "Create a promotional banner for the feed.",
       "editTitle": "Edit Banner",
       "editDescription": "ID: {{id}} · Update banner details.",
@@ -754,7 +754,7 @@
       }
     },
     "dialog": {
-      "addTitle": "Add Review",
+      "addTitle": "Add New Review",
       "addDescription": "Manually add a product review.",
       "editTitle": "Edit Review",
       "editDescription": "Editing \"{{title}}\"",
@@ -948,7 +948,7 @@
         "filterStatus": "Status",
         "filterDepartment": "Department",
         "variantsCount": "{{count}} variants",
-        "addProduct": "Add New Product",
+        "addProduct": "Add Product",
         "emptyTitle": "No products found",
         "emptyDescription": "Try adjusting your search or filters.",
         "columns": {
