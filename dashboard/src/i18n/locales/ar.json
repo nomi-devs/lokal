@@ -6,9 +6,12 @@
     "products": "المنتجات",
     "userManagement": "المستخدمون",
     "vendors": "الموردون",
+    "kyc": "التحقق من الهوية",
     "orders": "الطلبات",
     "payments": "المدفوعات",
     "reviews": "التقييمات",
+    "promoCodes": "أكواد الخصم",
+    "refunds": "المبالغ المستردة",
     "notifications": "الإشعارات",
     "settings": "الإعدادات",
     "send": "إرسال",
@@ -780,6 +783,182 @@
       "add": "إضافة"
     }
   },
+  "promoCodes": {
+    "topbarTitle": "أكواد الخصم",
+    "title": "أكواد الخصم",
+    "search": "البحث في أكواد الخصم…",
+    "status": "الحالة",
+    "active": "الأكواد النشطة",
+    "totalUsage": "إجمالي الاستخدام",
+    "revenueImpact": "الأثر على الإيرادات",
+    "createNew": "كود خصم جديد",
+    "view": "عرض التفاصيل",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "emptyState": "لا توجد أكواد خصم بعد",
+    "createFirst": "إنشاء أول كود خصم",
+    "filterValid": "الصلاحية",
+    "filterValidYes": "غير منتهي",
+    "filterValidNo": "منتهي",
+    "columns": {
+      "code": "الكود",
+      "discountType": "نوع الخصم",
+      "discountValue": "قيمة الخصم",
+      "usage": "الاستخدام",
+      "validUntil": "صالح حتى",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "statusLabels": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "expired": "منتهي الصلاحية"
+    },
+    "dialog": {
+      "createTitle": "إنشاء كود خصم جديد",
+      "editTitle": "تعديل كود الخصم",
+      "createDescription": "إعداد كود خصم جديد للسوق.",
+      "editDescription": "تحديث تفاصيل \"{{code}}\".",
+      "code": "كود الخصم",
+      "codePlaceholder": "SUMMER20",
+      "codeHint": "أحرف إنجليزية كبيرة وأرقام فقط",
+      "discountType": "نوع الخصم",
+      "percentage": "نسبة مئوية (%)",
+      "fixedAmount": "مبلغ ثابت (د.ك)",
+      "discountValue": "قيمة الخصم",
+      "maxUsage": "الحد الأقصى للاستخدام",
+      "currentUsage": "المستخدم حاليًا",
+      "currentUsageValue": "تم استخدام {{used}} من أصل {{max}} ({{percent}}%)",
+      "currentUsageUnlimited": "تم استخدام {{used}} (غير محدود)",
+      "minOrder": "الحد الأدنى لقيمة الطلب",
+      "minOrderHint": "اتركه فارغًا لعدم وجود حد أدنى",
+      "maxDiscountCap": "الحد الأقصى للخصم (للنسبة المئوية)",
+      "maxDiscountCapHint": "مثال: تحديد خصم 20% بحد أقصى 200 د.ك",
+      "validityPeriod": "فترة الصلاحية",
+      "validFrom": "صالح من",
+      "validUntil": "صالح حتى",
+      "applicableVendors": "ينطبق على الموردين",
+      "applicableCategories": "ينطبق على الفئات",
+      "applicableVendorsHint": "اتركه فارغًا للتطبيق على جميع الموردين",
+      "applicableCategoriesHint": "اتركه فارغًا للتطبيق على جميع الفئات",
+      "allVendors": "جميع الموردين",
+      "allCategories": "جميع الفئات",
+      "searchVendors": "البحث عن موردين…",
+      "searchCategories": "البحث عن فئات…",
+      "isActive": "مفعّل",
+      "advancedOptions": "خيارات متقدمة (حدود الاستخدام، الشروط، الصلاحية، النطاق)",
+      "save": "حفظ الكود",
+      "cancel": "إلغاء"
+    },
+    "detailsModal": {
+      "title": "تفاصيل كود الخصم",
+      "usage": "إجمالي الاستخدام",
+      "revenueSaved": "المبلغ الموفر",
+      "mostUsedBy": "الأكثر استخدامًا لدى",
+      "lastUsed": "آخر استخدام",
+      "neverUsed": "لم يُستخدم بعد",
+      "createdBy": "أنشئ بواسطة",
+      "createdDate": "تاريخ الإنشاء",
+      "allProducts": "جميع الموردين والفئات",
+      "testTitle": "اختبار كود الخصم",
+      "testOrderValue": "قيمة الطلب التجريبية (د.ك)",
+      "expectedDiscount": "الخصم المتوقع",
+      "finalTotal": "الإجمالي النهائي",
+      "testValid": "الكود صالح لهذا الطلب",
+      "testInvalid": "الكود غير صالح لهذا الطلب"
+    },
+    "confirmation": {
+      "deleteTitle": "حذف \"{{code}}\"؟",
+      "deleteSelectedTitle": "حذف {{count}} كود خصم؟",
+      "delete": "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء.",
+      "yes": "حذف",
+      "no": "إلغاء"
+    },
+    "messages": {
+      "created": "تم إنشاء كود الخصم بنجاح",
+      "updated": "تم تحديث كود الخصم بنجاح",
+      "deleted": "تم حذف كود الخصم بنجاح",
+      "deletedSelected": "تم حذف {{count}} كود خصم",
+      "limitExceeded": "تم تجاوز حد الاستخدام"
+    }
+  },
+  "refunds": {
+    "topbarTitle": "المبالغ المستردة",
+    "title": "طلبات الاسترداد",
+    "search": "البحث في طلبات الاسترداد…",
+    "pending": "الطلبات المعلقة",
+    "approved": "موافق عليها",
+    "rejected": "مرفوضة",
+    "totalAmount": "إجمالي المبلغ",
+    "orderId": "رقم الطلب",
+    "customerName": "العميل",
+    "amount": "المبلغ",
+    "reason": "السبب",
+    "bank": "البنك",
+    "status": "الحالة",
+    "requestedDate": "تاريخ الطلب",
+    "viewDetails": "عرض التفاصيل",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "emptyTitle": "لا توجد طلبات استرداد بعد",
+    "emptyDescription": "ستظهر طلبات استرداد العملاء هنا للمراجعة.",
+    "statusLabels": {
+      "requested": "مطلوب",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض",
+      "completed": "مكتمل"
+    },
+    "detailsDialog": {
+      "title": "تفاصيل الاسترداد",
+      "orderInfo": "معلومات الطلب",
+      "orderDate": "تاريخ الطلب",
+      "customer": "العميل",
+      "customerEmail": "البريد الإلكتروني",
+      "address": "عنوان التوصيل",
+      "orderTotal": "إجمالي الطلب",
+      "items": "العناصر",
+      "refundInfo": "طلب الاسترداد",
+      "customerExplanation": "توضيح العميل",
+      "bankAccount": "الحساب البنكي",
+      "accountHolder": "صاحب الحساب",
+      "accountNumber": "رقم الحساب",
+      "bankName": "اسم البنك",
+      "bankCode": "رمز البنك",
+      "timeline": "الحالة والجدول الزمني",
+      "rejectedDate": "تاريخ الرفض",
+      "completedDate": "تاريخ الاكتمال",
+      "approvalDetails": "تفاصيل الموافقة"
+    },
+    "approveDialog": {
+      "title": "الموافقة على طلب الاسترداد",
+      "description": "تأكيد التحويل لطلب \"{{orderId}}\".",
+      "proofUrl": "رابط إثبات التحويل",
+      "notes": "ملاحظات الموافقة (اختياري)",
+      "notesPlaceholder": "أضف أي ملاحظات داخلية حول هذه الموافقة…",
+      "reviewedBy": "تمت المراجعة بواسطة",
+      "approvalDate": "تاريخ/وقت الموافقة"
+    },
+    "rejectDialog": {
+      "title": "رفض طلب الاسترداد",
+      "description": "رفض طلب الاسترداد لطلب \"{{orderId}}\".",
+      "reasonCategory": "فئة السبب",
+      "categories": {
+        "warranty": "الضمان",
+        "returnWindow": "فترة الإرجاع",
+        "customerDamage": "تلف من العميل",
+        "bankDetails": "بيانات بنكية",
+        "other": "أخرى"
+      },
+      "reason": "سبب الرفض",
+      "reasonPlaceholder": "اشرح سبب رفض طلب الاسترداد هذا…",
+      "internalNotes": "ملاحظات داخلية (اختياري)",
+      "internalNotesPlaceholder": "ملاحظات مرئية للمشرفين فقط…"
+    },
+    "messages": {
+      "approved": "تمت الموافقة على الاسترداد {{id}} بنجاح",
+      "rejected": "تم رفض الاسترداد {{id}}"
+    }
+  },
   "vendors": {
     "topbarTitle": "الموردون",
     "tabs": {
@@ -900,6 +1079,83 @@
         "reviews": "لا توجد تقييمات بعد",
         "documents": "لم يتم رفع أي مستندات"
       }
+    }
+  },
+  "kyc": {
+    "topbarTitle": "التحقق من الهوية",
+    "table": {
+      "title": "طلبات التحقق من هوية الموردين",
+      "description": "راجع مستندات الهوية والأعمال الخاصة بالموردين للموافقة عليها.",
+      "searchPlaceholder": "ابحث باسم المورد أو المالك…",
+      "filterStatus": "حالة التحقق",
+      "columns": {
+        "vendor": "المورد",
+        "owner": "اسم المالك",
+        "category": "فئة المتجر",
+        "status": "حالة التحقق",
+        "submitted": "تاريخ التقديم"
+      },
+      "emptyTitle": "لا يوجد موردون",
+      "emptyDescription": "جرّب تعديل البحث أو الفلتر."
+    },
+    "stats": {
+      "pending": "بانتظار الموافقة",
+      "approvedToday": "تمت الموافقة اليوم",
+      "totalVendors": "إجمالي الموردين"
+    },
+    "documentTypes": {
+      "id": "الهوية الوطنية",
+      "tax": "الشهادة الضريبية",
+      "business_license": "رخصة العمل"
+    },
+    "documentStatus": {
+      "verified": "موثّق",
+      "pending": "قيد الانتظار"
+    },
+    "details": {
+      "description": "بيانات المورد ومستندات التحقق",
+      "basicInfo": "بيانات المورد",
+      "documents": "مستندات التحقق",
+      "accountStatus": "حالة الحساب",
+      "storeCategory": "فئة المتجر",
+      "uploadDate": "تاريخ الرفع",
+      "viewDocument": "عرض",
+      "viewAllDocuments": "عرض كل المستندات"
+    },
+    "preview": {
+      "title": "معاينة المستند",
+      "download": "تنزيل",
+      "back": "رجوع"
+    },
+    "approveDialog": {
+      "title": "الموافقة على تحقق المورد",
+      "description": "أنت توافق على تحقق \"{{name}}\"",
+      "notes": "ملاحظات الموافقة (اختياري)",
+      "notesPlaceholder": "أضف أي ملاحظات داخلية حول هذه الموافقة…",
+      "reviewedBy": "تمت المراجعة بواسطة",
+      "approvalDate": "تاريخ الموافقة",
+      "button": "موافقة"
+    },
+    "rejectDialog": {
+      "title": "رفض تحقق المورد",
+      "description": "أنت ترفض تحقق \"{{name}}\"",
+      "reasonPreset": "السبب",
+      "reason": "سبب الرفض",
+      "reasonPlaceholder": "اشرح سبب رفض تحقق هذا المورد…",
+      "reasons": {
+        "unclear": "مستندات غير واضحة",
+        "expired": "مستند منتهي الصلاحية",
+        "invalidTax": "الشهادة الضريبية غير صالحة",
+        "mismatch": "رخصة العمل غير مطابقة",
+        "other": "أخرى"
+      },
+      "button": "رفض"
+    },
+    "toasts": {
+      "approvedTitle": "تمت الموافقة على المورد",
+      "approvedBody": "تمت الموافقة على \"{{name}}\".",
+      "rejectedTitle": "تم رفض تحقق المورد",
+      "rejectedBody": "تم رفض \"{{name}}\"."
     }
   },
   "vendor": {

@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { orders as initialOrders, type Order, type OrderStatus } from "@/data/orders";
 import { users } from "@/data/users";
 import { initialVendors } from "@/data/vendors";
@@ -270,6 +271,7 @@ function OrderDetails({ order }: { order: Order }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function OrdersPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [orderList, setOrderList] = useState<Order[]>(initialOrders);
   const [selected, setSelected] = useState<Order | null>(null);
   const [statusTarget, setStatusTarget] = useState<Order | null>(null);
@@ -460,6 +462,7 @@ export default function OrdersPage() {
         data={orderList}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("orders.searchPlaceholder")}
         searchKeys={["orderNumber"]}

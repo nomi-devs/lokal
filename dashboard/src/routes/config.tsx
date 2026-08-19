@@ -13,9 +13,12 @@ import ProductsPage from "@/pages/ProductsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import UserManagementPage from "@/pages/UserManagementPage";
 import VendorsPage from "@/pages/VendorsPage";
+import KycVerificationPage from "@/pages/KycVerificationPage";
 import OrdersPage from "@/pages/OrdersPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import ReviewsPage from "@/pages/ReviewsPage";
+import PromoCodesPage from "@/pages/PromoCodesPage";
+import RefundsPage from "@/pages/RefundsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import SendNotificationsPage from "@/pages/NotificationsPage/Send";
 import VendorDashboard from "@/pages/vendor/VendorDashboard";
@@ -47,9 +50,17 @@ export const routes: AppRoute[] = [
   { path: "/admin/products", element: <ProductsPage />, protected: true, role: "admin" },
   { path: "/admin/users", element: <UserManagementPage />, protected: true, role: "admin" },
   { path: "/admin/vendors", element: <VendorsPage />, protected: true, role: "admin" },
+  {
+    path: "/admin/kyc-verification",
+    element: <KycVerificationPage />,
+    protected: true,
+    role: "admin",
+  },
   { path: "/admin/orders", element: <OrdersPage />, protected: true, role: "admin" },
   { path: "/admin/payments", element: <PaymentsPage />, protected: true, role: "admin" },
   { path: "/admin/reviews", element: <ReviewsPage />, protected: true, role: "admin" },
+  { path: "/admin/promo-codes", element: <PromoCodesPage />, protected: true, role: "admin" },
+  { path: "/admin/refunds", element: <RefundsPage />, protected: true, role: "admin" },
   {
     path: "/admin/notifications",
     element: <NotificationsPage />,

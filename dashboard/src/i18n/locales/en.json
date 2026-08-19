@@ -6,9 +6,12 @@
     "products": "Products",
     "userManagement": "Users",
     "vendors": "Vendors",
+    "kyc": "KYC Verification",
     "orders": "Orders",
     "payments": "Payments",
     "reviews": "Reviews",
+    "promoCodes": "Promo Codes",
+    "refunds": "Refunds",
     "notifications": "Notifications",
     "settings": "Settings",
     "send": "Send",
@@ -780,6 +783,182 @@
       "add": "Add"
     }
   },
+  "promoCodes": {
+    "topbarTitle": "Promo Codes",
+    "title": "Promo Codes",
+    "search": "Search promo codes…",
+    "status": "Status",
+    "active": "Active Codes",
+    "totalUsage": "Total Usage",
+    "revenueImpact": "Revenue Impact",
+    "createNew": "New Promo Code",
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "emptyState": "No promo codes yet",
+    "createFirst": "Create First Promo Code",
+    "filterValid": "Valid",
+    "filterValidYes": "Not Expired",
+    "filterValidNo": "Expired",
+    "columns": {
+      "code": "Code",
+      "discountType": "Discount Type",
+      "discountValue": "Discount Value",
+      "usage": "Usage",
+      "validUntil": "Valid Until",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "statusLabels": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "expired": "Expired"
+    },
+    "dialog": {
+      "createTitle": "Create New Promo Code",
+      "editTitle": "Edit Promo Code",
+      "createDescription": "Set up a new discount code for the marketplace.",
+      "editDescription": "Update details for \"{{code}}\".",
+      "code": "Promo Code",
+      "codePlaceholder": "SUMMER20",
+      "codeHint": "Uppercase letters and numbers only",
+      "discountType": "Discount Type",
+      "percentage": "Percentage (%)",
+      "fixedAmount": "Fixed Amount (KWD)",
+      "discountValue": "Discount Value",
+      "maxUsage": "Max Usage Count",
+      "currentUsage": "Currently Used",
+      "currentUsageValue": "{{used}} out of {{max}} used ({{percent}}%)",
+      "currentUsageUnlimited": "{{used}} used (unlimited)",
+      "minOrder": "Min Order Value",
+      "minOrderHint": "Leave blank for no minimum",
+      "maxDiscountCap": "Max Discount Cap (for %)",
+      "maxDiscountCapHint": "e.g., cap 20% at 200 KWD max",
+      "validityPeriod": "Validity Period",
+      "validFrom": "Valid From",
+      "validUntil": "Valid Until",
+      "applicableVendors": "Applicable to Vendors",
+      "applicableCategories": "Applicable to Categories",
+      "applicableVendorsHint": "leave empty to apply to all vendors",
+      "applicableCategoriesHint": "leave empty to apply to all categories",
+      "allVendors": "All Vendors",
+      "allCategories": "All Categories",
+      "searchVendors": "Search vendors…",
+      "searchCategories": "Search categories…",
+      "isActive": "Is Active",
+      "advancedOptions": "Advanced options (usage limits, conditions, validity, applicability)",
+      "save": "Save Code",
+      "cancel": "Cancel"
+    },
+    "detailsModal": {
+      "title": "Promo Code Details",
+      "usage": "Total Usage",
+      "revenueSaved": "Revenue Saved",
+      "mostUsedBy": "Most Used By",
+      "lastUsed": "Last Used",
+      "neverUsed": "Never used",
+      "createdBy": "Created By",
+      "createdDate": "Created Date",
+      "allProducts": "All vendors & categories",
+      "testTitle": "Test Promo Code",
+      "testOrderValue": "Test Order Value (KWD)",
+      "expectedDiscount": "Expected Discount",
+      "finalTotal": "Final Total",
+      "testValid": "Code is valid for this order",
+      "testInvalid": "Code is not valid for this order"
+    },
+    "confirmation": {
+      "deleteTitle": "Delete \"{{code}}\"?",
+      "deleteSelectedTitle": "Delete {{count}} promo codes?",
+      "delete": "Are you sure? This cannot be undone.",
+      "yes": "Delete",
+      "no": "Cancel"
+    },
+    "messages": {
+      "created": "Promo code created successfully",
+      "updated": "Promo code updated successfully",
+      "deleted": "Promo code deleted successfully",
+      "deletedSelected": "Deleted {{count}} promo codes",
+      "limitExceeded": "Usage limit exceeded"
+    }
+  },
+  "refunds": {
+    "topbarTitle": "Refunds",
+    "title": "Refund Requests",
+    "search": "Search refunds…",
+    "pending": "Pending Requests",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "totalAmount": "Total Amount",
+    "orderId": "Order ID",
+    "customerName": "Customer",
+    "amount": "Amount",
+    "reason": "Reason",
+    "bank": "Bank",
+    "status": "Status",
+    "requestedDate": "Requested Date",
+    "viewDetails": "View Details",
+    "approve": "Approve",
+    "reject": "Reject",
+    "emptyTitle": "No refund requests yet",
+    "emptyDescription": "Customer refund requests will show up here for review.",
+    "statusLabels": {
+      "requested": "Requested",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "completed": "Completed"
+    },
+    "detailsDialog": {
+      "title": "Refund Details",
+      "orderInfo": "Order Information",
+      "orderDate": "Order Date",
+      "customer": "Customer",
+      "customerEmail": "Email",
+      "address": "Delivery Address",
+      "orderTotal": "Order Total",
+      "items": "Items",
+      "refundInfo": "Refund Request",
+      "customerExplanation": "Customer Explanation",
+      "bankAccount": "Bank Account",
+      "accountHolder": "Account Holder",
+      "accountNumber": "Account Number",
+      "bankName": "Bank Name",
+      "bankCode": "Bank Code",
+      "timeline": "Status & Timeline",
+      "rejectedDate": "Rejected Date",
+      "completedDate": "Completed Date",
+      "approvalDetails": "Approval Details"
+    },
+    "approveDialog": {
+      "title": "Approve Refund Request",
+      "description": "Confirm the transfer for order \"{{orderId}}\".",
+      "proofUrl": "Proof of Transfer URL",
+      "notes": "Approval Notes (Optional)",
+      "notesPlaceholder": "Add any internal notes about this approval…",
+      "reviewedBy": "Reviewed By",
+      "approvalDate": "Approval Date/Time"
+    },
+    "rejectDialog": {
+      "title": "Reject Refund Request",
+      "description": "Reject the refund request for order \"{{orderId}}\".",
+      "reasonCategory": "Reason Category",
+      "categories": {
+        "warranty": "Warranty",
+        "returnWindow": "Return Window",
+        "customerDamage": "Customer Damage",
+        "bankDetails": "Bank Details",
+        "other": "Other"
+      },
+      "reason": "Rejection Reason",
+      "reasonPlaceholder": "Explain why this refund request is being rejected…",
+      "internalNotes": "Internal Notes (Optional)",
+      "internalNotesPlaceholder": "Notes visible to admins only…"
+    },
+    "messages": {
+      "approved": "Refund {{id}} approved successfully",
+      "rejected": "Refund {{id}} rejected"
+    }
+  },
   "vendors": {
     "topbarTitle": "Vendors",
     "tabs": {
@@ -900,6 +1079,83 @@
         "reviews": "No reviews yet",
         "documents": "No documents uploaded"
       }
+    }
+  },
+  "kyc": {
+    "topbarTitle": "KYC Verification",
+    "table": {
+      "title": "Vendor KYC Applications",
+      "description": "Review vendor identity and business documents for approval.",
+      "searchPlaceholder": "Search by vendor or owner name…",
+      "filterStatus": "KYC Status",
+      "columns": {
+        "vendor": "Vendor",
+        "owner": "Owner Name",
+        "category": "Store Category",
+        "status": "KYC Status",
+        "submitted": "Submitted Date"
+      },
+      "emptyTitle": "No vendors found",
+      "emptyDescription": "Try adjusting your search or filter."
+    },
+    "stats": {
+      "pending": "Pending Approvals",
+      "approvedToday": "Approved Today",
+      "totalVendors": "Total Vendors"
+    },
+    "documentTypes": {
+      "id": "National ID",
+      "tax": "Tax Certificate",
+      "business_license": "Business License"
+    },
+    "documentStatus": {
+      "verified": "Verified",
+      "pending": "Pending"
+    },
+    "details": {
+      "description": "Vendor info and KYC documents",
+      "basicInfo": "Vendor Info",
+      "documents": "KYC Documents",
+      "accountStatus": "Account Status",
+      "storeCategory": "Store Category",
+      "uploadDate": "Uploaded",
+      "viewDocument": "View",
+      "viewAllDocuments": "View All Documents"
+    },
+    "preview": {
+      "title": "Document Preview",
+      "download": "Download",
+      "back": "Back"
+    },
+    "approveDialog": {
+      "title": "Approve Vendor KYC",
+      "description": "You are approving KYC for \"{{name}}\"",
+      "notes": "Approval Notes (Optional)",
+      "notesPlaceholder": "Add any internal notes about this approval…",
+      "reviewedBy": "Reviewed By",
+      "approvalDate": "Approval Date",
+      "button": "Approve"
+    },
+    "rejectDialog": {
+      "title": "Reject Vendor KYC",
+      "description": "You are rejecting KYC for \"{{name}}\"",
+      "reasonPreset": "Reason",
+      "reason": "Rejection Reason",
+      "reasonPlaceholder": "Explain why this vendor's KYC is being rejected…",
+      "reasons": {
+        "unclear": "Unclear documents",
+        "expired": "Document expired",
+        "invalidTax": "Tax certificate invalid",
+        "mismatch": "Business license mismatch",
+        "other": "Other"
+      },
+      "button": "Reject"
+    },
+    "toasts": {
+      "approvedTitle": "Vendor Approved",
+      "approvedBody": "\"{{name}}\" has been approved.",
+      "rejectedTitle": "Vendor KYC Rejected",
+      "rejectedBody": "\"{{name}}\" has been rejected."
     }
   },
   "vendor": {

@@ -44,14 +44,25 @@ export default function Chart(props: ChartProps) {
 
   switch (props.type) {
     case "bar":
-      return <Bar data={props.data} options={props.options} plugins={plugins} className={className} />;
+      return (
+        <Bar data={props.data} options={props.options} plugins={plugins} className={className} />
+      );
     case "line":
-      return <Line data={props.data} options={props.options} plugins={plugins} className={className} />;
+      return (
+        <Line data={props.data} options={props.options} plugins={plugins} className={className} />
+      );
     case "pie":
-      return <Pie data={props.data} options={props.options} plugins={plugins} className={className} />;
+      return (
+        <Pie data={props.data} options={props.options} plugins={plugins} className={className} />
+      );
     case "doughnut":
       return (
-        <Doughnut data={props.data} options={props.options} plugins={plugins} className={className} />
+        <Doughnut
+          data={props.data}
+          options={props.options}
+          plugins={plugins}
+          className={className}
+        />
       );
     default:
       return null;

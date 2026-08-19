@@ -12,6 +12,9 @@ import {
   CreditCard,
   Star,
   Wallet,
+  ShieldCheck,
+  Tag,
+  RotateCcw,
 } from "lucide-react";
 
 import type { SidebarItem } from "@/components/Dashboard/types";
@@ -48,9 +51,27 @@ export const sidebarItems: SidebarItem[] = [
   { label: "Products", labelKey: "sidebar.products", icon: Package, path: "/admin/products" },
   { label: "Users", labelKey: "sidebar.userManagement", icon: Users, path: "/admin/users" },
   { label: "Vendors", labelKey: "sidebar.vendors", icon: Store, path: "/admin/vendors" },
+  {
+    label: "KYC Verification",
+    labelKey: "sidebar.kyc",
+    icon: ShieldCheck,
+    path: "/admin/kyc-verification",
+  },
   { label: "Orders", labelKey: "sidebar.orders", icon: ShoppingCart, path: "/admin/orders" },
   { label: "Payments", labelKey: "sidebar.payments", icon: CreditCard, path: "/admin/payments" },
   { label: "Reviews", labelKey: "sidebar.reviews", icon: Star, path: "/admin/reviews" },
+  {
+    label: "Promo Codes",
+    labelKey: "sidebar.promoCodes",
+    icon: Tag,
+    path: "/admin/promo-codes",
+  },
+  {
+    label: "Refunds",
+    labelKey: "sidebar.refunds",
+    icon: RotateCcw,
+    path: "/admin/refunds",
+  },
   {
     label: "Notifications",
     labelKey: "sidebar.notifications",

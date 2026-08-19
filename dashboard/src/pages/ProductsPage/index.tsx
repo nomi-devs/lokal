@@ -21,6 +21,7 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import {
   products as initialProducts,
   type Product,
@@ -64,6 +65,7 @@ type PendingAction =
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [productList, setProductList] = useState<Product[]>(initialProducts);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -347,6 +349,7 @@ export default function ProductsPage() {
         data={productList}
         columns={productColumns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("products.list.searchPlaceholder")}
         searchKeys={["nameEn", "nameAr"]}

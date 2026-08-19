@@ -11,6 +11,7 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { categories as initialCategories, type Category } from "@/data/categories";
 import type { Department } from "@/data/products";
 
@@ -30,6 +31,7 @@ type PendingAction =
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [categoryList, setCategoryList] = useState<Category[]>(initialCategories);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -239,6 +241,7 @@ export default function CategoriesPage() {
         data={categoryList}
         columns={categoryColumns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("categories.list.searchPlaceholder")}
         searchKeys={["nameEn", "nameAr"]}

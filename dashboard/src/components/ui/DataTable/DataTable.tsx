@@ -132,7 +132,7 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
       {stats && stats.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {stats.map((s) => (
-            <StatsCard key={s.title} {...s} />
+            <StatsCard key={s.title} {...s} loading={s.loading ?? loading} />
           ))}
         </div>
       )}

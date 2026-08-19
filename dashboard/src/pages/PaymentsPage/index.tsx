@@ -20,6 +20,7 @@ import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import {
   payments as initialPayments,
   type Payment,
@@ -61,6 +62,7 @@ type PendingAction = { type: "delete"; payment: Payment } | null;
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function PaymentsPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [paymentList, setPaymentList] = useState<Payment[]>(initialPayments);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
@@ -225,6 +227,7 @@ export default function PaymentsPage() {
         data={paymentList}
         columns={paymentColumns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("payments.list.searchPlaceholder")}
         searchKeys={["transactionId"]}

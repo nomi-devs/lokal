@@ -17,6 +17,7 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { banners as initialBanners, type Banner, type BannerPosition } from "@/data/banners";
 
 // ── Derived display status (isActive + scheduling window) ─────────────────────
@@ -61,6 +62,7 @@ const positionKey: Record<BannerPosition, string> = {
 
 export default function BannersPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [bannerList, setBannerList] = useState<Banner[]>(initialBanners);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
@@ -238,6 +240,7 @@ export default function BannersPage() {
         data={bannerList}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("banners.searchPlaceholder")}
         searchKeys={["titleEn", "url"]}

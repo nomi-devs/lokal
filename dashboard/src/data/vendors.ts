@@ -5,6 +5,20 @@ export type CommissionType = "percentage" | "fixed";
 
 export type VendorDocument = { type: string; url: string; uploadedAt: string };
 
+export type KycStatus = "pending" | "approved" | "rejected";
+export type KycDocumentType = "id" | "tax" | "business_license";
+export type KycDocument = { type: KycDocumentType; url: string; verifiedAt: string | null };
+
+export type VendorKyc = {
+  status: KycStatus;
+  documents: KycDocument[]; // always exactly one entry per KycDocumentType
+  approvedBy?: string;
+  approvalNotes?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  submittedAt: string;
+};
+
 export type Vendor = {
   id: number;
   nameEn: string;
@@ -20,6 +34,7 @@ export type Vendor = {
   status: VendorStatus;
   commission: { type: CommissionType; value: number };
   documents: VendorDocument[];
+  kyc: VendorKyc;
   createdAt: string;
   updatedAt: string;
   approvedAt?: string;
@@ -35,6 +50,18 @@ const doc = (type: string, uploadedAt: string): VendorDocument => ({
   url: `/documents/${type.toLowerCase().replace(/\s+/g, "-")}.pdf`,
   uploadedAt,
 });
+
+const kycDoc = (type: KycDocumentType, verifiedAt: string | null): KycDocument => ({
+  type,
+  url: `/kyc/${type}.pdf`,
+  verifiedAt,
+});
+
+const kycDocs = (verifiedAt: string | null): KycDocument[] => [
+  kycDoc("id", verifiedAt),
+  kycDoc("tax", verifiedAt),
+  kycDoc("business_license", verifiedAt),
+];
 
 export const initialVendors: Vendor[] = [
   {
@@ -57,6 +84,7 @@ export const initialVendors: Vendor[] = [
     createdAt: "2026-08-10",
     updatedAt: "2026-08-10",
     rating: null,
+    kyc: { status: "pending", documents: kycDocs(null), submittedAt: "2026-08-10" },
   },
   {
     id: 2,
@@ -77,6 +105,7 @@ export const initialVendors: Vendor[] = [
     createdAt: "2026-08-12",
     updatedAt: "2026-08-12",
     rating: null,
+    kyc: { status: "pending", documents: kycDocs(null), submittedAt: "2026-08-12" },
   },
   {
     id: 3,
@@ -93,6 +122,7 @@ export const initialVendors: Vendor[] = [
     createdAt: "2026-08-14",
     updatedAt: "2026-08-14",
     rating: null,
+    kyc: { status: "pending", documents: kycDocs(null), submittedAt: "2026-08-14" },
   },
   {
     id: 4,
@@ -115,6 +145,7 @@ export const initialVendors: Vendor[] = [
     createdAt: "2026-08-15",
     updatedAt: "2026-08-15",
     rating: null,
+    kyc: { status: "pending", documents: kycDocs(null), submittedAt: "2026-08-15" },
   },
   {
     id: 5,
@@ -148,6 +179,13 @@ export const initialVendors: Vendor[] = [
     updatedAt: "2026-07-05",
     approvedAt: "2026-07-05",
     rating: 4.8,
+    kyc: {
+      status: "approved",
+      documents: kycDocs("2026-07-05"),
+      approvedBy: "Admin",
+      approvedAt: "2026-07-05",
+      submittedAt: "2026-07-02",
+    },
   },
   {
     id: 6,
@@ -170,6 +208,13 @@ export const initialVendors: Vendor[] = [
     updatedAt: "2026-06-25",
     approvedAt: "2026-06-25",
     rating: 4.5,
+    kyc: {
+      status: "approved",
+      documents: kycDocs("2026-06-25"),
+      approvedBy: "Admin",
+      approvedAt: "2026-06-25",
+      submittedAt: "2026-06-18",
+    },
   },
   {
     id: 7,
@@ -191,6 +236,13 @@ export const initialVendors: Vendor[] = [
     updatedAt: "2026-05-30",
     approvedAt: "2026-05-30",
     rating: 4.2,
+    kyc: {
+      status: "approved",
+      documents: kycDocs("2026-05-30"),
+      approvedBy: "Admin",
+      approvedAt: "2026-05-30",
+      submittedAt: "2026-05-25",
+    },
   },
   {
     id: 8,
@@ -213,6 +265,8 @@ export const initialVendors: Vendor[] = [
     updatedAt: "2026-07-01",
     approvedAt: "2026-05-05",
     rating: 3.6,
+    // Re-submitted documents after suspension — awaiting re-verification.
+    kyc: { status: "pending", documents: kycDocs(null), submittedAt: "2026-07-15" },
   },
   {
     id: 9,
@@ -229,6 +283,13 @@ export const initialVendors: Vendor[] = [
     createdAt: "2026-07-20",
     updatedAt: "2026-07-22",
     rating: null,
+    kyc: {
+      status: "rejected",
+      documents: kycDocs(null),
+      approvalNotes: "Business license mismatch",
+      rejectedAt: "2026-07-22",
+      submittedAt: "2026-07-20",
+    },
   },
   {
     id: 10,
@@ -254,5 +315,12 @@ export const initialVendors: Vendor[] = [
     updatedAt: "2026-03-18",
     approvedAt: "2026-03-18",
     rating: 4.9,
+    kyc: {
+      status: "approved",
+      documents: kycDocs("2026-03-18"),
+      approvedBy: "Admin",
+      approvedAt: "2026-03-18",
+      submittedAt: "2026-03-11",
+    },
   },
 ];

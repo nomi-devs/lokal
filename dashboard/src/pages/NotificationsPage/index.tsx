@@ -7,6 +7,7 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { notifications as initialNotifications, type Notification } from "@/data/notifications";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
@@ -26,6 +27,7 @@ const priorityStyle: Record<Notification["priority"], { text: string; dot: strin
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function NotificationsPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
 
   const unread = notifications.filter((n) => !n.read).length;
@@ -131,6 +133,7 @@ export default function NotificationsPage() {
         data={notifications}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("notifications.searchPlaceholder")}
         searchKeys={["title", "message"]}
