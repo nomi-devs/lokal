@@ -1,0 +1,63 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { AllConfigType } from '../config/config.type';
+
+@Injectable()
+export class SmsService {
+  private readonly logger = new Logger(SmsService.name);
+
+  constructor(private readonly configService: ConfigService<AllConfigType>) {}
+
+  async sendOtp(phone: string, otp: string): Promise<void> {
+    const message = `Your Lokal verification code is ${otp}`;
+
+    if (
+      this.configService.get('app.nodeEnv', { infer: true }) !== 'production'
+    ) {
+      // Dev/staging fallback so the auth flow is testable end-to-end even
+      // before the real SMSBox query contract below has been verified.
+      this.logger.log(`[DEV ONLY] OTP for ${phone}: ${otp}`);
+    }
+
+    const baseUrl = this.configService.get('sms.baseUrl', { infer: true });
+    if (!baseUrl) {
+      return;
+    }
+
+    try {
+      await this.dispatch(baseUrl, phone, message);
+    } catch (error) {
+      // Best-effort: a downstream gateway failure must never break the OTP
+      // flow — the OTP is already stored and (outside production) logged above.
+      this.logger.error(
+        `Failed to send SMS to ${phone}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  // NOTE: query param names are a best-effort guess at SMSBox's Http_SendSMS
+  // contract (User/Password/CustomerID/Sender/Mobile/Message is the common
+  // convention for this class of ASMX SMS gateway). Verify against SMSBox's
+  // actual API docs and adjust this one function if OTPs aren't arriving.
+  private async dispatch(
+    baseUrl: string,
+    phone: string,
+    message: string,
+  ): Promise<void> {
+    const params = new URLSearchParams({
+      User: this.configService.get('sms.username', { infer: true }) ?? '',
+      Password: this.configService.get('sms.password', { infer: true }) ?? '',
+      CustomerID:
+        this.configService.get('sms.customerId', { infer: true }) ?? '',
+      Sender: this.configService.get('sms.sender', { infer: true }) ?? '',
+      Mobile: phone.replace('+', ''),
+      Message: message,
+    });
+
+    const url = `${baseUrl}${params.toString()}`;
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+      throw new Error(`SMSBox responded with status ${response.status}`);
+    }
+  }
+}

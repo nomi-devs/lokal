@@ -1,0 +1,119 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Put,
+  Query,
+  SerializeOptions,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.type';
+import { AppException } from '../common/exceptions/app.exception';
+import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { UsersService } from '../users/users.service';
+import { VendorsService } from '../vendors/vendors.service';
+import { ListUsersQueryDto } from './dto/list-users-query.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { DeleteUserDto } from './dto/delete-user.dto';
+import {
+  AdminUpdateUserStatusResponseDto,
+  AdminUserDetailResponseDto,
+  AdminUserListItemDto,
+  AdminUsersListResponseDto,
+} from './dto/admin-user-response.dto';
+
+@ApiTags('Admin - Users')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
+@SerializeOptions({ groups: ['admin'] })
+@Controller('admin/users')
+export class AdminUsersController {
+  private readonly logger = new Logger(AdminUsersController.name);
+
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly vendorsService: VendorsService,
+  ) {}
+
+  @ApiOkResponse({ type: AdminUsersListResponseDto })
+  @Get()
+  async list(
+    @Query() query: ListUsersQueryDto,
+  ): Promise<AdminUsersListResponseDto> {
+    const { data, total } = await this.usersService.list(query);
+    const vendorUserIds = data
+      .filter((u) => u.role === 'vendor')
+      .map((u) => u.id);
+    const vendors = vendorUserIds.length
+      ? await this.vendorsService.findManyByUserIds(vendorUserIds)
+      : [];
+    const vendorByUserId = new Map(vendors.map((v) => [v.userId, v]));
+
+    const items: AdminUserListItemDto[] = data.map((user) =>
+      Object.assign(new AdminUserListItemDto(), user, {
+        vendor:
+          user.role === 'vendor' ? (vendorByUserId.get(user.id) ?? null) : null,
+      }),
+    );
+
+    return {
+      success: true,
+      data: items,
+      pagination: { page: query.page, limit: query.limit, total },
+    };
+  }
+
+  @ApiOkResponse({ type: AdminUserDetailResponseDto })
+  @Get(':id')
+  async get(@Param('id') id: string): Promise<AdminUserDetailResponseDto> {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new AppException(ERROR_CODES.USER_NOT_FOUND, 'User not found', 404);
+    }
+    return { success: true, user };
+  }
+
+  @ApiOkResponse({ type: AdminUpdateUserStatusResponseDto })
+  @Put(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserStatusDto,
+    @CurrentUser() admin: AuthenticatedUser,
+  ): Promise<AdminUpdateUserStatusResponseDto> {
+    const user = await this.usersService.updateStatus(
+      id,
+      dto.status,
+      admin.userId,
+    );
+    return {
+      success: true,
+      message: 'User status updated',
+      user: { status: user.status },
+    };
+  }
+
+  @ApiOkResponse({ type: MessageResponseDto })
+  @Delete(':id')
+  async remove(
+    @Param('id') id: string,
+    @Body() dto: DeleteUserDto,
+  ): Promise<MessageResponseDto> {
+    // Cascading deletion of orders/payments (dto.deleteData) is deferred
+    // until those modules exist; we still record why the account was removed.
+    this.logger.log(
+      `Hard-deleting user ${id}${dto.reason ? ` (reason: ${dto.reason})` : ''}`,
+    );
+    await this.usersService.hardDelete(id);
+    return { success: true, message: 'User deleted permanently' };
+  }
+}
