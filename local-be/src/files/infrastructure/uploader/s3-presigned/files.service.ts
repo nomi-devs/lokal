@@ -13,6 +13,12 @@ export interface UploadUrlResult {
   expiresIn: number;
 }
 
+export interface RawUploadUrlResult {
+  uploadUrl: string;
+  fileUrl: string;
+  expiresIn: number;
+}
+
 @Injectable()
 export class FilesS3PresignedService {
   private readonly s3: S3Client;
@@ -40,6 +46,45 @@ export class FilesS3PresignedService {
     purpose: string | undefined,
     uploadedBy: string,
   ): Promise<UploadUrlResult> {
+    const presigned = await this.presign(fileName, contentType, purpose);
+    const record = await this.fileRepository.create({
+      key: presigned.key,
+      url: presigned.fileUrl,
+      contentType,
+      purpose,
+      uploadedBy,
+    });
+
+    return { fileId: record.id, ...presigned };
+  }
+
+  // No FileRepository record — used for the one pre-registration case (vendor
+  // KYC document) where there's no authenticated user yet to attribute the
+  // upload to. The resulting URL is stored directly on Vendor.kycDocumentUrl
+  // instead, so nothing is lost by skipping the generic Files bookkeeping.
+  async createPublicUploadUrl(
+    fileName: string,
+    contentType: string,
+    purpose: string,
+  ): Promise<RawUploadUrlResult> {
+    const { uploadUrl, fileUrl, expiresIn } = await this.presign(
+      fileName,
+      contentType,
+      purpose,
+    );
+    return { uploadUrl, fileUrl, expiresIn };
+  }
+
+  private async presign(
+    fileName: string,
+    contentType: string,
+    purpose: string | undefined,
+  ): Promise<{
+    key: string;
+    uploadUrl: string;
+    fileUrl: string;
+    expiresIn: number;
+  }> {
     const bucket = this.configService.getOrThrow('file.awsDefaultS3Bucket', {
       infer: true,
     });
@@ -65,14 +110,6 @@ export class FilesS3PresignedService {
     const uploadUrl = await getSignedUrl(this.s3, command, { expiresIn });
     const fileUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 
-    const record = await this.fileRepository.create({
-      key,
-      url: fileUrl,
-      contentType,
-      purpose,
-      uploadedBy,
-    });
-
-    return { fileId: record.id, uploadUrl, fileUrl, expiresIn };
+    return { key, uploadUrl, fileUrl, expiresIn };
   }
 }

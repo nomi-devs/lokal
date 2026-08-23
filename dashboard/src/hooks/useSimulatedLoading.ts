@@ -11,6 +11,7 @@ export function useSimulatedLoading(delayMs = 500) {
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), delayMs);
+
     return () => clearTimeout(timer);
   }, [delayMs]);
 

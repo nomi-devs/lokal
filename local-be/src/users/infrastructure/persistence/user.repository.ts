@@ -29,6 +29,8 @@ export abstract class UserRepository {
   abstract findByIdentifierWithPassword(
     identifier: string,
   ): Promise<NullableType<User>>;
+  // Same, but by id — used by the authenticated change-password flow.
+  abstract findByIdWithPassword(id: User['id']): Promise<NullableType<User>>;
   abstract findByEmail(email: string): Promise<NullableType<User>>;
 
   abstract update(

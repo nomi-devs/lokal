@@ -26,7 +26,9 @@ export class TokensDto {
   refreshExpiresIn: number;
 }
 
-export class VerifyOtpResponseDto {
+// Shared shape for every mobile flow that ends with the user logged in:
+// verify-registration-otp, login, reset-password.
+export class MobileAuthResponseDto {
   @ApiProperty({ example: true })
   success: boolean;
 
@@ -36,7 +38,10 @@ export class VerifyOtpResponseDto {
   @ApiProperty({ type: TokensDto })
   tokens: TokensDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'True only right after verify-registration-otp creates the account',
+  })
   isNewUser: boolean;
 }
 

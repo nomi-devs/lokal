@@ -1,655 +1,227 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Users,
-  UserCheck,
-  UserX,
-  UserPlus,
-  Eye,
-  Pencil,
-  Trash2,
-  ShieldOff,
-  ShieldCheck,
-  Phone,
-  Mail,
-  UserMinus,
-  RotateCcw,
-  AlertTriangle,
-  KeyRound,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Eye, ShieldOff, ShieldCheck, Trash2 } from "lucide-react";
 
 import UserViewDialog from "./UserViewDialog";
-import UserFormDialog, { type UserFormValues } from "./UserFormDialog";
-import UserPasswordDialog from "./UserPasswordDialog";
 
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils";
-import { users as initialUsers, type User } from "@/data/users";
+import { getApiErrorMessage } from "@/lib/apiClient";
+import * as adminApi from "@/lib/adminApi";
+import type { AdminUserRow } from "@/lib/adminApi";
 
-const fullName = (u: User) => `${u.firstName} ${u.lastName}`.trim();
+const PAGE_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 300;
 
-// ── Style maps ────────────────────────────────────────────────────────────────
-const statusStyle: Record<User["status"], { text: string; bg: string; dot: string }> = {
-  active: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  suspended: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    dot: "bg-red-500",
-  },
-  inactive: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    dot: "bg-amber-400",
-  },
+const STATUS_BADGE: Record<string, string> = {
+  active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  suspended: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+  deleted: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500",
 };
 
-const roleBadge: Record<User["role"], string> = {
-  user: "text-violet-700 bg-violet-100 dark:text-violet-300 dark:bg-violet-900/30",
-  vendor: "text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30",
-  admin: "text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30",
+const ROLE_BADGE: Record<string, string> = {
+  admin: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+  vendor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  customer: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+  driver: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
 };
 
-const avatarColor = (name: string) => {
-  const colors = [
-    "bg-violet-500",
-    "bg-blue-500",
-    "bg-emerald-500",
-    "bg-amber-500",
-    "bg-pink-500",
-    "bg-teal-500",
-    "bg-indigo-500",
-  ];
-
-  return colors[name.charCodeAt(0) % colors.length];
-};
-
-// ── Page ──────────────────────────────────────────────────────────────────────
 export default function UserManagementPage() {
-  const { t } = useTranslation();
-  const [userList, setUserList] = useState<User[]>(initialUsers);
-  const [tab, setTab] = useState<"active" | "deleted">("active");
+  const [users, setUsers] = useState<AdminUserRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [viewTarget, setViewTarget] = useState<AdminUserRow | null>(null);
+  const [suspendTarget, setSuspendTarget] = useState<AdminUserRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null);
 
-  // Dialog targets
-  const [viewTarget, setViewTarget] = useState<User | null>(null);
-  const [editTarget, setEditTarget] = useState<User | null>(null);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [passwordTarget, setPasswordTarget] = useState<User | null>(null);
-  const [suspendTarget, setSuspendTarget] = useState<User | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
-  const [hardDeleteTarget, setHardDeleteTarget] = useState<User | null>(null);
-
-  const activeUsers = userList.filter((u) => !u.deletedAt);
-  const deletedUsers = userList.filter((u) => !!u.deletedAt);
-
-  const active = activeUsers.filter((u) => u.status === "active").length;
-  const suspended = activeUsers.filter((u) => u.status === "suspended").length;
-  const inactive = activeUsers.filter((u) => u.status === "inactive").length;
-
-  function handleSuspendConfirm(user: User) {
-    const isSuspended = user.status === "suspended";
-    setUserList((prev) =>
-      prev.map((u) =>
-        u.id === user.id ? { ...u, status: isSuspended ? "active" : "suspended" } : u
-      )
-    );
-    toast.success(
-      isSuspended
-        ? t("users.toasts.activated", { name: fullName(user) })
-        : t("users.toasts.suspended", { name: fullName(user) })
-    );
-  }
-
-  function softDelete(user: User) {
-    setUserList((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, deletedAt: new Date().toISOString() } : u))
-    );
-    toast.success(t("users.toasts.softDeleted", { name: fullName(user) }));
-  }
-
-  function restore(user: User) {
-    setUserList((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, deletedAt: undefined, status: "active" } : u))
-    );
-    toast.success(t("users.deleted.toastRestored", { name: fullName(user) }));
-  }
-
-  function hardDelete(user: User) {
-    setUserList((prev) => prev.filter((u) => u.id !== user.id));
-    toast.error(t("users.deleted.toastHardDeleted", { name: fullName(user) }));
-  }
-
-  function handlePasswordChange(_password: string, id: number) {
-    const user = userList.find((u) => u.id === id);
-    toast.success(t("vendors.toasts.passwordChangedBody", { name: user ? fullName(user) : "" }), {
-      title: t("vendors.toasts.passwordChangedTitle"),
-    });
-  }
-
-  function handleFormSubmit(values: UserFormValues, editingId: number | null) {
-    const now = new Date().toISOString();
-
-    if (editingId != null) {
-      setUserList((prev) =>
-        prev.map((u) =>
-          u.id === editingId
-            ? {
-                ...u,
-                firstName: values.firstName,
-                lastName: values.lastName ?? "",
-                email: values.email || undefined,
-                phone: values.phone,
-                role: values.role,
-                language: values.language,
-                status: values.status,
-                username: values.username,
-                gender: values.gender || undefined,
-                birthday: values.birthday,
-                profilePicture: values.profilePicture,
-                profileBackground: values.profileBackground,
-                updatedAt: now,
-              }
-            : u
-        )
-      );
-      toast.success(
-        t("users.toasts.updated", { name: `${values.firstName} ${values.lastName}`.trim() })
-      );
-
-      return;
+  async function load() {
+    setLoading(true);
+    try {
+      // Vendors and admins have their own dedicated pages (/admin/vendors,
+      // seed-only admin) — this page is customer account management. Search
+      // and status are sent to the backend so filtering covers every
+      // customer, not just whatever page happens to be loaded.
+      const resp = await adminApi.listUsers({
+        role: "customer",
+        page,
+        limit: pageSize,
+        search: search || undefined,
+        status: status || undefined,
+      });
+      setUsers(resp.data);
+      setTotal(resp.pagination.total);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to load users"));
+    } finally {
+      setLoading(false);
     }
-
-    const nextId = Math.max(0, ...userList.map((u) => u.id)) + 1;
-    setUserList((prev) => [
-      ...prev,
-      {
-        id: nextId,
-        firstName: values.firstName,
-        lastName: values.lastName ?? "",
-        email: values.email || undefined,
-        phone: values.phone,
-        role: values.role,
-        language: values.language,
-        status: values.status,
-        username: values.username,
-        gender: values.gender || undefined,
-        birthday: values.birthday,
-        profilePicture: values.profilePicture,
-        profileBackground: values.profileBackground,
-        createdAt: now,
-        updatedAt: now,
-      },
-    ]);
-    toast.success(
-      t("users.toasts.created", { name: `${values.firstName} ${values.lastName}`.trim() })
-    );
   }
 
-  // ── Active tab columns ────────────────────────────────────────────────────
-  const activeColumns: ColumnDef<User>[] = [
+  // Search is debounced (and resets to page 1) so typing doesn't fire a
+  // request per keystroke; page/pageSize/status changes fetch immediately.
+  useEffect(() => {
+    const id = setTimeout(() => void load(), search ? SEARCH_DEBOUNCE_MS : 0);
+
+    return () => clearTimeout(id);
+     
+  }, [page, pageSize, status, search]);
+
+  async function handleSuspendConfirm(user: AdminUserRow) {
+    const nextStatus = user.status === "suspended" ? "active" : "suspended";
+    try {
+      await adminApi.updateUserStatus(user.id, nextStatus);
+      toast.success(`${user.firstName || user.phone} is now ${nextStatus}`);
+      setSuspendTarget(null);
+      void load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to update status"));
+    }
+  }
+
+  async function handleDeleteConfirm(user: AdminUserRow) {
+    try {
+      await adminApi.deleteUser(user.id);
+      toast.success(`${user.firstName || user.phone} deleted permanently`);
+      setDeleteTarget(null);
+      void load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to delete user"));
+    }
+  }
+
+  const columns: ColumnDef<AdminUserRow>[] = [
     {
-      key: "firstName",
-      header: t("users.columns.nameCompany"),
-      sortable: true,
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-          <span
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${avatarColor(fullName(row))}`}
-          >
-            {fullName(row)
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .slice(0, 2)}
-          </span>
-          <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{fullName(row)}</p>
-            {row.username && <p className="text-xs text-muted-foreground">@{row.username}</p>}
-          </div>
+      key: "name",
+      header: "Name",
+      render: (_v, row) => (
+        <div>
+          <p className="font-medium">
+            {row.firstName} {row.lastName}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{row.phone}</p>
         </div>
       ),
     },
+    { key: "email", header: "Email", render: (v) => (v as string) || "—" },
     {
       key: "role",
-      header: t("users.columns.userType"),
-      sortable: true,
+      header: "Role",
       render: (v) => (
         <span
-          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${roleBadge[v as User["role"]]}`}
+          className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${ROLE_BADGE[v as string] ?? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}
         >
-          {t(`common.status.${v as string}`)}
-        </span>
-      ),
-    },
-    {
-      key: "phone",
-      header: t("users.columns.phone"),
-      render: (v) => (
-        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Phone className="w-3.5 h-3.5 shrink-0" />
           {v as string}
         </span>
       ),
     },
     {
-      key: "email",
-      header: t("users.columns.email"),
+      key: "status",
+      header: "Status",
       render: (v) => (
-        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Mail className="w-3.5 h-3.5 shrink-0" />
-          {(v as string) || "—"}
+        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}>
+          {v as string}
         </span>
       ),
     },
-    { key: "createdAt", header: t("users.columns.registrationDate"), sortable: true },
     {
-      key: "status",
-      header: t("users.columns.status"),
+      key: "createdAt",
+      header: "Joined",
       sortable: true,
-      render: (v) => {
-        const s = statusStyle[v as User["status"]];
-
-        return (
-          <span
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${s.text} ${s.bg}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-            {t(`common.status.${v as string}`, v as string)}
-          </span>
-        );
-      },
+      render: (v) => new Date(v as string).toLocaleDateString(),
     },
   ];
 
-  const userRowActions: RowAction<User>[] = [
+  const rowActions: RowAction<AdminUserRow>[] = [
+    { label: "View", icon: Eye, onClick: (row) => setViewTarget(row) },
     {
-      label: t("common.actions.view"),
-      icon: Eye,
-      onClick: setViewTarget,
-    },
-    {
-      label: t("common.actions.edit"),
-      icon: Pencil,
-      onClick: setEditTarget,
-    },
-    {
-      label: t("users.view.changePasswordTitle"),
-      icon: KeyRound,
-      onClick: setPasswordTarget,
-    },
-    {
-      label: t("common.actions.activate"),
-      icon: ShieldCheck,
-      variant: "warning",
-      onClick: setSuspendTarget,
-      hidden: (r) => r.status !== "suspended",
-    },
-    {
-      label: t("common.actions.suspend"),
+      label: "Suspend",
       icon: ShieldOff,
       variant: "warning",
-      onClick: setSuspendTarget,
-      hidden: (r) => r.status === "suspended",
+      hidden: (row) => row.status === "suspended",
+      onClick: (row) => setSuspendTarget(row),
     },
     {
-      label: t("users.actions.delete"),
-      icon: Trash2,
-      variant: "destructive",
-      onClick: setDeleteTarget,
+      label: "Activate",
+      icon: ShieldCheck,
+      hidden: (row) => row.status !== "suspended",
+      onClick: (row) => setSuspendTarget(row),
     },
+    { label: "Delete permanently", icon: Trash2, variant: "destructive", onClick: (row) => setDeleteTarget(row) },
   ];
-
-  // ── Deleted tab columns ───────────────────────────────────────────────────
-  const deletedColumns: ColumnDef<User>[] = [
-    {
-      key: "firstName",
-      header: t("users.columns.user"),
-      render: (_, row) => (
-        <div className="flex items-center gap-3">
-          <span
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 opacity-60 ${avatarColor(fullName(row))}`}
-          >
-            {fullName(row)
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .slice(0, 2)}
-          </span>
-          <div className="min-w-0">
-            <p className="font-medium text-sm truncate line-through text-muted-foreground">
-              {fullName(row)}
-            </p>
-            {row.username && <p className="text-xs text-muted-foreground">@{row.username}</p>}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "email",
-      header: t("users.columns.email"),
-      render: (v) => (
-        <span className="text-sm text-muted-foreground line-through">{(v as string) || "—"}</span>
-      ),
-    },
-    {
-      key: "role",
-      header: t("users.columns.role"),
-      render: (v) => (
-        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-          {t(`common.status.${v as string}`, v as string)}
-        </span>
-      ),
-    },
-    {
-      key: "deletedAt",
-      header: t("users.columns.deletedAt"),
-      sortable: true,
-      render: (v) => <span className="text-sm text-muted-foreground">{v as string}</span>,
-    },
-    {
-      key: "id",
-      header: t("users.columns.actions"),
-      align: "right",
-      render: (_, row) => (
-        <div className="flex items-center justify-end gap-3">
-          <button
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
-            onClick={() => restore(row)}
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            {t("users.actions.restore")}
-          </button>
-          <button
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors"
-            onClick={() => setHardDeleteTarget(row)}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            {t("users.actions.hardDelete")}
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  const isSuspended = suspendTarget?.status === "suspended";
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("users.topbarTitle")}>
-      {/* Tabs */}
-      <div className="inline-flex items-center gap-1 bg-card border rounded-xl p-1 w-fit mb-6">
-        <button
-          onClick={() => setTab("active")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-            tab === "active"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Users className="w-4 h-4" />
-          {t("users.tabs.active")}
-          <span
-            className={cn(
-              "text-xs px-1.5 py-0.5 rounded-full font-bold",
-              tab === "active" ? "bg-white/20" : "bg-muted text-muted-foreground"
-            )}
-          >
-            {activeUsers.length}
-          </span>
-        </button>
-        <button
-          onClick={() => setTab("deleted")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-            tab === "deleted"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <UserMinus className="w-4 h-4" />
-          {t("users.tabs.deleted")}
-          <span
-            className={cn(
-              "text-xs px-1.5 py-0.5 rounded-full font-bold",
-              tab === "deleted" ? "bg-white/20" : "bg-muted text-muted-foreground"
-            )}
-          >
-            {deletedUsers.length}
-          </span>
-        </button>
-      </div>
-
-      {tab === "active" ? (
-        <DataTable<User>
-          title={t("users.title")}
-          description={t("users.description")}
-          data={activeUsers}
-          columns={activeColumns}
-          rowActions={userRowActions}
-          rowActionsVariant="inline"
-          rowKey="id"
-          searchable
-          searchPlaceholder={t("users.searchPlaceholder")}
-          searchKeys={["firstName", "lastName", "email"]}
-          filters={[
-            {
-              key: "role",
-              label: t("users.filterUserType"),
-              options: [
-                { label: t("common.status.user"), value: "user" },
-                { label: t("common.status.vendor"), value: "vendor" },
-                { label: t("common.status.admin"), value: "admin" },
-              ],
-            },
-            {
-              key: "status",
-              label: t("users.filterStatus"),
-              options: [
-                { label: t("common.status.active"), value: "active" },
-                { label: t("common.status.suspended"), value: "suspended" },
-                { label: t("common.status.inactive"), value: "inactive" },
-              ],
-            },
-          ]}
-          selectable
-          toolbarActions={[
-            {
-              label: t("common.actions.suspendSelected"),
-              icon: ShieldOff,
-              variant: "destructive",
-              requiresSelection: true,
-              onClick: (rows) => {
-                const ids = new Set(rows.map((r) => r.id));
-                setUserList((prev) =>
-                  prev.map((u) => (ids.has(u.id) ? { ...u, status: "suspended" } : u))
-                );
-                toast.success(t("users.toasts.suspendedSelected", { count: rows.length }));
-              },
-            },
-            {
-              label: t("users.addUser"),
-              icon: UserPlus,
-              variant: "default",
-              requiresSelection: false,
-              onClick: () => setAddDialogOpen(true),
-            },
-          ]}
-          pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 20] }}
-          defaultSort={{ key: "createdAt", direction: "desc" }}
-          striped
-          stats={[
-            {
-              title: t("users.stats.total"),
-              value: activeUsers.length,
-              icon: Users,
-              variant: "primary",
-              trend: { value: 8.1, label: t("users.stats.thisMonth") },
-            },
-            {
-              title: t("users.stats.active"),
-              value: active,
-              icon: UserCheck,
-              variant: "success",
-              trend: { value: 3.4, label: t("users.stats.vsLastMonth") },
-            },
-            {
-              title: t("users.stats.suspended"),
-              value: suspended,
-              icon: UserX,
-              variant: "danger",
-              trend: { value: suspended, label: t("users.stats.accounts"), positiveIsGood: false },
-            },
-            {
-              title: t("users.stats.pending"),
-              value: inactive,
-              icon: UserPlus,
-              variant: "warning",
-            },
-          ]}
-          emptyState={{ title: t("users.emptyTitle"), description: t("users.emptyDescription") }}
-        />
-      ) : (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
-            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-            <p>{t("users.deleted.warningBanner")}</p>
-          </div>
-          <DataTable<User>
-            title={t("users.deleted.title")}
-            description={t("users.deleted.description")}
-            data={deletedUsers}
-            columns={deletedColumns}
-            rowKey="id"
-            searchable
-            searchPlaceholder={t("users.deleted.searchPlaceholder")}
-            searchKeys={["firstName", "lastName", "email"]}
-            pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 20] }}
-            defaultSort={{ key: "deletedAt", direction: "desc" }}
-            striped
-            emptyState={{
-              title: t("users.deleted.emptyTitle"),
-              description: t("users.deleted.emptyDescription"),
-            }}
-          />
-        </div>
-      )}
-
-      {/* Modals */}
-      <UserViewDialog
-        open={!!viewTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setViewTarget(null);
+    <DashboardLayout sidebarItems={sidebarItems} topbarTitle="User Management">
+      <DataTable<AdminUserRow>
+        data={users}
+        columns={columns}
+        rowKey="id"
+        searchable
+        onSearchChange={(q) => {
+          setPage(1);
+          setSearch(q);
+        }}
+        filters={[
+          {
+            key: "status",
+            label: "Status",
+            options: [
+              { label: "Active", value: "active" },
+              { label: "Inactive", value: "inactive" },
+              { label: "Suspended", value: "suspended" },
+            ],
+          },
+        ]}
+        onFilterChange={(key, value) => {
+          if (key === "status") {
+            setPage(1);
+            setStatus(value);
           }
         }}
-        user={viewTarget}
-      />
-      <UserFormDialog
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        user={null}
-        onSubmit={handleFormSubmit}
-      />
-      <UserFormDialog
-        open={!!editTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setEditTarget(null);
-          }
+        rowActions={rowActions}
+        pagination={{
+          pageSize,
+          serverSide: true,
+          totalCount: total,
+          onPageChange: (p, s) => {
+            setPage(p);
+            setPageSize(s);
+          },
         }}
-        user={editTarget}
-        onSubmit={handleFormSubmit}
-      />
-      <UserPasswordDialog
-        open={!!passwordTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setPasswordTarget(null);
-          }
-        }}
-        user={passwordTarget}
-        onSubmit={handlePasswordChange}
+        loading={loading}
+        striped
       />
 
-      {/* Suspend confirm */}
+      <UserViewDialog open={!!viewTarget} onOpenChange={(o) => !o && setViewTarget(null)} user={viewTarget} />
+
       <ConfirmDialog
         open={!!suspendTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setSuspendTarget(null);
-          }
-        }}
-        title={isSuspended ? t("users.confirm.activateTitle") : t("users.confirm.suspendTitle")}
+        onOpenChange={(o) => !o && setSuspendTarget(null)}
+        title={suspendTarget?.status === "suspended" ? "Activate user?" : "Suspend user?"}
         description={
-          isSuspended
-            ? t("users.confirm.activateDesc", {
-                name: suspendTarget ? fullName(suspendTarget) : "",
-              })
-            : t("users.confirm.suspendDesc", { name: suspendTarget ? fullName(suspendTarget) : "" })
+          suspendTarget?.status === "suspended"
+            ? "This user will regain access immediately."
+            : "This user will be unable to log in until reactivated."
         }
-        confirmLabel={isSuspended ? t("common.actions.activate") : t("common.actions.suspend")}
-        variant={isSuspended ? "default" : "destructive"}
-        onConfirm={() => {
-          if (suspendTarget) {
-            handleSuspendConfirm(suspendTarget);
-          }
-
-          setSuspendTarget(null);
-        }}
+        variant={suspendTarget?.status === "suspended" ? "default" : "destructive"}
+        onConfirm={() => suspendTarget && handleSuspendConfirm(suspendTarget)}
       />
 
-      {/* Delete confirm */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setDeleteTarget(null);
-          }
-        }}
-        title={t("users.confirm.deleteTitle")}
-        description={t("users.confirm.deleteDesc", {
-          name: deleteTarget ? fullName(deleteTarget) : "",
-        })}
-        confirmLabel={t("users.actions.delete")}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete user permanently?"
+        description="This cannot be undone — the account and its data are removed immediately."
         variant="destructive"
-        onConfirm={() => {
-          if (deleteTarget) {
-            softDelete(deleteTarget);
-          }
-
-          setDeleteTarget(null);
-        }}
-      />
-
-      {/* Hard delete confirm */}
-      <ConfirmDialog
-        open={!!hardDeleteTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setHardDeleteTarget(null);
-          }
-        }}
-        title={t("users.deleted.confirmTitle")}
-        description={t("users.deleted.confirmDescription", {
-          name: hardDeleteTarget ? fullName(hardDeleteTarget) : "",
-        })}
-        confirmLabel={t("users.deleted.confirmLabel")}
-        variant="destructive"
-        onConfirm={() => {
-          if (hardDeleteTarget) {
-            hardDelete(hardDeleteTarget);
-          }
-
-          setHardDeleteTarget(null);
-        }}
+        confirmLabel="Delete"
+        onConfirm={() => deleteTarget && handleDeleteConfirm(deleteTarget)}
       />
     </DashboardLayout>
   );

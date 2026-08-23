@@ -74,7 +74,7 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
     return null;
   }
 
-  const reviewedBy = user ? titleCase(user.email.split("@")[0]) : "Admin";
+  const reviewedBy = user ? titleCase((user.email?.split("@")[0] ?? user.firstName) || "Admin") : "Admin";
 
   const approvalDate = new Date().toLocaleString();
 

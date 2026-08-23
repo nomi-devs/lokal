@@ -38,3 +38,23 @@ export class VendorResponseDto {
   @ApiProperty({ type: Vendor })
   vendor: Vendor;
 }
+
+export class KycUploadUrlResponseDto {
+  @ApiProperty({ example: true })
+  success: boolean;
+
+  @ApiProperty({
+    type: String,
+    description: 'PUT the file bytes directly to this URL',
+  })
+  uploadUrl: string;
+
+  @ApiProperty({
+    type: String,
+    description: 'Pass this back as kycDocumentUrl on POST /vendors/register',
+  })
+  fileUrl: string;
+
+  @ApiProperty({ type: Number, description: 'Seconds until uploadUrl expires' })
+  expiresIn: number;
+}

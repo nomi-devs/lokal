@@ -1,21 +1,35 @@
 import { z } from "zod";
-import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CheckCircle2, ShieldCheck } from "lucide-react";
 
-import type { AppDispatch } from "@/store";
-import { register } from "@/store/slices/authSlice";
+import { registerVendor, resendVendorOtp, uploadKycDocument, verifyVendorRegistration } from "@/lib/vendorsApi";
+import { getApiErrorMessage } from "@/lib/apiClient";
 import TopBanner from "@/components/layout/TopBanner";
 import DynamicForm from "@/components/form/DynamicForm";
 import type { FieldConfig } from "@/components/form/DynamicForm";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { OtpInput } from "@/components/ui/OtpInput";
+import { toast } from "@/components/ui/Toast";
 
+const OTP_RESEND_SECONDS = 30;
+
+// Vendor sign-up — the only real self-registration flow the dashboard has
+// (admins are seed-only, customers register via OTP on the mobile app).
+// Three steps, three endpoints: (1) fill in the full form → POST
+// /vendors/register emails an OTP and creates nothing yet; (2) verify it →
+// POST /vendors/verify-registration (same payload + otp) actually creates
+// the account; a mistyped/expired code can be re-sent via
+// POST /vendors/resend-otp. (3) the account is shown as pending KYC review.
 const registerSchema = z
   .object({
-    name: z.string().min(2, "Name is too short"),
+    phone: z.string().regex(/^\+[1-9]\d{6,14}$/, "Phone must be in E.164 format, e.g. +96500000000"),
+    firstName: z.string().min(2, "Too short"),
+    lastName: z.string().min(2, "Too short"),
     email: z.email("Invalid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    storeName: z.string().min(2, "Too short"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -23,36 +37,43 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
+type RegisterValues = z.infer<typeof registerSchema>;
+
 export default function RegisterPage() {
   const { t } = useTranslation();
-  const dispatch = useDispatch<AppDispatch>();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [kycFile, setKycFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registered, setRegistered] = useState<{ storeName: string; message: string } | null>(null);
+
+  // Set once the full form is submitted and the OTP has been sent — holds
+  // everything needed to actually create the account once the code is verified.
+  const [pending, setPending] = useState<{ values: RegisterValues; kycDocumentUrl: string } | null>(null);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+
+  useEffect(() => {
+    if (resendIn <= 0) {return;}
+
+    const id = setInterval(() => setResendIn((s) => Math.max(s - 1, 0)), 1000);
+
+    return () => clearInterval(id);
+  }, [resendIn]);
 
   const registerFields: FieldConfig[] = [
-    {
-      name: "name",
-      label: t("auth.register.nameLabel"),
-      type: "text",
-      placeholder: "John Doe",
-      autocomplete: "name",
-      col: 12,
-    },
-    {
-      name: "email",
-      label: t("auth.register.emailLabel"),
-      type: "email",
-      placeholder: "you@example.com",
-      autocomplete: "email",
-      col: 12,
-    },
+    { name: "storeName", label: "Store name", type: "text", placeholder: "Fashion Store", col: 12 },
+    { name: "firstName", label: "First name", type: "text", placeholder: "Ahmed", col: 6 },
+    { name: "lastName", label: "Last name", type: "text", placeholder: "Al-Rashid", col: 6 },
+    { name: "phone", label: "Phone", type: "phone", col: 6 },
+    { name: "email", label: t("auth.register.emailLabel"), type: "email", placeholder: "you@example.com", col: 6 },
     {
       name: "password",
       label: t("auth.register.passwordLabel"),
       type: "password",
       placeholder: "••••••••",
       autocomplete: "new-password",
-      col: 12,
+      col: 6,
     },
     {
       name: "confirmPassword",
@@ -60,97 +81,223 @@ export default function RegisterPage() {
       type: "password",
       placeholder: "••••••••",
       autocomplete: "new-password",
-      col: 12,
+      col: 6,
     },
+    { name: "kycDocument", label: "KYC document — business license or ID", type: "file", col: 12 },
   ];
 
-  function onSubmit(values: z.infer<typeof registerSchema>) {
-    console.log("Register attempt:", values);
-    dispatch(register(values));
+  // Step 1 → 2: upload the KYC doc, submit the full form (without `otp`) to
+  // have the code emailed, then move to the verify screen.
+  async function onSubmit(values: RegisterValues) {
+    if (!kycFile) {
+      toast.error("Please upload a KYC document (business license or ID) to register.", {
+        title: "KYC document required",
+      });
+
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      let kycDocumentUrl: string;
+      try {
+        kycDocumentUrl = await uploadKycDocument(kycFile);
+      } catch {
+        // This PUT goes straight to S3, not through our backend, so
+        // getApiErrorMessage's error envelope parsing doesn't apply — most
+        // often a blocked CORS preflight on the bucket, which surfaces to
+        // axios as a bare network error with no response body.
+        toast.error("Couldn't upload the KYC document. Please try again.", { title: "Upload failed" });
+
+        return;
+      }
+
+      await registerVendor({
+        phone: values.phone,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        storeName: values.storeName,
+        kycDocumentUrl,
+      });
+
+      setPending({ values, kycDocumentUrl });
+      setOtp("");
+      setResendIn(OTP_RESEND_SECONDS);
+      toast.success(`We've emailed a verification code to ${values.email}.`, { title: "Check your inbox" });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Couldn't send the verification code"), { title: "Send failed" });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  function getStrength(pw: string) {
-    if (!pw) {
-      return { label: "", color: "" };
+  // Step 2 → 3: resubmit the same payload with `otp` filled in to verify and
+  // actually create the account.
+  async function onVerify(code: string) {
+    if (!pending) {return;}
+
+    if (!/^\d{4,6}$/.test(code)) {
+      setOtpError("Enter the code we emailed you");
+
+      return;
     }
 
-    if (pw.length < 6) {
-      return { label: t("auth.register.strength.weak"), color: "bg-red-500" };
-    }
+    setOtpError(null);
+    setVerifying(true);
+    try {
+      const { values, kycDocumentUrl } = pending;
 
-    if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw) || !/[!@#$%^&*]/.test(pw)) {
-      return { label: t("auth.register.strength.medium"), color: "bg-yellow-500" };
-    }
+      const resp = await verifyVendorRegistration({
+        phone: values.phone,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        otp: code,
+        password: values.password,
+        storeName: values.storeName,
+        kycDocumentUrl,
+      });
 
-    return { label: t("auth.register.strength.strong"), color: "bg-green-500" };
+      setRegistered({ storeName: resp.vendor.storeName, message: resp.vendor.message });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Verification failed"), { title: "Verification failed" });
+    } finally {
+      setVerifying(false);
+    }
   }
 
-  const strength = getStrength(password);
-  const passwordsMatch = confirmPassword === password;
+  async function resendOtp() {
+    if (!pending || resendIn > 0) {return;}
+
+    setVerifying(true);
+    try {
+      await resendVendorOtp(pending.values.email);
+      setResendIn(OTP_RESEND_SECONDS);
+      toast.success(`We've re-sent the code to ${pending.values.email}.`, { title: "Code resent" });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Couldn't resend the code"), { title: "Send failed" });
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  if (registered) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <TopBanner />
+        <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 px-4 py-8">
+          <div className="w-full max-w-xl p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg text-center">
+            <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-green-500" />
+            <h1 className="text-2xl font-bold mb-2 text-primary dark:text-white">You're registered</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-1">
+              <span className="font-medium">{registered.storeName}</span> is now pending KYC approval.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{registered.message}</p>
+            <Link
+              to="/login"
+              className="inline-block rounded-md bg-primary px-6 py-2 text-white hover:opacity-90 transition-opacity"
+            >
+              Go to login
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (pending) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <TopBanner />
+        <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 px-4 py-8">
+          <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <ShieldCheck className="h-7 w-7 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2 text-primary dark:text-white">Enter Verification Code</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              We've sent a 6-digit code to <span className="font-medium text-primary">{pending.values.email}</span>{" "}
+              ·{" "}
+              <button type="button" className="text-primary hover:underline" onClick={() => setPending(null)}>
+                Change email
+              </button>
+            </p>
+
+            <OtpInput
+              value={otp}
+              onChange={(v) => {
+                setOtp(v);
+                setOtpError(null);
+              }}
+              onComplete={onVerify}
+              disabled={verifying}
+            />
+            {otpError && <p className="text-sm text-red-500 mt-2">{otpError}</p>}
+
+            <Button type="button" className="w-full mt-6" onClick={() => onVerify(otp)} disabled={verifying}>
+              {verifying ? "Verifying…" : "Verify Code"}
+            </Button>
+
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              Didn't receive the code?{" "}
+              {resendIn > 0 ? (
+                <span className="text-gray-400">Resend code in {resendIn}s</span>
+              ) : (
+                <button
+                  type="button"
+                  className="text-primary hover:underline"
+                  onClick={resendOtp}
+                  disabled={verifying}
+                >
+                  Resend code
+                </button>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
       <TopBanner />
-      <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold mb-3 text-primary dark:text-white">
-            {t("auth.register.title")}
-          </h1>
+      <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 px-4 py-8">
+        <div className="w-full max-w-xl p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+          <h1 className="text-2xl font-bold mb-1 text-primary dark:text-white">Become a vendor</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Create your store account — an admin will review and approve it before you can start selling.
+          </p>
 
           <DynamicForm
             schema={registerSchema}
             fields={registerFields}
             defaultValues={{
-              name: "",
+              storeName: "",
+              firstName: "",
+              lastName: "",
+              phone: "",
               email: "",
               password: "",
               confirmPassword: "",
             }}
             onSubmit={onSubmit}
-            submitText={t("auth.register.submit")}
-            // Track password values for live feedback
+            submitText="Continue"
+            isSubmitting={isSubmitting}
+            submittingText="Sending code…"
             onChange={(name, value) => {
-              if (name === "password") {
-                setPassword(value);
-              }
-
-              if (name === "confirmPassword") {
-                setConfirmPassword(value);
+              if (name === "kycDocument") {
+                setKycFile((value as File | undefined) ?? null);
               }
             }}
           />
 
-          {/* Password strength indicator */}
-          <div className="mt-2 min-h-[24px]">
-            {strength.label && (
-              <div className="flex items-center gap-2">
-                <div className={cn("h-2 w-20 rounded", strength.color)} />
-                <span className="text-sm text-gray-600 dark:text-gray-300">{strength.label}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Confirm password live check */}
-          <div className="mt-1 min-h-[10px]">
-            {confirmPassword && !passwordsMatch && (
-              <p className="text-xs text-red-500">{t("auth.register.passwordsDontMatch")}</p>
-            )}
-          </div>
-
-          {/* Links Section */}
-          <div className="mt-2 flex flex-col sm:flex-row sm:justify-between text-sm text-center sm:text-left">
+          <div className="mt-4 flex flex-col sm:flex-row sm:justify-between text-sm text-center sm:text-left">
             <Link to="/login" className="text-blue-500 hover:underline dark:text-blue-400">
               {t("auth.register.backToLogin")}
             </Link>
-            <span className="mt-2 sm:mt-0">
-              {t("auth.register.forgotOldOne")}{" "}
-              <Link
-                to="/forgot-password"
-                className="text-blue-500 hover:underline dark:text-blue-400"
-              >
-                {t("auth.register.resetPassword")}
-              </Link>
-            </span>
           </div>
         </div>
       </div>

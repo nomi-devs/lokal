@@ -28,7 +28,9 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
     searchable,
     searchPlaceholder,
     searchKeys,
+    onSearchChange,
     filters,
+    onFilterChange,
     defaultSort,
     selectable,
     onSelectionChange,
@@ -126,6 +128,50 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
     ? (paginationObj.totalCount ?? totalCount)
     : totalCount;
 
+  // In server-side mode the consumer owns fetching each page, so page/size
+  // changes need to reach them via onPageChange — internal state still
+  // tracks currentPage/pageSize for the Pagination UI itself.
+  const handlePageChange = useCallback(
+    (p: number) => {
+      setCurrentPage(p);
+
+      if (paginationObj?.serverSide) {
+        paginationObj.onPageChange?.(p, pageSize);
+      }
+    },
+    [setCurrentPage, paginationObj, pageSize]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (s: number) => {
+      setPageSize(s);
+
+      if (paginationObj?.serverSide) {
+        paginationObj.onPageChange?.(1, s);
+      }
+    },
+    [setPageSize, paginationObj]
+  );
+
+  // Search/filter changes reset back to page 1 (via setSearch/setFilter
+  // above) and, when a consumer callback is provided, notify it to refetch —
+  // same server-side handoff as page changes.
+  const handleSearchChange = useCallback(
+    (q: string) => {
+      setSearch(q);
+      onSearchChange?.(q);
+    },
+    [setSearch, onSearchChange]
+  );
+
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilter(key, value);
+      onFilterChange?.(key, value);
+    },
+    [setFilter, onFilterChange]
+  );
+
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       {/* Stats strip */}
@@ -152,10 +198,10 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
           searchable={searchable}
           searchPlaceholder={searchPlaceholder}
           searchQuery={searchQuery}
-          setSearch={setSearch}
+          setSearch={handleSearchChange}
           filters={filters}
           activeFilters={activeFilters}
-          setFilter={setFilter}
+          setFilter={handleFilterChange}
           toolbarActions={toolbarActions}
           selectedRows={selectedRows}
         />
@@ -312,8 +358,8 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
             totalPages={Math.max(1, Math.ceil(serverTotal / pageSize))}
             totalCount={serverTotal}
             pageSize={pageSize}
-            setCurrentPage={setCurrentPage}
-            setPageSize={setPageSize}
+            setCurrentPage={handlePageChange}
+            setPageSize={handlePageSizeChange}
             pageSizeOptions={pageSizeOptions}
           />
         )}

@@ -15,6 +15,7 @@ export class VendorMapper {
     domainEntity.phone = raw.phone;
     domainEntity.businessLicense = raw.businessLicense;
     domainEntity.logoUrl = raw.logoUrl;
+    domainEntity.kycDocumentUrl = raw.kycDocumentUrl;
     domainEntity.status = raw.status;
     domainEntity.approvedAt = raw.approvedAt;
     domainEntity.approvedBy = raw.approvedBy
@@ -60,6 +61,8 @@ export class VendorMapper {
       persistence.businessLicense = domainEntity.businessLicense;
     if (domainEntity.logoUrl !== undefined)
       persistence.logoUrl = domainEntity.logoUrl;
+    if (domainEntity.kycDocumentUrl !== undefined)
+      persistence.kycDocumentUrl = domainEntity.kycDocumentUrl;
     if (domainEntity.status !== undefined)
       persistence.status = domainEntity.status;
     if (domainEntity.approvedAt !== undefined)

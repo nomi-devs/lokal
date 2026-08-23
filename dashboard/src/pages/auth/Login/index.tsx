@@ -2,13 +2,12 @@
 import { useState } from "react";
 import { z } from "zod";
 import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ShieldCheck, Store } from "lucide-react";
 
 import type { AppDispatch, RootState } from "@/store";
-import { store } from "@/store";
-import { login } from "@/store/slices/authSlice";
+import { loginAsync } from "@/store/slices/authSlice";
 import { APP_CONFIG } from "@/config";
 import TopBanner from "@/components/layout/TopBanner";
 import DynamicForm from "@/components/form/DynamicForm";
@@ -20,24 +19,28 @@ const loginSchema = z.object({
   password: z.string().min(4, "Password must be at least 4 characters"),
 });
 
+// Real accounts on the local-be backend: the seeded admin (see
+// local-be's `npm run seed:admin`) plus any vendor already approved there.
+// Update these once your own seed/vendor data differs.
 const DEMO_ACCOUNTS = [
   {
     role: "admin" as const,
     icon: ShieldCheck,
-    email: "admin@gmail.com",
-    password: "admin123",
+    email: "admin@lokal.com",
+    password: "ChangeMe123!",
   },
   {
     role: "vendor" as const,
     icon: Store,
-    email: "vendor@gmail.com",
-    password: "vendor123",
+    email: "ahmed@store.com",
+    password: "VendorPass123",
   },
 ];
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
+  const isLoading = useSelector((state: RootState) => state.auth.isLoading);
   const [quickFill, setQuickFill] = useState<{ email: string; password: string } | null>(null);
 
   const loginFields: FieldConfig[] = [
@@ -59,14 +62,12 @@ export default function LoginPage() {
     },
   ];
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
-    dispatch(login(values));
-    const { error, isAuthenticated } = (store.getState() as RootState).auth;
-
-    if (isAuthenticated) {
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    try {
+      await dispatch(loginAsync({ identifier: values.email, password: values.password })).unwrap();
       toast.success(t("auth.login.successBody"), { title: t("auth.login.successTitle") });
-    } else if (error) {
-      toast.error(error, { title: t("auth.login.failTitle") });
+    } catch (error) {
+      toast.error(error as string, { title: t("auth.login.failTitle") });
     }
   }
 
@@ -87,12 +88,13 @@ export default function LoginPage() {
             schema={loginSchema}
             fields={loginFields}
             defaultValues={{
-              email: "admin@gmail.com",
-              password: "admin123",
+              email: "admin@lokal.com",
+              password: "ChangeMe123!",
             }}
             values={quickFill ?? undefined}
             onSubmit={onSubmit}
             submitText={t("auth.login.submit")}
+            isSubmitting={isLoading}
           />
 
           {/* Demo accounts */}

@@ -56,6 +56,13 @@ export class UsersDocumentRepository implements UserRepository {
     return found ? UserMapper.toDomain(found) : null;
   }
 
+  async findByIdWithPassword(id: string): Promise<NullableType<User>> {
+    const found = await this.userModel
+      .findOne({ _id: id, deletedAt: { $exists: false } })
+      .select('+passwordHash');
+    return found ? UserMapper.toDomain(found) : null;
+  }
+
   async findByEmail(email: string): Promise<NullableType<User>> {
     const found = await this.userModel.findOne({
       email,

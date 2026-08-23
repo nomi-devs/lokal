@@ -57,7 +57,7 @@ type PendingAction =
 
 export default function VendorProducts() {
   const { t } = useTranslation();
-  const vendorId = useSelector((state: RootState) => state.auth.user?.vendorId ?? 0);
+  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
 
   const [productList, setProductList] = useState<Product[]>(() =>
     products.filter((p) => p.vendorId === vendorId)

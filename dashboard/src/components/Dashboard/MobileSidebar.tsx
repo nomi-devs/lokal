@@ -7,12 +7,13 @@ import type { SidebarItem as SidebarItemType } from "./types";
 
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { logout } from "@/store/slices/authSlice";
+import { logoutAsync } from "@/store/slices/authSlice";
 import { cn } from "@/lib/utils";
 import { APP_CONFIG } from "@/config";
+import type { AppDispatch } from "@/store";
 
 export default function MobileSidebar({ items }: { items: SidebarItemType[] }) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
 
   return (
@@ -60,7 +61,7 @@ export default function MobileSidebar({ items }: { items: SidebarItemType[] }) {
         {/* Logout */}
         <div className="border-t border-sidebar-border p-2 shrink-0">
           <button
-            onClick={() => dispatch(logout())}
+            onClick={() => dispatch(logoutAsync())}
             className={cn(
               "flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/20 hover:text-white"
             )}

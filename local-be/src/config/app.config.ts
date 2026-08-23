@@ -19,6 +19,9 @@ class EnvironmentVariablesValidator {
   @Max(65535)
   @IsOptional()
   PORT: number;
+
+  @IsOptional()
+  CORS_ORIGINS: string;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -27,5 +30,11 @@ export default registerAs<AppConfig>('app', () => {
   return {
     nodeEnv: process.env.NODE_ENV || 'development',
     port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+    // Dashboard dev server defaults to :5173 (Vite) — add more via a
+    // comma-separated CORS_ORIGINS env var as other clients come online.
+    corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:5173')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
   };
 });

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { ChevronDown, Settings, LogOut } from "lucide-react";
 
 import type { AppDispatch, RootState } from "@/store";
-import { logout } from "@/store/slices/authSlice";
+import { logoutAsync } from "@/store/slices/authSlice";
 import { cn } from "@/lib/utils";
 
 function titleCase(value: string) {
@@ -49,7 +49,7 @@ export default function UserMenu() {
     return null;
   }
 
-  const localPart = user.email.split("@")[0];
+  const localPart = user.email?.split("@")[0] ?? user.firstName ?? user.phone;
   const displayName = titleCase(localPart);
   const roleLabel = titleCase(user.role);
   const initials = localPart.slice(0, 2).toUpperCase();
@@ -107,7 +107,7 @@ export default function UserMenu() {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              dispatch(logout());
+              dispatch(logoutAsync());
             }}
             className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
           >

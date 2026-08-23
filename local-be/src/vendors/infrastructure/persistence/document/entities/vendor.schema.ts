@@ -41,6 +41,12 @@ export class VendorSchemaClass extends EntityDocumentHelper {
   @Prop()
   logoUrl?: string;
 
+  // Uploaded via the same /files/upload-url presigned flow as everything
+  // else — a single KYC document (business license/ID) captured at registration
+  // for admin review; see VendorsService.register and the admin vendors endpoints.
+  @Prop()
+  kycDocumentUrl?: string;
+
   @Prop({ enum: VENDOR_STATUSES, default: 'pending_approval', index: true })
   status: VendorStatus;
 

@@ -16,13 +16,15 @@ const storage = {
   setItem: (key: string, value: string) => Promise.resolve(localStorage.setItem(key, value)),
   removeItem: (key: string) => Promise.resolve(localStorage.removeItem(key)),
 };
-import authReducer from "./slices/authSlice";
+import authReducer, { logoutAsync, tokenRefreshed } from "./slices/authSlice";
 import itemsReducer from "./slices/itemsSlice";
+
+import { configureApiClientAuth } from "@/lib/apiClient";
 
 const authPersistConfig = {
   key: "auth",
   storage,
-  whitelist: ["isAuthenticated", "user"],
+  whitelist: ["isAuthenticated", "user", "accessToken", "refreshToken"],
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,3 +49,10 @@ export const persistor = persistStore(store);
 type AuthState = ReturnType<typeof authReducer>;
 export type RootState = { auth: AuthState; items: ReturnType<typeof itemsReducer> };
 export type AppDispatch = typeof store.dispatch;
+
+configureApiClientAuth({
+  getAccessToken: () => (store.getState() as RootState).auth.accessToken,
+  getRefreshToken: () => (store.getState() as RootState).auth.refreshToken,
+  onTokenRefreshed: (tokens) => store.dispatch(tokenRefreshed(tokens)),
+  onRefreshFailed: () => void store.dispatch(logoutAsync()),
+});

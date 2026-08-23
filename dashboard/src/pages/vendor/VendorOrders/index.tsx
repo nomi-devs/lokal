@@ -79,7 +79,7 @@ const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }
 
 export default function VendorOrders() {
   const { t } = useTranslation();
-  const vendorId = useSelector((state: RootState) => state.auth.user?.vendorId ?? 0);
+  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
 
   const [rows, setRows] = useState<VendorOrderTableRow[]>(() =>
     getVendorOrders(vendorId).map((r) => ({

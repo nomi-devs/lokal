@@ -7,12 +7,13 @@ import type { SidebarItem as SidebarItemType } from "./types";
 import { useDashboard } from "./context";
 
 import { cn } from "@/lib/utils";
-import { logout } from "@/store/slices/authSlice";
+import { logoutAsync } from "@/store/slices/authSlice";
 import { APP_CONFIG } from "@/config";
+import type { AppDispatch } from "@/store";
 
 export default function DesktopSidebar({ items }: { items: SidebarItemType[] }) {
   const { sidebarState } = useDashboard();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
 
   const isPartial = sidebarState === "partial";
@@ -58,7 +59,7 @@ export default function DesktopSidebar({ items }: { items: SidebarItemType[] }) 
       {/* Logout */}
       <div className="border-t border-sidebar-border p-2 shrink-0">
         <button
-          onClick={() => dispatch(logout())}
+          onClick={() => dispatch(logoutAsync())}
           className={cn(
             "flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-destructive/20 hover:text-white",
             isPartial && "justify-center px-0"

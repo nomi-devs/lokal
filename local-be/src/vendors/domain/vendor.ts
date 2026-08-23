@@ -39,6 +39,13 @@ export class Vendor {
   logoUrl?: string;
 
   @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'KYC document (business license/ID) uploaded at registration',
+  })
+  kycDocumentUrl?: string;
+
+  @ApiProperty({
     enum: ['pending_approval', 'active', 'suspended', 'inactive'],
   })
   status: VendorStatus;

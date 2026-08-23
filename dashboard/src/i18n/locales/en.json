@@ -1334,28 +1334,22 @@
       "sections": {
         "generalInfo": "General Info",
         "accountStatus": "Account Status",
-        "verification": "Verification & Documents"
+        "verification": "Verification"
       },
       "fields": {
         "logo": "Store Logo",
-        "nameEnglish": "Store Name (English)",
-        "nameArabic": "Store Name (Arabic)",
+        "storeName": "Store Name",
         "description": "Store Description",
-        "email": "Email",
-        "phone": "Phone",
+        "phone": "Store Phone",
         "address": "Address",
         "ownerName": "Owner Name",
-        "category": "Category",
+        "ownerEmail": "Owner Email",
         "city": "City",
         "commission": "Commission",
         "memberSince": "Member Since",
         "approvedOn": "Approved On",
         "rating": "Rating",
-        "businessLicense": "Business License",
-        "taxId": "Tax ID",
-        "bankName": "Bank Name",
-        "accountNumber": "Account Number",
-        "documents": "Documents"
+        "kycDocument": "KYC Document"
       },
       "security": {
         "title": "Change Password",
@@ -1366,6 +1360,9 @@
         "updatedToast": {
           "title": "Password Updated",
           "body": "Your password has been changed."
+        },
+        "failedToast": {
+          "title": "Password Update Failed"
         }
       }
     },
@@ -1672,12 +1669,30 @@
     },
     "forgotPassword": {
       "title": "Forgot Password",
-      "subtitle": "Enter your email and we'll send you a reset link.",
+      "subtitle": "Enter your email and we'll send you a reset code.",
       "emailLabel": "Email",
-      "submit": "Send Reset Link",
+      "submit": "Send Reset Code",
+      "sending": "Sending…",
       "backToLogin": "Back to Login",
       "noAccount": "Don’t have an account?",
-      "register": "Register"
+      "register": "Register",
+      "codeSentToast": {
+        "title": "Check your inbox"
+      },
+      "reset": {
+        "title": "Reset Password",
+        "subtitle": "Enter the code we emailed to {{email}} along with your new password.",
+        "changeEmail": "Change email",
+        "codeLabel": "Verification code",
+        "newPasswordLabel": "New Password",
+        "confirmPasswordLabel": "Confirm New Password",
+        "submit": "Reset Password",
+        "resetting": "Resetting…",
+        "successToast": {
+          "title": "Password Reset",
+          "body": "Your password has been reset. You can now log in."
+        }
+      }
     }
   },
   "notFound": {

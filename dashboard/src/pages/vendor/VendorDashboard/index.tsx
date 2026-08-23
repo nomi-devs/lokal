@@ -73,7 +73,12 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 
 export default function VendorDashboard() {
   const { t } = useTranslation();
-  const vendorId = useSelector((state: RootState) => state.auth.user?.vendorId ?? 0);
+  // auth.user.vendorId is now the real backend's Mongo ObjectId string (see
+  // src/lib/authApi.ts), but products/orders here are still mock data keyed
+  // by small numeric ids (src/data/vendors.ts) — Number(...) safely falls
+  // back to 0 (no match) until vendor-scoped products/orders exist on the
+  // real backend too.
+  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
 
   const vendorProducts = products.filter((p) => p.vendorId === vendorId);
   const rows = getVendorOrders(vendorId);

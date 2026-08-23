@@ -19,15 +19,18 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.type'
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { UsersService } from '../users/users.service';
-import { VendorsService } from '../vendors/vendors.service';
+import { WishlistsService } from '../wishlists/wishlists.service';
+import { AddressesService } from '../addresses/addresses.service';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import {
   AdminUpdateUserStatusResponseDto,
+  AdminUserAddressesListResponseDto,
   AdminUserDetailResponseDto,
-  AdminUserListItemDto,
+  AdminUserWishlistListResponseDto,
   AdminUsersListResponseDto,
 } from './dto/admin-user-response.dto';
 
@@ -42,7 +45,8 @@ export class AdminUsersController {
 
   constructor(
     private readonly usersService: UsersService,
-    private readonly vendorsService: VendorsService,
+    private readonly wishlistsService: WishlistsService,
+    private readonly addressesService: AddressesService,
   ) {}
 
   @ApiOkResponse({ type: AdminUsersListResponseDto })
@@ -51,24 +55,10 @@ export class AdminUsersController {
     @Query() query: ListUsersQueryDto,
   ): Promise<AdminUsersListResponseDto> {
     const { data, total } = await this.usersService.list(query);
-    const vendorUserIds = data
-      .filter((u) => u.role === 'vendor')
-      .map((u) => u.id);
-    const vendors = vendorUserIds.length
-      ? await this.vendorsService.findManyByUserIds(vendorUserIds)
-      : [];
-    const vendorByUserId = new Map(vendors.map((v) => [v.userId, v]));
-
-    const items: AdminUserListItemDto[] = data.map((user) =>
-      Object.assign(new AdminUserListItemDto(), user, {
-        vendor:
-          user.role === 'vendor' ? (vendorByUserId.get(user.id) ?? null) : null,
-      }),
-    );
 
     return {
       success: true,
-      data: items,
+      data,
       pagination: { page: query.page, limit: query.limit, total },
     };
   }
@@ -81,6 +71,42 @@ export class AdminUsersController {
       throw new AppException(ERROR_CODES.USER_NOT_FOUND, 'User not found', 404);
     }
     return { success: true, user };
+  }
+
+  @ApiOkResponse({ type: AdminUserWishlistListResponseDto })
+  @Get(':id/wishlist')
+  async wishlist(
+    @Param('id') id: string,
+    @Query() query: PaginationQueryDto,
+  ): Promise<AdminUserWishlistListResponseDto> {
+    const { data, total } = await this.wishlistsService.findManyByUserId(
+      id,
+      query.page,
+      query.limit,
+    );
+    return {
+      success: true,
+      data,
+      pagination: { page: query.page, limit: query.limit, total },
+    };
+  }
+
+  @ApiOkResponse({ type: AdminUserAddressesListResponseDto })
+  @Get(':id/addresses')
+  async addresses(
+    @Param('id') id: string,
+    @Query() query: PaginationQueryDto,
+  ): Promise<AdminUserAddressesListResponseDto> {
+    const { data, total } = await this.addressesService.findManyByUserId(
+      id,
+      query.page,
+      query.limit,
+    );
+    return {
+      success: true,
+      data,
+      pagination: { page: query.page, limit: query.limit, total },
+    };
   }
 
   @ApiOkResponse({ type: AdminUpdateUserStatusResponseDto })

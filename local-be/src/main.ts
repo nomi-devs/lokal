@@ -20,6 +20,13 @@ async function bootstrap() {
   const configService = app.get(ConfigService<AllConfigType>);
   const port = configService.getOrThrow('app.port', { infer: true });
 
+  app.enableCors({
+    origin: configService.getOrThrow('app.corsOrigins', { infer: true }),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

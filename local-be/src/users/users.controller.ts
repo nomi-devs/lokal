@@ -16,6 +16,7 @@ import { ERROR_CODES } from '../common/exceptions/error-codes';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { DeleteAccountDto } from './dto/delete-account.dto';
 import { UpdateProfileResponseDto } from './dto/user-response.dto';
@@ -35,6 +36,20 @@ export class UsersController {
   ): Promise<UpdateProfileResponseDto> {
     const user = await this.usersService.updateProfile(currentUser.userId, dto);
     return { success: true, message: 'Profile updated successfully', user };
+  }
+
+  @ApiOkResponse({ type: MessageResponseDto })
+  @Put('change-password')
+  async changePassword(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<MessageResponseDto> {
+    await this.usersService.changePassword(
+      currentUser.userId,
+      dto.currentPassword,
+      dto.newPassword,
+    );
+    return { success: true, message: 'Password changed successfully' };
   }
 
   @ApiOkResponse({ type: MessageResponseDto })

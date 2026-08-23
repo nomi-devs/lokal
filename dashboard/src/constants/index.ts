@@ -21,19 +21,6 @@ import type { SidebarItem } from "@/components/Dashboard/types";
 
 // Colors and fonts → src/index.css  |  App name → src/config.ts
 
-export const mockUsers: {
-  id: string;
-  email: string;
-  password: string;
-  role: "admin" | "user" | "vendor";
-  vendorId?: number;
-}[] = [
-  { id: "1", email: "admin@gmail.com", password: "admin123", role: "admin" },
-  { id: "2", email: "user@gmail.com", password: "user123", role: "user" },
-  // Logs in as "Studio Line Interiors" — see src/data/vendors.ts (id 5)
-  { id: "3", email: "vendor@gmail.com", password: "vendor123", role: "vendor", vendorId: 5 },
-];
-
 export const sidebarItems: SidebarItem[] = [
   {
     label: "Overview",

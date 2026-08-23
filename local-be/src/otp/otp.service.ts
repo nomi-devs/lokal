@@ -51,7 +51,12 @@ export class OtpService {
     return otp;
   }
 
-  async verify(phone: string, otp: string): Promise<void> {
+  // Validates without consuming — lets a multi-step flow (e.g. dashboard
+  // forgot-password) confirm the code is correct on its own screen, before a
+  // later step calls verify() to actually consume it. Still enforces the
+  // same expiry/already-used/attempts rules and increments attempts on a
+  // wrong guess, so brute-force protection isn't weakened by peeking.
+  async checkValid(phone: string, otp: string): Promise<void> {
     const record = await this.otpRepository.findLatestByPhone(phone);
 
     if (!record) {
@@ -100,8 +105,15 @@ export class OtpService {
         400,
       );
     }
+  }
 
-    await this.otpRepository.markUsed(record.id);
+  async verify(phone: string, otp: string): Promise<void> {
+    await this.checkValid(phone, otp);
+
+    const record = await this.otpRepository.findLatestByPhone(phone);
+    if (record) {
+      await this.otpRepository.markUsed(record.id);
+    }
   }
 
   private randomOtp(): string {

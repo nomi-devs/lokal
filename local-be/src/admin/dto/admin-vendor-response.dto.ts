@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Product } from '../../products/domain/product';
 
 class AdminVendorListItemDto {
   @ApiProperty()
@@ -14,6 +15,9 @@ class AdminVendorListItemDto {
   ownerPhone?: string;
 
   @ApiProperty({ required: false })
+  ownerEmail?: string;
+
+  @ApiProperty({ required: false })
   city?: string;
 
   @ApiProperty({
@@ -26,6 +30,12 @@ class AdminVendorListItemDto {
 
   @ApiProperty({ required: false })
   message?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'KYC document uploaded at registration',
+  })
+  kycDocumentUrl?: string;
 }
 
 class PaginationDto {
@@ -45,6 +55,17 @@ export class AdminVendorsListResponseDto {
 
   @ApiProperty({ type: [AdminVendorListItemDto] })
   data: AdminVendorListItemDto[];
+
+  @ApiProperty({ type: PaginationDto })
+  pagination: PaginationDto;
+}
+
+export class AdminVendorProductsListResponseDto {
+  @ApiProperty({ example: true })
+  success: boolean;
+
+  @ApiProperty({ type: [Product] })
+  data: Product[];
 
   @ApiProperty({ type: PaginationDto })
   pagination: PaginationDto;

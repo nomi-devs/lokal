@@ -30,6 +30,13 @@ export function useDataTable<T extends RowData>(
 
   // ── Search + filter ────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
+    // Server-side mode: the consumer already returned the matching rows for
+    // the current search/filter state — narrowing again here would only
+    // flicker between the old data and the new query on every keystroke.
+    if (pagination && typeof pagination === "object" && pagination.serverSide) {
+      return data;
+    }
+
     let result = data;
 
     if (searchQuery.trim() && searchKeys && searchKeys.length > 0) {
@@ -50,7 +57,7 @@ export function useDataTable<T extends RowData>(
     });
 
     return result;
-  }, [data, searchQuery, searchKeys, activeFilters]);
+  }, [data, searchQuery, searchKeys, activeFilters, pagination]);
 
   // ── Sort ───────────────────────────────────────────────────────────────────
   const allFiltered = useMemo(() => {

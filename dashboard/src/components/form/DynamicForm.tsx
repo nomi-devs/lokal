@@ -1,11 +1,11 @@
 // src/components/form/DynamicForm.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Zod generic inference cannot bridge to react-hook-form's FieldValues without `any` casts here.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { z } from "zod";
 import type { ZodTypeAny } from "zod";
 import { useForm } from "react-hook-form";
-import { Eye, EyeOff } from "lucide-react"; // icons
+import { ChevronDown, Eye, EyeOff } from "lucide-react"; // icons
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -33,7 +33,14 @@ export type FieldType =
   | "file"
   | "select"
   | "textarea"
-  | "pdf";
+  | "pdf"
+  | "phone";
+
+// Dial-code choices for the "phone" field type's country dropdown.
+export const PHONE_COUNTRIES = [
+  { code: "KW", dialCode: "+965", flag: "🇰🇼", name: "Kuwait" },
+  { code: "SA", dialCode: "+966", flag: "🇸🇦", name: "Saudi Arabia" },
+] as const;
 
 /**
  * Single field config
@@ -63,6 +70,9 @@ interface DynamicFormProps<Schema extends ZodTypeAny> {
   onChange?: (name: string, value: any) => void; // ADDED: New optional onChange prop
   /** When this object changes (new reference), the form is reset to these values — e.g. a "fill demo credentials" action. */
   values?: Partial<z.infer<Schema>>;
+  /** Disables the submit button and swaps its label — e.g. while an async onSubmit is in flight. */
+  isSubmitting?: boolean;
+  submittingText?: string;
 }
 
 /**
@@ -72,6 +82,86 @@ interface DynamicFormProps<Schema extends ZodTypeAny> {
  */
 type NormalizeZodInfer<T> = T extends Record<string, any> ? T : Record<string, any>;
 
+// Splits a full E.164 value ("+96500000000") into the matching PHONE_COUNTRIES
+// entry and the remaining local digits, defaulting to the first country when
+// the value doesn't (yet) match one of the supported dial codes.
+function splitPhoneValue(value: string) {
+  const match = PHONE_COUNTRIES.find((c) => value.startsWith(c.dialCode));
+
+  return match
+    ? { country: match, local: value.slice(match.dialCode.length) }
+    : { country: PHONE_COUNTRIES[0], local: value.replace(/^\+\d*/, "") };
+}
+
+function PhoneField({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  const { country, local } = splitPhoneValue(value ?? "");
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative flex items-center rounded-full border bg-muted/40 dark:bg-gray-800">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 pl-4 pr-2 py-2.5 text-sm shrink-0"
+      >
+        <span>{country.flag}</span>
+        <span>{country.dialCode}</span>
+        <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+      </button>
+      <div className="h-5 w-px bg-border" />
+      <input
+        type="tel"
+        value={local}
+        maxLength={8}
+        placeholder={placeholder ?? "Enter phone number"}
+        className="flex-1 bg-transparent border-0 outline-none px-3 py-2.5 text-sm placeholder:text-gray-400"
+        onChange={(e) =>
+          onChange(`${country.dialCode}${e.target.value.replace(/[^\d]/g, "").slice(0, 8)}`)
+        }
+      />
+      {open && (
+        <div className="absolute z-10 top-full mt-1 left-0 w-48 rounded-md border bg-white dark:bg-gray-800 shadow-lg py-1">
+          {PHONE_COUNTRIES.map((c) => (
+            <button
+              key={c.code}
+              type="button"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-left"
+              onClick={() => {
+                onChange(`${c.dialCode}${local}`);
+                setOpen(false);
+              }}
+            >
+              <span>{c.flag}</span>
+              <span>{c.name}</span>
+              <span className="ml-auto text-gray-400">{c.dialCode}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DynamicForm<Schema extends ZodTypeAny>({
   schema,
   fields,
@@ -80,6 +170,8 @@ export default function DynamicForm<Schema extends ZodTypeAny>({
   submitText = "Submit",
   onChange, // ADDED: Destructure the new prop
   values,
+  isSubmitting = false,
+  submittingText,
 }: DynamicFormProps<Schema>) {
   // Infer form value type and ensure it extends FieldValues
   type Inferred = NormalizeZodInfer<z.infer<Schema>>;
@@ -137,6 +229,15 @@ export default function DynamicForm<Schema extends ZodTypeAny>({
                         onChange={(e) => {
                           controller.onChange(e);
                           onChange?.(field.name, e.target.value);
+                        }}
+                      />
+                    ) : field.type === "phone" ? (
+                      <PhoneField
+                        value={controller.value ?? ""}
+                        placeholder={field.placeholder}
+                        onChange={(value) => {
+                          controller.onChange(value);
+                          onChange?.(field.name, value);
                         }}
                       />
                     ) : field.type === "file" ? (
@@ -200,8 +301,8 @@ export default function DynamicForm<Schema extends ZodTypeAny>({
         ))}
 
         <div className="col-span-12">
-          <Button type="submit" className="w-full">
-            {submitText}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? (submittingText ?? submitText) : submitText}
           </Button>
         </div>
       </form>

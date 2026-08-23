@@ -1,298 +1,125 @@
-import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Clock, CheckCircle2, XCircle, Store, Eye } from "lucide-react";
-
-import KycDetailsDialog from "./KycDetailsDialog";
-import KycApproveDialog from "./KycApproveDialog";
-import KycRejectDialog from "./KycRejectDialog";
+import { useEffect, useState } from "react";
+import { CheckCircle2, FileText, XCircle } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils";
-import { initialVendors, type Vendor, type KycStatus } from "@/data/vendors";
+import { getApiErrorMessage } from "@/lib/apiClient";
+import * as adminApi from "@/lib/adminApi";
+import type { AdminVendorRow } from "@/lib/adminApi";
+import VendorApproveDialog from "@/components/vendor/VendorApproveDialog";
+import VendorRejectDialog from "@/components/vendor/VendorRejectDialog";
 
-const kycStatusStyle: Record<KycStatus, { text: string; bg: string; dot: string }> = {
-  pending: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    dot: "bg-amber-400",
-  },
-  approved: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  rejected: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    dot: "bg-red-500",
-  },
-};
-
-const avatarColors = [
-  "bg-violet-500",
-  "bg-blue-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-pink-500",
-  "bg-teal-500",
-];
-const avatarColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
-
-type KycRow = {
-  id: number;
-  nameEn: string;
-  nameAr: string;
-  ownerName: string;
-  category: string;
-  kycStatus: KycStatus;
-  submittedAt: string;
-  vendor: Vendor;
-};
-
-const todayIso = () => new Date().toISOString().slice(0, 10);
-
+// Focused queue of vendors awaiting approval — a filtered view over the same
+// data/endpoints as /admin/vendors, kept as its own page for admins who only
+// care about the review queue. See local-be's "KYC" == vendor pending_approval
+// + the optional kycDocumentUrl captured at registration.
 export default function KycVerificationPage() {
-  const { t } = useTranslation();
-  const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+  const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [approveTarget, setApproveTarget] = useState<AdminVendorRow | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<AdminVendorRow | null>(null);
 
-  const [viewTarget, setViewTarget] = useState<Vendor | null>(null);
-  const [approveTarget, setApproveTarget] = useState<Vendor | null>(null);
-  const [rejectTarget, setRejectTarget] = useState<Vendor | null>(null);
-
-  function approve(vendorId: number, notes: string, reviewedBy: string) {
-    const now = todayIso();
-
-    setVendors((prev) =>
-      prev.map((v) =>
-        v.id === vendorId
-          ? {
-              ...v,
-              kyc: {
-                ...v.kyc,
-                status: "approved",
-                approvedBy: reviewedBy,
-                approvalNotes: notes || undefined,
-                approvedAt: now,
-                rejectedAt: undefined,
-                documents: v.kyc.documents.map((d) => ({
-                  ...d,
-                  verifiedAt: d.verifiedAt ?? now,
-                })),
-              },
-            }
-          : v
-      )
-    );
-
-    const vendor = vendors.find((v) => v.id === vendorId);
-    toast.success(t("kyc.toasts.approvedBody", { name: vendor?.nameEn }), {
-      title: t("kyc.toasts.approvedTitle"),
-    });
+  async function load() {
+    setLoading(true);
+    try {
+      const { data } = await adminApi.listVendors({ status: "pending_approval" });
+      setVendors(data);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to load pending vendors"));
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function reject(vendorId: number, reason: string) {
-    const now = todayIso();
+  useEffect(() => {
+    void load();
+  }, []);
 
-    setVendors((prev) =>
-      prev.map((v) =>
-        v.id === vendorId
-          ? {
-              ...v,
-              kyc: {
-                ...v.kyc,
-                status: "rejected",
-                approvedBy: undefined,
-                approvalNotes: reason,
-                rejectedAt: now,
-              },
-            }
-          : v
-      )
-    );
-
-    const vendor = vendors.find((v) => v.id === vendorId);
-    toast.error(t("kyc.toasts.rejectedBody", { name: vendor?.nameEn }), {
-      title: t("kyc.toasts.rejectedTitle"),
-    });
+  async function handleApprove(id: string, notes: string) {
+    try {
+      await adminApi.approveVendor(id, notes || undefined);
+      toast.success("Vendor approved");
+      void load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to approve vendor"));
+    }
   }
 
-  const rows: KycRow[] = useMemo(
-    () =>
-      vendors.map((v) => ({
-        id: v.id,
-        nameEn: v.nameEn,
-        nameAr: v.nameAr,
-        ownerName: v.ownerName,
-        category: v.category,
-        kycStatus: v.kyc.status,
-        submittedAt: v.kyc.submittedAt,
-        vendor: v,
-      })),
-    [vendors]
-  );
+  async function handleReject(id: string, reason: string, category: string) {
+    try {
+      await adminApi.rejectVendor(id, reason, category);
+      toast.success("Vendor rejected");
+      void load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to reject vendor"));
+    }
+  }
 
-  const pendingCount = vendors.filter((v) => v.kyc.status === "pending").length;
-
-  const approvedTodayCount = vendors.filter(
-    (v) => v.kyc.status === "approved" && v.kyc.approvedAt === todayIso()
-  ).length;
-
-  const columns: ColumnDef<KycRow>[] = [
+  const columns: ColumnDef<AdminVendorRow>[] = [
+    { key: "storeName", header: "Store", render: (v) => <span className="font-medium">{v as string}</span> },
+    { key: "ownerName", header: "Owner", render: (v) => (v as string) || "—" },
+    { key: "ownerPhone", header: "Phone", render: (v) => (v as string) || "—" },
+    { key: "city", header: "City", render: (v) => (v as string) || "—" },
     {
-      key: "nameEn",
-      header: t("kyc.table.columns.vendor"),
-      sortable: true,
-      render: (_, row) => (
-        <div className="flex items-center gap-3 min-w-0">
-          <span
-            className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0",
-              avatarColor(row.nameEn)
-            )}
+      key: "kycDocumentUrl",
+      header: "Document",
+      render: (v) =>
+        v ? (
+          <a
+            href={v as string}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-primary hover:underline"
           >
-            {row.nameEn
-              .split(" ")
-              .map((n) => n[0])
-              .slice(0, 2)
-              .join("")}
-          </span>
-          <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{row.nameEn}</p>
-            <p className="text-xs text-muted-foreground truncate" dir="rtl">
-              {row.nameAr}
-            </p>
-          </div>
-        </div>
-      ),
+            <FileText className="w-4 h-4" />
+            View
+          </a>
+        ) : (
+          <span className="text-gray-400">Not provided</span>
+        ),
     },
-    { key: "ownerName", header: t("kyc.table.columns.owner"), sortable: true },
-    { key: "category", header: t("kyc.table.columns.category"), sortable: true },
     {
-      key: "kycStatus",
-      header: t("kyc.table.columns.status"),
+      key: "createdAt",
+      header: "Submitted",
       sortable: true,
-      render: (v) => {
-        const s = kycStatusStyle[v as KycStatus];
-
-        return (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
-              s.text,
-              s.bg
-            )}
-          >
-            <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
-            {t(`common.status.${v as string}`, v as string)}
-          </span>
-        );
-      },
+      render: (v) => new Date(v as string).toLocaleDateString(),
     },
-    { key: "submittedAt", header: t("kyc.table.columns.submitted"), sortable: true },
   ];
 
-  const rowActions: RowAction<KycRow>[] = [
-    { label: t("common.actions.viewDetails"), icon: Eye, onClick: (r) => setViewTarget(r.vendor) },
-    {
-      label: t("common.actions.approve"),
-      icon: CheckCircle2,
-      onClick: (r) => setApproveTarget(r.vendor),
-      hidden: (r) => r.kycStatus !== "pending",
-    },
-    {
-      label: t("common.actions.reject"),
-      icon: XCircle,
-      variant: "destructive",
-      onClick: (r) => setRejectTarget(r.vendor),
-      hidden: (r) => r.kycStatus !== "pending",
-    },
+  const rowActions: RowAction<AdminVendorRow>[] = [
+    { label: "Approve", icon: CheckCircle2, onClick: (row) => setApproveTarget(row) },
+    { label: "Reject", icon: XCircle, variant: "destructive", onClick: (row) => setRejectTarget(row) },
   ];
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("kyc.topbarTitle")}>
-      <DataTable<KycRow>
-        title={t("kyc.table.title")}
-        description={t("kyc.table.description")}
-        data={rows}
+    <DashboardLayout sidebarItems={sidebarItems} topbarTitle="KYC Verification">
+      <DataTable<AdminVendorRow>
+        data={vendors}
         columns={columns}
         rowKey="id"
         searchable
-        searchPlaceholder={t("kyc.table.searchPlaceholder")}
-        searchKeys={["nameEn", "nameAr", "ownerName"]}
-        filters={[
-          {
-            key: "kycStatus",
-            label: t("kyc.table.filterStatus"),
-            options: [
-              { label: t("common.status.pending"), value: "pending" },
-              { label: t("common.status.approved"), value: "approved" },
-              { label: t("common.status.rejected"), value: "rejected" },
-            ],
-          },
-        ]}
+        searchKeys={["storeName", "ownerName", "ownerPhone"]}
         rowActions={rowActions}
-        rowActionsVariant="inline"
-        pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 20] }}
-        defaultSort={{ key: "submittedAt", direction: "desc" }}
+        pagination={{ pageSize: 10 }}
+        loading={loading}
         striped
-        stats={[
-          {
-            title: t("kyc.stats.pending"),
-            value: pendingCount,
-            icon: Clock,
-            variant: "warning",
-          },
-          {
-            title: t("kyc.stats.approvedToday"),
-            value: approvedTodayCount,
-            icon: CheckCircle2,
-            variant: "success",
-          },
-          {
-            title: t("kyc.stats.totalVendors"),
-            value: vendors.length,
-            icon: Store,
-            variant: "primary",
-          },
-        ]}
-        emptyState={{
-          title: t("kyc.table.emptyTitle"),
-          description: t("kyc.table.emptyDescription"),
-        }}
+        emptyState={{ title: "No vendors pending review", description: "New registrations will show up here." }}
       />
 
-      <KycDetailsDialog
-        open={!!viewTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setViewTarget(null);
-          }
-        }}
-        vendor={viewTarget}
-      />
-      <KycApproveDialog
+      <VendorApproveDialog
         open={!!approveTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setApproveTarget(null);
-          }
-        }}
+        onOpenChange={(o) => !o && setApproveTarget(null)}
         vendor={approveTarget}
-        onApprove={approve}
+        onApprove={handleApprove}
       />
-      <KycRejectDialog
+      <VendorRejectDialog
         open={!!rejectTarget}
-        onOpenChange={(o) => {
-          if (!o) {
-            setRejectTarget(null);
-          }
-        }}
+        onOpenChange={(o) => !o && setRejectTarget(null)}
         vendor={rejectTarget}
-        onReject={reject}
+        onReject={handleReject}
       />
     </DashboardLayout>
   );

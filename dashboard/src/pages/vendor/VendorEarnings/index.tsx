@@ -34,7 +34,7 @@ const payoutStyle: Record<PayoutStatus, { text: string; bg: string }> = {
 
 export default function VendorEarnings() {
   const { t } = useTranslation();
-  const vendorId = useSelector((state: RootState) => state.auth.user?.vendorId ?? 0);
+  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
   const vendor = initialVendors.find((v) => v.id === vendorId);
   const commission = vendor?.commission ?? { type: "percentage" as const, value: 0 };
 

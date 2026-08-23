@@ -18,6 +18,7 @@ import appConfig from './config/app.config';
 import databaseConfig from './database/config/database.config';
 import authConfig from './auth/config/auth.config';
 import smsConfig from './sms/config/sms.config';
+import emailConfig from './email/config/email.config';
 import fileConfig from './files/config/file.config';
 import { AllConfigType } from './config/config.type';
 
@@ -25,7 +26,14 @@ import { AllConfigType } from './config/config.type';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig, smsConfig, fileConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        authConfig,
+        smsConfig,
+        emailConfig,
+        fileConfig,
+      ],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

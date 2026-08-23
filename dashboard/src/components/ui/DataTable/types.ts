@@ -95,9 +95,21 @@ export interface DataTableProps<T extends RowData> {
   searchPlaceholder?: string;
   /** Which keys to search across. Defaults to all visible string/number columns. */
   searchKeys?: (keyof T)[];
+  /**
+   * Server-side search: called whenever the search query changes, so the
+   * consumer can refetch. When `pagination.serverSide` is true, internal
+   * client-side search narrowing is skipped — `data` is trusted as-is.
+   */
+  onSearchChange?: (query: string) => void;
 
   // Filters
   filters?: FilterConfig[];
+  /**
+   * Server-side filters: called whenever a filter dropdown changes, so the
+   * consumer can refetch. When `pagination.serverSide` is true, internal
+   * client-side filter narrowing is skipped — `data` is trusted as-is.
+   */
+  onFilterChange?: (key: string, value: string) => void;
 
   // Sorting
   defaultSort?: { key: string; direction: "asc" | "desc" };

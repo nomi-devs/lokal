@@ -25,6 +25,10 @@ export class UsersService {
     return this.userRepository.findByPhone(phone);
   }
 
+  findByEmail(email: string): Promise<NullableType<User>> {
+    return this.userRepository.findByEmail(email);
+  }
+
   findById(id: string): Promise<NullableType<User>> {
     return this.userRepository.findById(id);
   }
@@ -105,6 +109,33 @@ export class UsersService {
   verifyPassword(user: User, password: string): Promise<boolean> {
     if (!user.passwordHash) return Promise.resolve(false);
     return compareWithBcrypt(password, user.passwordHash);
+  }
+
+  async setPassword(userId: string, password: string): Promise<void> {
+    const rounds = this.configService.getOrThrow('auth.bcryptRounds', {
+      infer: true,
+    });
+    const passwordHash = await hashWithBcrypt(password, rounds);
+    await this.userRepository.update(userId, { passwordHash });
+  }
+
+  // Authenticated change-password: requires knowing the current password
+  // (unlike the OTP-based forgot/reset-password flow).
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.userRepository.findByIdWithPassword(userId);
+    if (!user || !(await this.verifyPassword(user, currentPassword))) {
+      throw new AppException(
+        ERROR_CODES.UNAUTHORIZED,
+        'Current password is incorrect',
+        401,
+      );
+    }
+
+    await this.setPassword(userId, newPassword);
   }
 
   async touchLogin(userId: string, ip?: string): Promise<void> {
