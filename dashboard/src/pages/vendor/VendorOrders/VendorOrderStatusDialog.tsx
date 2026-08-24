@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pencil, Package, Check } from "lucide-react";
+import { Pencil, Package, Check, Truck } from "lucide-react";
 
-import type { Order, OrderStatus } from "@/data/orders";
+import { ORDER_TIMELINE } from "../../OrdersPage/orderTimeline";
+
+import type { Order, OrderDriver, UpdateVendorOrderStatusPayload } from "@/lib/ordersApi";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -15,58 +18,51 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-// Full timeline for the visual progress display — admin/dispatch owns everything from
-// "in_transit" onward, so the editable <select> below only offers steps up to "ready_for_pickup".
-const ORDER_TIMELINE: OrderStatus[] = [
-  "pending",
+// Only these three are vendor-triggerable — 'placed' happens automatically
+// at checkout and 'cancelled' is the customer's own action (see local-be's
+// UpdateOrderStatusDto).
+const VENDOR_ALLOWED_STATUSES: UpdateVendorOrderStatusPayload["status"][] = [
   "confirmed",
-  "preparing",
-  "ready_for_pickup",
   "in_transit",
   "delivered",
 ];
 
-const VENDOR_ALLOWED_STATUSES: OrderStatus[] = [
-  "pending",
-  "confirmed",
-  "preparing",
-  "ready_for_pickup",
-];
-
-export interface VendorOrderDetail {
-  order: Order;
-  status: OrderStatus;
-  amount: number;
-  customerName: string;
-  customerEmail: string;
-}
-
 export interface VendorOrderStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  detail: VendorOrderDetail | null;
-  onSave: (orderId: number, status: OrderStatus) => void;
+  order: Order | null;
+  onSave: (orderId: string, payload: UpdateVendorOrderStatusPayload) => void;
 }
 
 const selectCls =
   "h-10 w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring";
+const inputCls = "h-10";
+const labelRowCls = "flex items-center gap-1.5 mb-1.5";
 
 export default function VendorOrderStatusDialog({
   open,
   onOpenChange,
-  detail,
+  order,
   onSave,
 }: VendorOrderStatusDialogProps) {
   const { t } = useTranslation();
-  const [status, setStatus] = useState<OrderStatus>("pending");
+  const [status, setStatus] = useState<UpdateVendorOrderStatusPayload["status"]>("confirmed");
+  const [driverName, setDriverName] = useState("");
+  const [driverPhone, setDriverPhone] = useState("");
 
   useEffect(() => {
-    if (open && detail) {
-      setStatus(detail.status);
+    if (open && order) {
+      setStatus(
+        VENDOR_ALLOWED_STATUSES.includes(order.status as UpdateVendorOrderStatusPayload["status"])
+          ? (order.status as UpdateVendorOrderStatusPayload["status"])
+          : "confirmed"
+      );
+      setDriverName(order.driver?.name ?? "");
+      setDriverPhone(order.driver?.phone ?? "");
     }
-  }, [open, detail]);
+  }, [open, order]);
 
-  if (!detail) {
+  if (!order) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="p-0" />
@@ -74,11 +70,18 @@ export default function VendorOrderStatusDialog({
     );
   }
 
-  const { order } = detail;
-  const currentIdx = ORDER_TIMELINE.indexOf(detail.status);
+  const currentIdx = ORDER_TIMELINE.indexOf(order.status);
+  const isLocked = order.status === "delivered" || order.status === "cancelled";
+  const showDriverFields = status === "in_transit" || status === "delivered";
 
-  const isLocked =
-    detail.status !== "cancelled" && !VENDOR_ALLOWED_STATUSES.includes(detail.status);
+  function handleSave() {
+    const driver: OrderDriver | undefined = driverName.trim()
+      ? { name: driverName.trim(), phone: driverPhone.trim() }
+      : undefined;
+
+    onSave(order!.id, { status, driver });
+    onOpenChange(false);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,13 +94,12 @@ export default function VendorOrderStatusDialog({
             <DialogTitle>
               {t("vendor.orders.details.editTitle", { order: order.orderNumber })}
             </DialogTitle>
-            <DialogDescription>{detail.customerName}</DialogDescription>
+            <DialogDescription>{order.addressSnapshot.name}</DialogDescription>
           </div>
         </DialogHeader>
 
         <DialogBody className="flex flex-col gap-6">
-          {/* Timeline */}
-          {detail.status !== "cancelled" && (
+          {order.status !== "cancelled" && (
             <div className="flex items-center">
               {ORDER_TIMELINE.map((step, i) => (
                 <div key={step} className="flex items-center flex-1 last:flex-none">
@@ -133,7 +135,6 @@ export default function VendorOrderStatusDialog({
             </div>
           )}
 
-          {/* Items (brief) */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <Package className="w-4 h-4" />
@@ -143,14 +144,14 @@ export default function VendorOrderStatusDialog({
               {order.items.map((item, i) => (
                 <div key={i} className="flex items-center justify-between px-3 py-2 text-sm">
                   <p>
-                    {item.productNameEn}
+                    {item.name.en}
                     <span className="text-muted-foreground">
                       {" "}
                       · {t("vendor.orders.details.qty", { qty: item.qty })}
                     </span>
                   </p>
                   <span className="font-medium">
-                    {(item.qty * item.price).toLocaleString()} KWD
+                    {(item.qty * item.unitPrice).toLocaleString()} KWD
                   </span>
                 </div>
               ))}
@@ -159,47 +160,75 @@ export default function VendorOrderStatusDialog({
 
           <div className="flex items-center justify-between text-base font-bold pt-2 border-t">
             <span>{t("vendor.orders.details.yourTotal")}</span>
-            <span>{detail.amount.toLocaleString()} KWD</span>
+            <span>{order.total.toLocaleString()} KWD</span>
           </div>
 
-          {/* Status update */}
-          {detail.status !== "cancelled" && isLocked && (
+          {isLocked ? (
             <div className="rounded-lg border bg-muted/50 p-4 text-sm text-muted-foreground">
               {t("vendor.orders.details.statusLockedNote")}
             </div>
-          )}
-          {detail.status !== "cancelled" && !isLocked && (
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">
-                {t("vendor.orders.details.updateStatus")}
-              </label>
-              <select
-                className={selectCls}
-                value={status}
-                onChange={(e) => setStatus(e.target.value as OrderStatus)}
-              >
-                {VENDOR_ALLOWED_STATUSES.map((step) => (
-                  <option key={step} value={step}>
-                    {t(`common.status.${step}`, step)}
-                  </option>
-                ))}
-              </select>
-            </div>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">
+                  {t("vendor.orders.details.updateStatus")}
+                </label>
+                <select
+                  className={selectCls}
+                  value={status}
+                  onChange={(e) =>
+                    setStatus(e.target.value as UpdateVendorOrderStatusPayload["status"])
+                  }
+                >
+                  {VENDOR_ALLOWED_STATUSES.map((step) => (
+                    <option key={step} value={step}>
+                      {t(`common.status.${step}`, step)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {showDriverFields && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelRowCls}>
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium">
+                        <Truck className="w-3.5 h-3.5 text-primary" />
+                        {t("orders.statusDialog.riderName")}
+                      </span>
+                    </label>
+                    <Input
+                      className={inputCls}
+                      placeholder={t("orders.statusDialog.riderNamePlaceholder")}
+                      value={driverName}
+                      onChange={(e) => setDriverName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelRowCls}>
+                      <span className="text-sm font-medium">
+                        {t("orders.statusDialog.riderPhone")}
+                      </span>
+                    </label>
+                    <Input
+                      className={inputCls}
+                      placeholder={t("orders.statusDialog.riderPhonePlaceholder")}
+                      value={driverPhone}
+                      onChange={(e) => setDriverPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </DialogBody>
 
-        {detail.status !== "cancelled" && !isLocked && (
+        {!isLocked && (
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("vendor.products.dialog.close")}
             </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                onSave(order.id, status);
-                onOpenChange(false);
-              }}
-            >
+            <Button type="button" onClick={handleSave}>
               {t("vendor.orders.details.save")}
             </Button>
           </DialogFooter>

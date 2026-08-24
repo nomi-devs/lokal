@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XCircle } from "lucide-react";
 
-import type { Order } from "@/data/orders";
+import type { AdminReview } from "@/lib/reviewsApi";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,19 +22,19 @@ const textareaCls = cn(
   "min-h-24 resize-y"
 );
 
-export interface OrderCancelDialogProps {
+export interface RejectReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  order: Order | null;
-  onConfirm: (orderId: number, reason: string) => void;
+  review: AdminReview | null;
+  onConfirm: (reviewId: string, rejectionReason: string) => void;
 }
 
-export default function OrderCancelDialog({
+export default function RejectReviewDialog({
   open,
   onOpenChange,
-  order,
+  review,
   onConfirm,
-}: OrderCancelDialogProps) {
+}: RejectReviewDialogProps) {
   const { t } = useTranslation();
   const [reason, setReason] = useState("");
 
@@ -44,7 +44,7 @@ export default function OrderCancelDialog({
     }
   }, [open]);
 
-  if (!order) {
+  if (!review) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="p-0" />
@@ -60,18 +60,20 @@ export default function OrderCancelDialog({
             <XCircle className="w-5 h-5 text-destructive" />
           </div>
           <div className="min-w-0">
-            <DialogTitle>
-              {t("orders.cancelDialog.title", { order: order.orderNumber })}
-            </DialogTitle>
-            <DialogDescription>{t("orders.cancelDialog.description")}</DialogDescription>
+            <DialogTitle>{t("reviews.rejectDialog.title", "Reject review")}</DialogTitle>
+            <DialogDescription>
+              {t("reviews.rejectDialog.description", { title: review.title.en })}
+            </DialogDescription>
           </div>
         </DialogHeader>
 
         <DialogBody className="flex flex-col gap-3">
-          <Label className="text-sm font-medium">{t("orders.cancelDialog.reasonLabel")}</Label>
+          <Label className="text-sm font-medium">
+            {t("reviews.rejectDialog.reasonLabel", "Reason")}
+          </Label>
           <textarea
             className={textareaCls}
-            placeholder={t("orders.cancelDialog.reasonPlaceholder")}
+            placeholder={t("reviews.rejectDialog.reasonPlaceholder", "Why is this being rejected?")}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
@@ -79,18 +81,18 @@ export default function OrderCancelDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {t("orders.cancelDialog.close")}
+            {t("common.actions.cancel")}
           </Button>
           <Button
             type="button"
             variant="destructive"
             disabled={!reason.trim()}
             onClick={() => {
-              onConfirm(order.id, reason.trim());
+              onConfirm(review.id, reason.trim());
               onOpenChange(false);
             }}
           >
-            {t("orders.cancelDialog.confirm")}
+            {t("reviews.reject", "Reject")}
           </Button>
         </DialogFooter>
       </DialogContent>

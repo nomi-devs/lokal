@@ -1,13 +1,5 @@
-import type { OrderStatus } from "@/data/orders";
+import type { OrderStatus } from "@/lib/ordersApi";
 
-// Full timeline — admin/dispatch owns every step, unlike the vendor dialog which stops at
-// "ready_for_pickup" (see VendorOrderStatusDialog). Mirrors the mobile app's Order Tracking screen
-// (Order Confirmed → Preparing → Pick Up → In Transit → Delivered).
-export const ORDER_TIMELINE: OrderStatus[] = [
-  "pending",
-  "confirmed",
-  "preparing",
-  "ready_for_pickup",
-  "in_transit",
-  "delivered",
-];
+// Canonical lifecycle (see local-be's orders.constants.ts) — 'cancelled' is
+// a separate one-directional branch, not shown on this forward timeline.
+export const ORDER_TIMELINE: OrderStatus[] = ["placed", "confirmed", "in_transit", "delivered"];

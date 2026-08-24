@@ -1,30 +1,20 @@
-import { useSelector } from "react-redux";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShoppingCart, Package, DollarSign, Clock, TrendingUp, Star } from "lucide-react";
 import type { ChartData, ChartOptions } from "chart.js";
-
-import { getVendorOrders } from "../utils";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import Chart from "@/components/ui/Chart";
 import StatsCard from "@/components/ui/StatsCard";
 import { vendorSidebarItems } from "@/constants";
 import { cn } from "@/lib/utils";
-import type { RootState } from "@/store";
-import { products } from "@/data/products";
-import { users } from "@/data/users";
-import type { OrderStatus } from "@/data/orders";
+import { toast } from "@/components/ui/Toast";
+import { getApiErrorMessage } from "@/lib/apiClient";
+import { listVendorOrders, type Order, type OrderStatus } from "@/lib/ordersApi";
+import { listMyProducts, type Product } from "@/lib/productsApi";
 
-const userById = new Map(users.map((u) => [u.id, u]));
-
-const customerName = (userId: number) => {
-  const u = userById.get(userId);
-
-  return u ? `${u.firstName} ${u.lastName}`.trim() : "—";
-};
-
-const statusStyle: Record<string, { text: string; bg: string; dot: string }> = {
-  pending: {
+const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }> = {
+  placed: {
     text: "text-amber-700 dark:text-amber-400",
     bg: "bg-amber-100 dark:bg-amber-900/30",
     dot: "bg-amber-400",
@@ -33,16 +23,6 @@ const statusStyle: Record<string, { text: string; bg: string; dot: string }> = {
     text: "text-sky-700 dark:text-sky-400",
     bg: "bg-sky-100 dark:bg-sky-900/30",
     dot: "bg-sky-500",
-  },
-  preparing: {
-    text: "text-indigo-700 dark:text-indigo-400",
-    bg: "bg-indigo-100 dark:bg-indigo-900/30",
-    dot: "bg-indigo-500",
-  },
-  ready_for_pickup: {
-    text: "text-fuchsia-700 dark:text-fuchsia-400",
-    bg: "bg-fuchsia-100 dark:bg-fuchsia-900/30",
-    dot: "bg-fuchsia-500",
   },
   in_transit: {
     text: "text-violet-700 dark:text-violet-400",
@@ -62,62 +42,61 @@ const statusStyle: Record<string, { text: string; bg: string; dot: string }> = {
 };
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending: "#f59e0b",
+  placed: "#f59e0b",
   confirmed: "#3b82f6",
-  preparing: "#6366f1",
-  ready_for_pickup: "#d946ef",
   in_transit: "#8b5cf6",
   delivered: "#10b981",
   cancelled: "#ef4444",
 };
 
+const ALL_STATUSES: OrderStatus[] = ["placed", "confirmed", "in_transit", "delivered", "cancelled"];
+
 export default function VendorDashboard() {
   const { t } = useTranslation();
-  // auth.user.vendorId is now the real backend's Mongo ObjectId string (see
-  // src/lib/authApi.ts), but products/orders here are still mock data keyed
-  // by small numeric ids (src/data/vendors.ts) — Number(...) safely falls
-  // back to 0 (no match) until vendor-scoped products/orders exist on the
-  // real backend too.
-  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const vendorProducts = products.filter((p) => p.vendorId === vendorId);
-  const rows = getVendorOrders(vendorId);
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [ordersRes, productsRes] = await Promise.all([listVendorOrders(), listMyProducts()]);
+      setOrders(ordersRes.data);
+      setProducts(productsRes.data);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load dashboard"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const totalRevenue = rows
-    .filter((r) => r.status !== "cancelled")
-    .reduce((sum, r) => sum + r.amount, 0);
-  const pendingOrders = rows.filter((r) => r.status === "pending").length;
-  const avgOrderValue = rows.length ? totalRevenue / rows.length : 0;
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
-  const recentOrders = [...rows]
-    .sort((a, b) => (a.order.createdAt < b.order.createdAt ? 1 : -1))
+  const totalRevenue = orders
+    .filter((o) => o.status !== "cancelled")
+    .reduce((sum, o) => sum + o.total, 0);
+  const pendingOrders = orders.filter((o) => o.status === "placed").length;
+  const avgOrderValue = orders.length ? totalRevenue / orders.length : 0;
+
+  const recentOrders = [...orders]
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, 5);
 
-  const topProducts = [...vendorProducts]
-    .sort((a, b) => b.ratings.count - a.ratings.count)
-    .slice(0, 5);
+  const topProducts = [...products].sort((a, b) => b.ratingCount - a.ratingCount).slice(0, 5);
 
-  const statusCounts = (
-    [
-      "pending",
-      "confirmed",
-      "preparing",
-      "ready_for_pickup",
-      "in_transit",
-      "delivered",
-      "cancelled",
-    ] as const
-  ).map((status) => ({
+  const statusCounts = ALL_STATUSES.map((status) => ({
     status,
-    count: rows.filter((r) => r.status === status).length,
+    count: orders.filter((o) => o.status === status).length,
   }));
 
   const revenueChartData: ChartData<"bar"> = {
-    labels: rows.map((r) => r.order.orderNumber.replace("ORD-2026-", "#")),
+    labels: orders.map((o) => o.orderNumber),
     datasets: [
       {
         label: t("vendor.dashboard.revenueChart.title"),
-        data: rows.map((r) => r.amount),
+        data: orders.map((o) => o.total),
         backgroundColor: "#4a9b8e",
         borderRadius: 6,
         maxBarThickness: 40,
@@ -161,13 +140,13 @@ export default function VendorDashboard() {
   const stats = [
     {
       title: t("vendor.dashboard.stats.totalOrders"),
-      value: rows.length,
+      value: orders.length,
       icon: ShoppingCart,
       variant: "primary" as const,
     },
     {
       title: t("vendor.dashboard.stats.totalProducts"),
-      value: vendorProducts.length,
+      value: products.length,
       icon: Package,
       variant: "info" as const,
     },
@@ -202,7 +181,7 @@ export default function VendorDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {stats.map((s) => (
-            <StatsCard key={s.title} {...s} />
+            <StatsCard key={s.title} {...s} loading={loading} />
           ))}
         </div>
 
@@ -213,7 +192,7 @@ export default function VendorDashboard() {
             {t("vendor.dashboard.revenueChart.description")}
           </p>
           <div className="h-64">
-            {rows.length > 0 ? (
+            {orders.length > 0 ? (
               <Chart type="bar" data={revenueChartData} options={revenueChartOptions} />
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
@@ -229,7 +208,7 @@ export default function VendorDashboard() {
             <h2 className="font-bold text-base mb-5">
               {t("vendor.dashboard.ordersByStatus.title")}
             </h2>
-            {rows.length === 0 ? (
+            {orders.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">
                 {t("vendor.dashboard.recentOrders.empty")}
               </p>
@@ -270,29 +249,29 @@ export default function VendorDashboard() {
               </p>
             ) : (
               <div className="flex flex-col divide-y">
-                {recentOrders.map((r) => (
-                  <div key={r.order.id} className="flex items-center justify-between py-3">
+                {recentOrders.map((o) => (
+                  <div key={o.id} className="flex items-center justify-between py-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{r.order.orderNumber}</p>
+                      <p className="text-sm font-medium truncate">{o.orderNumber}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {customerName(r.order.userId)}
+                        {o.addressSnapshot.name}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span
                         className={cn(
                           "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
-                          statusStyle[r.status].text,
-                          statusStyle[r.status].bg
+                          statusStyle[o.status].text,
+                          statusStyle[o.status].bg
                         )}
                       >
                         <span
-                          className={cn("w-1.5 h-1.5 rounded-full", statusStyle[r.status].dot)}
+                          className={cn("w-1.5 h-1.5 rounded-full", statusStyle[o.status].dot)}
                         />
-                        {t(`common.status.${r.status}`, r.status)}
+                        {t(`common.status.${o.status}`, o.status)}
                       </span>
                       <span className="text-sm font-semibold w-20 text-right">
-                        {r.amount.toLocaleString()} KWD
+                        {o.total.toLocaleString()} KWD
                       </span>
                     </div>
                   </div>
@@ -320,19 +299,19 @@ export default function VendorDashboard() {
                     {p.images[0] && (
                       <img
                         src={p.images[0]}
-                        alt={p.nameEn}
+                        alt={p.name.en}
                         className="w-9 h-9 rounded-md object-cover border shrink-0"
                       />
                     )}
-                    <p className="text-sm font-medium truncate">{p.nameEn}</p>
+                    <p className="text-sm font-medium truncate">{p.name.en}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      {p.ratings.average.toFixed(1)} ({p.ratings.count})
+                      {p.rating.toFixed(1)} ({p.ratingCount})
                     </span>
                     <span className="text-sm font-semibold w-20 text-right">
-                      {p.price.base} {p.price.currency}
+                      {p.price.toLocaleString()} KWD
                     </span>
                   </div>
                 </div>

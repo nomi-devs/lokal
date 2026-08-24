@@ -9,6 +9,7 @@ export const MOBILE_API_TAGS = [
   'Files',
   'Categories',
   'Products',
+  'Stores',
   'Addresses',
   'Wishlist',
   'Cart',
@@ -17,6 +18,8 @@ export const MOBILE_API_TAGS = [
   'FAQ',
   'Banners',
   'Notifications',
+  'Reviews',
+  'Refunds',
 ];
 
 export const DASHBOARD_API_TAGS = [
@@ -36,4 +39,9 @@ export const DASHBOARD_API_TAGS = [
   'Vendor - Orders',
   'Notifications',
   'Admin - Notifications',
+  'Admin - Reviews',
+  'Admin - Payments',
+  'Admin - Promo Codes',
+  'Admin - Refunds',
+  'Admin - Settings',
 ];

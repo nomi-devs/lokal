@@ -227,6 +227,35 @@ export class VendorsService {
     return this.vendorRepository.findManyWithPagination(filters);
   }
 
+  // Public, unauthenticated: customer-app "Shop by Stores" — always forces
+  // status: 'active' regardless of what's passed in, same active-only scoping
+  // ProductsService.listPublic applies via findActiveVendorIds().
+  listPublic(filters: {
+    page: number;
+    limit: number;
+    search?: string;
+  }): Promise<{ data: Vendor[]; total: number }> {
+    return this.vendorRepository.findManyWithPagination({
+      ...filters,
+      status: 'active',
+    });
+  }
+
+  // Public, unauthenticated: customer-app Store Details page. 404s (not just
+  // "not found") for a pending/suspended/inactive store too, so a customer
+  // can't distinguish "no such store" from "store isn't live yet".
+  async findPublicByIdOrThrow(id: string): Promise<Vendor> {
+    const vendor = await this.vendorRepository.findById(id);
+    if (!vendor || vendor.status !== 'active') {
+      throw new AppException(
+        ERROR_CODES.VENDOR_NOT_FOUND,
+        'Vendor not found',
+        404,
+      );
+    }
+    return vendor;
+  }
+
   // One method for every admin-driven status transition (previously three:
   // approve/reject/suspend) — status picks the transition, see
   // UpdateVendorStatusDto for which fields apply to which status.
@@ -297,6 +326,17 @@ export class VendorsService {
   // broadcast-to-all-vendors path.
   findAllVendorUserIds(): Promise<string[]> {
     return this.vendorRepository.findAllUserIds();
+  }
+
+  // System-triggered (ReviewsService, after a review is approved/rejected/
+  // deleted) — bypasses updateStatus/updateProfile's owner-facing checks
+  // since this recomputes a derived aggregate, not a vendor-authored edit.
+  async updateRatingAggregate(
+    vendorId: string,
+    rating: number,
+    totalReviews: number,
+  ): Promise<void> {
+    await this.vendorRepository.update(vendorId, { rating, totalReviews });
   }
 
   private async getOrThrow(id: string): Promise<Vendor> {

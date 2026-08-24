@@ -1,11 +1,8 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShoppingCart, DollarSign, Clock, Eye, Pencil } from "lucide-react";
 
-import { getVendorOrders } from "../utils";
-
-import VendorOrderStatusDialog, { type VendorOrderDetail } from "./VendorOrderStatusDialog";
+import VendorOrderStatusDialog from "./VendorOrderStatusDialog";
 import VendorOrderViewDialog from "./VendorOrderViewDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
@@ -14,33 +11,17 @@ import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
-import type { RootState } from "@/store";
-import type { Order, OrderStatus } from "@/data/orders";
-import { users } from "@/data/users";
-
-const userById = new Map(users.map((u) => [u.id, u]));
-
-const customerName = (userId: number) => {
-  const u = userById.get(userId);
-
-  return u ? `${u.firstName} ${u.lastName}`.trim() : "—";
-};
-const customerEmail = (userId: number) => userById.get(userId)?.email ?? "—";
-
-type VendorOrderTableRow = {
-  id: number;
-  orderNumber: string;
-  customerName: string;
-  customerEmail: string;
-  items: number;
-  amount: number;
-  status: OrderStatus;
-  createdAt: string;
-  order: Order;
-};
+import {
+  listVendorOrders,
+  updateVendorOrderStatus,
+  type Order,
+  type OrderStatus,
+  type UpdateVendorOrderStatusPayload,
+} from "@/lib/ordersApi";
+import { getApiErrorMessage } from "@/lib/apiClient";
 
 const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }> = {
-  pending: {
+  placed: {
     text: "text-amber-700 dark:text-amber-400",
     bg: "bg-amber-100 dark:bg-amber-900/30",
     dot: "bg-amber-400",
@@ -49,16 +30,6 @@ const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }
     text: "text-sky-700 dark:text-sky-400",
     bg: "bg-sky-100 dark:bg-sky-900/30",
     dot: "bg-sky-500",
-  },
-  preparing: {
-    text: "text-indigo-700 dark:text-indigo-400",
-    bg: "bg-indigo-100 dark:bg-indigo-900/30",
-    dot: "bg-indigo-500",
-  },
-  ready_for_pickup: {
-    text: "text-fuchsia-700 dark:text-fuchsia-400",
-    bg: "bg-fuchsia-100 dark:bg-fuchsia-900/30",
-    dot: "bg-fuchsia-500",
   },
   in_transit: {
     text: "text-violet-700 dark:text-violet-400",
@@ -79,55 +50,48 @@ const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }
 
 export default function VendorOrders() {
   const { t } = useTranslation();
-  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [viewing, setViewing] = useState<Order | null>(null);
+  const [editing, setEditing] = useState<Order | null>(null);
 
-  const [rows, setRows] = useState<VendorOrderTableRow[]>(() =>
-    getVendorOrders(vendorId).map((r) => ({
-      id: r.order.id,
-      orderNumber: r.order.orderNumber,
-      customerName: customerName(r.order.userId),
-      customerEmail: customerEmail(r.order.userId),
-      items: r.order.items.length,
-      amount: r.amount,
-      status: r.status,
-      createdAt: r.order.createdAt,
-      order: r.order,
-    }))
-  );
-  const [viewing, setViewing] = useState<VendorOrderTableRow | null>(null);
-  const [editing, setEditing] = useState<VendorOrderTableRow | null>(null);
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await listVendorOrders();
+      setOrders(res.data);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load orders"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const totalRevenue = rows
-    .filter((r) => r.status !== "cancelled")
-    .reduce((sum, r) => sum + r.amount, 0);
-  const pending = rows.filter((r) => r.status === "pending").length;
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
-  function handleSaveStatus(orderId: number, status: OrderStatus) {
-    setRows((prev) => prev.map((r) => (r.id === orderId ? { ...r, status } : r)));
-    toast.success(
-      t("vendor.orders.toasts.statusUpdated", {
-        order: `#${orderId}`,
-        status: t(`common.status.${status}`, status),
-      })
-    );
+  const totalRevenue = orders
+    .filter((o) => o.status !== "cancelled")
+    .reduce((sum, o) => sum + o.total, 0);
+  const pending = orders.filter((o) => o.status === "placed").length;
+
+  async function handleSaveStatus(orderId: string, payload: UpdateVendorOrderStatusPayload) {
+    try {
+      const updated = await updateVendorOrderStatus(orderId, payload);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
+      toast.success(
+        t("vendor.orders.toasts.statusUpdated", {
+          order: updated.orderNumber,
+          status: t(`common.status.${payload.status}`, payload.status),
+        })
+      );
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    }
   }
 
-  function toDetail(row: VendorOrderTableRow | null): VendorOrderDetail | null {
-    return row
-      ? {
-          order: row.order,
-          status: row.status,
-          amount: row.amount,
-          customerName: row.customerName,
-          customerEmail: row.customerEmail,
-        }
-      : null;
-  }
-
-  const viewDetail = toDetail(viewing);
-  const editDetail = toDetail(editing);
-
-  const columns: ColumnDef<VendorOrderTableRow>[] = [
+  const columns: ColumnDef<Order>[] = [
     {
       key: "orderNumber",
       header: t("vendor.orders.columns.order"),
@@ -135,13 +99,18 @@ export default function VendorOrders() {
       render: (_, row) => (
         <div className="min-w-0">
           <p className="font-medium text-sm truncate">{row.orderNumber}</p>
-          <p className="text-xs text-muted-foreground truncate">{row.customerName}</p>
+          <p className="text-xs text-muted-foreground truncate">{row.addressSnapshot.name}</p>
         </div>
       ),
     },
-    { key: "items", header: t("vendor.orders.columns.items"), align: "right" },
     {
-      key: "amount",
+      key: "items",
+      header: t("vendor.orders.columns.items"),
+      align: "right",
+      render: (v) => (v as Order["items"]).length,
+    },
+    {
+      key: "total",
       header: t("vendor.orders.columns.total"),
       sortable: true,
       align: "right",
@@ -168,10 +137,15 @@ export default function VendorOrders() {
         );
       },
     },
-    { key: "createdAt", header: t("vendor.orders.columns.date"), sortable: true },
+    {
+      key: "createdAt",
+      header: t("vendor.orders.columns.date"),
+      sortable: true,
+      render: (v) => new Date(v as string).toLocaleDateString(),
+    },
   ];
 
-  const rowActions: RowAction<VendorOrderTableRow>[] = [
+  const rowActions: RowAction<Order>[] = [
     { label: t("common.actions.view"), icon: Eye, onClick: setViewing },
     {
       label: t("common.actions.edit"),
@@ -183,24 +157,23 @@ export default function VendorOrders() {
 
   return (
     <DashboardLayout sidebarItems={vendorSidebarItems} topbarTitle={t("vendor.orders.topbarTitle")}>
-      <DataTable<VendorOrderTableRow>
+      <DataTable<Order>
         title={t("vendor.orders.title")}
         description={t("vendor.orders.description")}
-        data={rows}
+        data={orders}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("vendor.orders.searchPlaceholder")}
-        searchKeys={["orderNumber", "customerName"]}
+        searchKeys={["orderNumber"]}
         filters={[
           {
             key: "status",
             label: t("vendor.orders.filterStatus"),
             options: [
-              { label: t("common.status.pending"), value: "pending" },
+              { label: t("common.status.placed", "Placed"), value: "placed" },
               { label: t("common.status.confirmed"), value: "confirmed" },
-              { label: t("common.status.preparing"), value: "preparing" },
-              { label: t("common.status.ready_for_pickup"), value: "ready_for_pickup" },
               { label: t("common.status.in_transit"), value: "in_transit" },
               { label: t("common.status.delivered"), value: "delivered" },
               { label: t("common.status.cancelled"), value: "cancelled" },
@@ -215,7 +188,7 @@ export default function VendorOrders() {
         stats={[
           {
             title: t("vendor.orders.stats.total"),
-            value: rows.length,
+            value: orders.length,
             icon: ShoppingCart,
             variant: "primary",
           },
@@ -242,13 +215,13 @@ export default function VendorOrders() {
       <VendorOrderViewDialog
         open={!!viewing}
         onOpenChange={(open) => !open && setViewing(null)}
-        detail={viewDetail}
+        order={viewing}
       />
 
       <VendorOrderStatusDialog
         open={!!editing}
         onOpenChange={(open) => !open && setEditing(null)}
-        detail={editDetail}
+        order={editing}
         onSave={handleSaveStatus}
       />
     </DashboardLayout>

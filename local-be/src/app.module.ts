@@ -21,6 +21,10 @@ import { FaqsModule } from './faqs/faqs.module';
 import { BannersModule } from './banners/banners.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PushModule } from './push/push.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { PromoCodesModule } from './promo-codes/promo-codes.module';
+import { RefundsModule } from './refunds/refunds.module';
+import { SettingsModule } from './settings/settings.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -79,6 +83,10 @@ import { AllConfigType } from './config/config.type';
     BannersModule,
     PushModule,
     NotificationsModule,
+    ReviewsModule,
+    PromoCodesModule,
+    RefundsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

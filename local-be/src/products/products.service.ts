@@ -142,12 +142,27 @@ export class ProductsService {
   }
 
   async listPublic(
-    filters: Omit<ListPublicProductsFilters, 'vendorIds'>,
+    filters: Omit<ListPublicProductsFilters, 'vendorIds'> & {
+      vendorId?: string;
+    },
   ): Promise<{ data: Product[]; total: number }> {
-    const vendorIds = await this.vendorsService.findActiveVendorIds();
+    const { vendorId, ...rest } = filters;
+
+    // A single vendorId (Store Details screen) still has to be active/
+    // approved — same visibility rule as the unscoped browse below, just
+    // checked directly instead of via findActiveVendorIds().
+    let vendorIds: string[];
+    if (vendorId) {
+      const vendor = await this.vendorsService.findById(vendorId);
+      if (!vendor || vendor.status !== 'active') return { data: [], total: 0 };
+      vendorIds = [vendorId];
+    } else {
+      vendorIds = await this.vendorsService.findActiveVendorIds();
+    }
     if (vendorIds.length === 0) return { data: [], total: 0 };
+
     return this.productRepository.findPublicWithPagination({
-      ...filters,
+      ...rest,
       vendorIds,
     });
   }
@@ -176,6 +191,17 @@ export class ProductsService {
 
   countByVendorId(vendorId: string): Promise<number> {
     return this.productRepository.countByVendorId(vendorId);
+  }
+
+  // System-triggered (ReviewsService, after a review is approved/rejected/
+  // deleted) — bypasses updateByVendor/updateByAdmin's ownership/validation
+  // checks since this recomputes a derived aggregate, not a vendor-authored edit.
+  async updateRatingAggregate(
+    productId: string,
+    rating: number,
+    ratingCount: number,
+  ): Promise<void> {
+    await this.productRepository.update(productId, { rating, ratingCount });
   }
 
   private async getOwnedByVendorOrThrow(

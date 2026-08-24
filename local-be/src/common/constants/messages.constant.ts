@@ -94,6 +94,15 @@ export const MESSAGES = {
     ADDED: { en: 'Added to wishlist', ar: 'تمت الإضافة إلى المفضلة' },
     REMOVED: { en: 'Removed from wishlist', ar: 'تمت الإزالة من المفضلة' },
   },
+  REVIEW: {
+    SUBMITTED: {
+      en: 'Review submitted — it will appear once approved',
+      ar: 'تم إرسال التقييم — سيظهر بعد الموافقة عليه',
+    },
+    DELETED: { en: 'Review deleted', ar: 'تم حذف التقييم' },
+    APPROVED: { en: 'Review approved', ar: 'تمت الموافقة على التقييم' },
+    REJECTED: { en: 'Review rejected', ar: 'تم رفض التقييم' },
+  },
   ORDER: {
     CANCELLED: { en: 'Order cancelled', ar: 'تم إلغاء الطلب' },
     STATUS_UPDATED: { en: 'Order status updated', ar: 'تم تحديث حالة الطلب' },

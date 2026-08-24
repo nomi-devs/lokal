@@ -12,6 +12,7 @@ import { AdminCategoriesController } from './admin-categories.controller';
 import { AdminProductsController } from './admin-products.controller';
 import { AdminDashboardController } from './admin-dashboard.controller';
 import { AdminOrdersController } from './admin-orders.controller';
+import { AdminPaymentsController } from './admin-payments.controller';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AdminOrdersController } from './admin-orders.controller';
     AdminProductsController,
     AdminDashboardController,
     AdminOrdersController,
+    AdminPaymentsController,
   ],
 })
 export class AdminModule {}

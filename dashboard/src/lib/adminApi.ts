@@ -358,3 +358,24 @@ export async function uploadCategoryIcon(file: File): Promise<string> {
 
   return data.fileUrl;
 }
+
+// ── Dashboard stats ───────────────────────────────────────────────────────────
+
+export interface AdminDashboardStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalVendors: number;
+  pendingApprovals: number;
+  activeVendors: number;
+  suspendedVendors: number;
+  registrations: { today: number; this_week: number; this_month: number };
+  newVendorApplications: number;
+}
+
+export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
+  const { data } = await apiClient.get<{ success: true; stats: AdminDashboardStats }>(
+    "/admin/dashboard/stats"
+  );
+
+  return data.stats;
+}

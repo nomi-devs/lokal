@@ -25,6 +25,12 @@ export class PublicListProductsQueryDto {
   @IsString()
   categoryId?: string;
 
+  // Scopes results to one store's products — used by the Store Details
+  // screen (see VendorsController.findOne for the store profile itself).
+  @IsOptional()
+  @IsString()
+  vendorId?: string;
+
   @IsOptional()
   @IsIn(['male', 'female', 'kids', 'unisex'])
   gender?: string;
