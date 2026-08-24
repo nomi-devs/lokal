@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export default function VendorApproveDialog({ open, onOpenChange, vendor, onApprove }: Props) {
+  const { t } = useTranslation();
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -51,16 +53,16 @@ export default function VendorApproveDialog({ open, onOpenChange, vendor, onAppr
             <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="min-w-0">
-            <DialogTitle>Approve vendor</DialogTitle>
-            <DialogDescription>{vendor.storeName} will be able to log in and start selling.</DialogDescription>
+            <DialogTitle>{t("vendors.approveModal.title")}</DialogTitle>
+            <DialogDescription>{t("vendors.approveModal.description", { storeName: vendor.storeName })}</DialogDescription>
           </div>
         </DialogHeader>
 
         <DialogBody>
-          <Label className="mb-1.5 block">Notes (optional)</Label>
+          <Label className="mb-1.5 block">{t("vendors.approveModal.notesLabel")}</Label>
           <textarea
             className={textareaCls}
-            placeholder="Documents verified and correct"
+            placeholder={t("vendors.approveModal.notesPlaceholder")}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
@@ -68,11 +70,11 @@ export default function VendorApproveDialog({ open, onOpenChange, vendor, onAppr
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("vendors.approveModal.cancel")}
           </Button>
           <Button type="button" onClick={submit} className="bg-emerald-600 text-white hover:bg-emerald-700">
             <CheckCircle2 className="w-4 h-4" />
-            Approve
+            {t("vendors.approveModal.approve")}
           </Button>
         </DialogFooter>
       </DialogContent>

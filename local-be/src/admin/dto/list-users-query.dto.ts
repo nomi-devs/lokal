@@ -15,7 +15,7 @@ export class ListUsersQueryDto {
   limit: number = 20;
 
   @IsOptional()
-  @IsIn(['customer', 'driver', 'vendor', 'admin'])
+  @IsIn(['customer', 'vendor', 'admin'])
   role?: string;
 
   @IsOptional()

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Calendar, Globe, Heart, Mail, MapPin, Package, Phone, ShieldCheck, User } from "lucide-react";
 
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 const PAGE_SIZE = 5;
 
 function UserWishlistTab({ userId }: { userId: string }) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<AdminWishlistItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -32,7 +34,7 @@ function UserWishlistTab({ userId }: { userId: string }) {
         setTotal(resp.pagination.total);
       })
       .catch((error) => {
-        toast.error(getApiErrorMessage(error, "Couldn't load wishlist"), { title: "Load failed" });
+        toast.error(getApiErrorMessage(error, t("users.viewDialog.loadWishlistFailed")), { title: t("common.failed", "Failed") });
       })
       .finally(() => {
         if (!cancelled) {setLoading(false);}
@@ -41,12 +43,12 @@ function UserWishlistTab({ userId }: { userId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, page]);
+  }, [userId, page, t]);
 
   const columns: ColumnDef<AdminWishlistItem>[] = [
     {
       key: "product",
-      header: "Product",
+      header: t("users.viewDialog.wishlistColumns.product"),
       render: (_v, row) => (
         <div className="flex items-center gap-2">
           {row.product?.images[0] ? (
@@ -56,16 +58,16 @@ function UserWishlistTab({ userId }: { userId: string }) {
               <Package className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
           )}
-          <span className="font-medium">{row.product?.nameEn ?? "—"}</span>
+          <span className="font-medium">{row.product?.name.en ?? "—"}</span>
         </div>
       ),
     },
     {
       key: "price",
-      header: "Price",
-      render: (_v, row) => (row.product ? `${row.product.price.base} ${row.product.price.currency}` : "—"),
+      header: t("users.viewDialog.wishlistColumns.price"),
+      render: (_v, row) => (row.product ? `${row.product.price}` : "—"),
     },
-    { key: "addedAt", header: "Added", render: (v) => new Date(v as string).toLocaleDateString() },
+    { key: "createdAt", header: t("users.viewDialog.wishlistColumns.added"), render: (v) => new Date(v as string).toLocaleDateString() },
   ];
 
   return (
@@ -80,12 +82,16 @@ function UserWishlistTab({ userId }: { userId: string }) {
         totalCount: total,
         onPageChange: (p) => setPage(p),
       }}
-      emptyState={{ title: "No wishlist items", description: "This user hasn't saved any products." }}
+      emptyState={{
+        title: t("users.viewDialog.emptyWishlist"),
+        description: t("users.viewDialog.emptyWishlistDesc"),
+      }}
     />
   );
 }
 
 function UserAddressesTab({ userId }: { userId: string }) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<AdminAddress[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -103,7 +109,7 @@ function UserAddressesTab({ userId }: { userId: string }) {
         setTotal(resp.pagination.total);
       })
       .catch((error) => {
-        toast.error(getApiErrorMessage(error, "Couldn't load addresses"), { title: "Load failed" });
+        toast.error(getApiErrorMessage(error, t("users.viewDialog.loadAddressesFailed")), { title: t("common.failed", "Failed") });
       })
       .finally(() => {
         if (!cancelled) {setLoading(false);}
@@ -112,26 +118,26 @@ function UserAddressesTab({ userId }: { userId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, page]);
+  }, [userId, page, t]);
 
   const columns: ColumnDef<AdminAddress>[] = [
     {
       key: "recipientName",
-      header: "Recipient",
+      header: t("users.viewDialog.addressColumns.recipient"),
       render: (_v, row) => (
         <div>
           <p className="font-medium">{row.recipientName}</p>
           <p className="text-xs text-muted-foreground capitalize">
             {row.type}
-            {row.isDefault ? " · Default" : ""}
+            {row.isDefault ? ` · ${t("users.viewDialog.addressColumns.default")}` : ""}
           </p>
         </div>
       ),
     },
-    { key: "phone", header: "Phone" },
+    { key: "phone", header: t("users.viewDialog.addressColumns.phone") },
     {
       key: "address",
-      header: "Address",
+      header: t("users.viewDialog.addressColumns.address"),
       render: (_v, row) => `${row.address}, ${row.city}, ${row.country}`,
     },
   ];
@@ -148,7 +154,10 @@ function UserAddressesTab({ userId }: { userId: string }) {
         totalCount: total,
         onPageChange: (p) => setPage(p),
       }}
-      emptyState={{ title: "No addresses", description: "This user hasn't saved any addresses." }}
+      emptyState={{
+        title: t("users.viewDialog.emptyAddresses"),
+        description: t("users.viewDialog.emptyAddressesDesc"),
+      }}
     />
   );
 }
@@ -167,6 +176,8 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function UserViewDialog({ open, onOpenChange, user }: Props) {
+  const { t } = useTranslation();
+
   if (!user) {return null;}
 
   const fullName = `${user.firstName} ${user.lastName}`.trim();
@@ -178,7 +189,9 @@ export default function UserViewDialog({ open, onOpenChange, user }: Props) {
           <InitialsAvatar name={fullName || user.phone} />
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-lg">{fullName || "—"}</DialogTitle>
-            <p className="text-sm text-muted-foreground truncate capitalize">{user.role}</p>
+            <p className="text-sm text-muted-foreground truncate capitalize">
+              {t(`common.status.${user.role}`, user.role)}
+            </p>
           </div>
           <span
             className={cn(
@@ -186,7 +199,7 @@ export default function UserViewDialog({ open, onOpenChange, user }: Props) {
               STATUS_STYLES[user.status]
             )}
           >
-            {user.status}
+            {t(`common.status.${user.status}`, user.status)}
           </span>
         </DialogHeader>
 
@@ -194,33 +207,37 @@ export default function UserViewDialog({ open, onOpenChange, user }: Props) {
           <TabsList className="px-6">
             <TabsTrigger value="details">
               <User className="h-3.5 w-3.5" />
-              Details
+              {t("users.viewDialog.tabs.details")}
             </TabsTrigger>
             <TabsTrigger value="wishlist">
               <Heart className="h-3.5 w-3.5" />
-              Wishlist
+              {t("users.viewDialog.tabs.wishlist")}
             </TabsTrigger>
             <TabsTrigger value="addresses">
               <MapPin className="h-3.5 w-3.5" />
-              Addresses
+              {t("users.viewDialog.tabs.addresses")}
             </TabsTrigger>
           </TabsList>
 
           <DialogBody className="pt-5">
             <TabsContent value="details" className="flex flex-col gap-5">
-              <DetailSection title="Contact Information" icon={User}>
-                <DetailRow icon={Phone} label="Phone" value={user.phone} />
-                <DetailRow icon={Mail} label="Email" value={user.email} />
-                <DetailRow icon={Globe} label="Language" value={user.language.toUpperCase()} />
-                <DetailRow icon={ShieldCheck} label="Phone verified" value={user.isPhoneVerified ? "Yes" : "No"} />
+              <DetailSection title={t("users.viewDialog.contactInfo")} icon={User}>
+                <DetailRow icon={Phone} label={t("users.viewDialog.phone")} value={user.phone} />
+                <DetailRow icon={Mail} label={t("users.viewDialog.email")} value={user.email} />
+                <DetailRow icon={Globe} label={t("users.viewDialog.language")} value={user.language.toUpperCase()} />
+                <DetailRow
+                  icon={ShieldCheck}
+                  label={t("users.viewDialog.phoneVerified")}
+                  value={user.isPhoneVerified ? t("users.viewDialog.yes") : t("users.viewDialog.no")}
+                />
               </DetailSection>
 
-              <DetailSection title="Account" icon={Calendar}>
-                <DetailRow icon={Calendar} label="Created" value={new Date(user.createdAt).toLocaleString()} />
+              <DetailSection title={t("users.viewDialog.account")} icon={Calendar}>
+                <DetailRow icon={Calendar} label={t("users.viewDialog.created")} value={new Date(user.createdAt).toLocaleString()} />
                 <DetailRow
                   icon={Calendar}
-                  label="Last login"
-                  value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "Never"}
+                  label={t("users.viewDialog.lastLogin")}
+                  value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : t("users.viewDialog.never")}
                 />
               </DetailSection>
             </TabsContent>

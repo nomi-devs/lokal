@@ -13,7 +13,7 @@ export const JWT_REFRESH_EXPIRES_IN_DEFAULT = '30d';
 export const JWT_REFRESH_EXPIRY_SECONDS_DEFAULT = 30 * 24 * 60 * 60;
 export const JWT_ACCESS_EXPIRY_SECONDS_DEFAULT = 24 * 60 * 60;
 
-export const ROLES = ['customer', 'driver', 'vendor', 'admin'] as const;
+export const ROLES = ['customer', 'vendor', 'admin'] as const;
 export type Role = (typeof ROLES)[number];
 
 export const USER_STATUSES = [

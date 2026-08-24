@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { Bell, Send } from "lucide-react";
 
+import type { AdminVendorRow } from "@/lib/adminApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,22 +20,24 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
+// Backend support is vendor-only (POST /admin/notifications/vendor) — an
+// empty vendorId broadcasts to every vendor instead of targeting one.
 const composeSchema = z.object({
+  vendorId: z.string(),
   title: z.string().min(1, "Title is required"),
+  titleAr: z.string().optional(),
   message: z.string().min(1, "Message is required"),
-  recipients: z.enum(["all", "admins", "vendors", "users"]),
-  type: z.enum(["Info", "Warning", "Alert", "System"]),
-  priority: z.enum(["Normal", "High", "Critical"]),
+  messageAr: z.string().optional(),
 });
 
 export type ComposeFormValues = z.infer<typeof composeSchema>;
 
 const emptyValues: ComposeFormValues = {
+  vendorId: "",
   title: "",
+  titleAr: "",
   message: "",
-  recipients: "all",
-  type: "Info",
-  priority: "Normal",
+  messageAr: "",
 };
 
 const selectCls =
@@ -44,12 +47,14 @@ const labelCls = "mb-1.5";
 export interface ComposeNotificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  vendors: AdminVendorRow[];
   onSubmit: (values: ComposeFormValues) => void;
 }
 
 export default function ComposeNotificationDialog({
   open,
   onOpenChange,
+  vendors,
   onSubmit,
 }: ComposeNotificationDialogProps) {
   const { t } = useTranslation();
@@ -92,6 +97,18 @@ export default function ComposeNotificationDialog({
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
             <div>
+              <Label className={labelCls}>{t("notificationsSend.compose.recipient")}</Label>
+              <select className={selectCls} {...register("vendorId")}>
+                <option value="">{t("notificationsSend.compose.allVendors")}</option>
+                {vendors.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.storeName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <Label className={labelCls}>
                 {t("notificationsSend.compose.titleLabel")}{" "}
                 <span className="text-destructive">*</span>
@@ -104,6 +121,11 @@ export default function ComposeNotificationDialog({
               {errors.title && (
                 <p className="text-xs text-destructive mt-1">{errors.title.message}</p>
               )}
+            </div>
+
+            <div>
+              <Label className={labelCls}>{t("notificationsSend.compose.titleArLabel")}</Label>
+              <Input className="h-10" dir="rtl" {...register("titleAr")} />
             </div>
 
             <div>
@@ -125,41 +147,17 @@ export default function ComposeNotificationDialog({
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className={labelCls}>{t("notificationsSend.compose.recipients")}</Label>
-                <select className={selectCls} {...register("recipients")}>
-                  <option value="all">{t("notificationsSend.compose.recipientOptions.all")}</option>
-                  <option value="admins">
-                    {t("notificationsSend.compose.recipientOptions.admins")}
-                  </option>
-                  <option value="vendors">
-                    {t("notificationsSend.compose.recipientOptions.vendors")}
-                  </option>
-                  <option value="users">
-                    {t("notificationsSend.compose.recipientOptions.users")}
-                  </option>
-                </select>
-              </div>
-
-              <div>
-                <Label className={labelCls}>{t("notificationsSend.compose.type")}</Label>
-                <select className={selectCls} {...register("type")}>
-                  <option value="Info">{t("common.status.info")}</option>
-                  <option value="Warning">{t("common.status.warning")}</option>
-                  <option value="Alert">{t("common.status.alert")}</option>
-                  <option value="System">{t("common.status.system")}</option>
-                </select>
-              </div>
-            </div>
-
             <div>
-              <Label className={labelCls}>{t("notificationsSend.compose.priority")}</Label>
-              <select className={selectCls} {...register("priority")}>
-                <option value="Normal">{t("common.status.normal")}</option>
-                <option value="High">{t("common.status.high")}</option>
-                <option value="Critical">{t("common.status.critical")}</option>
-              </select>
+              <Label className={labelCls}>{t("notificationsSend.compose.messageArLabel")}</Label>
+              <textarea
+                rows={3}
+                dir="rtl"
+                className={cn(
+                  "w-full rounded-md border bg-transparent px-3 py-2.5 text-sm resize-none",
+                  "focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
+                )}
+                {...register("messageAr")}
+              />
             </div>
           </DialogBody>
 

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Send, Users, Bell, AlertTriangle } from "lucide-react";
+import { Send, Bell } from "lucide-react";
 
 import ComposeNotificationDialog, { type ComposeFormValues } from "./ComposeNotificationDialog";
 
@@ -9,46 +9,68 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
-import { sentHistory as initialSentHistory, type SentNotification } from "@/data/notifications";
+import { getApiErrorMessage } from "@/lib/apiClient";
+import * as adminApi from "@/lib/adminApi";
+import type { AdminVendorRow } from "@/lib/adminApi";
+import * as notificationsApi from "@/lib/notificationsApi";
 
-const typeStyle: Record<string, string> = {
-  Info: "text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30",
-  Warning: "text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30",
-  Alert: "text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/30",
-  System: "text-slate-700 bg-slate-100 dark:text-slate-300 dark:bg-slate-800",
-};
-
-const recipientLabel: Record<ComposeFormValues["recipients"], string> = {
-  all: "All Users",
-  admins: "Admins",
-  vendors: "Vendors",
-  users: "Users",
-};
+// There's no backend endpoint to list past admin->vendor broadcasts (only to
+// send one), so this table only tracks what was sent during this browser
+// session — it resets on reload.
+interface SentEntry {
+  id: string;
+  title: string;
+  recipient: string;
+  sentAt: string;
+  // DataTable's RowData constraint requires an index signature.
+  [key: string]: unknown;
+}
 
 export default function SendNotificationsPage() {
   const { t } = useTranslation();
-  const [sentList, setSentList] = useState<SentNotification[]>(initialSentHistory);
+  const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
+  const [sentList, setSentList] = useState<SentEntry[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  function handleCompose(values: ComposeFormValues) {
-    const nextId = Math.max(0, ...sentList.map((n) => n.id)) + 1;
+  useEffect(() => {
+    adminApi
+      .listVendors()
+      .then((resp) => setVendors(resp.data))
+      .catch((error: unknown) =>
+        toast.error(getApiErrorMessage(error, t("notificationsSend.toasts.loadVendorsFailed")))
+      );
+  }, [t]);
 
-    setSentList((prev) => [
-      {
-        id: nextId,
+  async function handleCompose(values: ComposeFormValues) {
+    const recipient = values.vendorId
+      ? (vendors.find((v) => v.id === values.vendorId)?.storeName ?? values.vendorId)
+      : t("notificationsSend.compose.allVendors");
+
+    try {
+      await notificationsApi.sendVendorNotification({
+        vendorId: values.vendorId || undefined,
         title: values.title,
-        recipients: recipientLabel[values.recipients],
-        type: values.type,
-        priority: values.priority,
-        sentAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-        delivered: 0,
-      },
-      ...prev,
-    ]);
-    toast.success(t("notificationsSend.compose.sentConfirmation"));
+        titleAr: values.titleAr || undefined,
+        message: values.message,
+        messageAr: values.messageAr || undefined,
+      });
+
+      setSentList((prev) => [
+        {
+          id: `${Date.now()}`,
+          title: values.title,
+          recipient,
+          sentAt: new Date().toLocaleString(),
+        },
+        ...prev,
+      ]);
+      toast.success(t("notificationsSend.compose.sentConfirmation"));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t("notificationsSend.compose.sendFailed")));
+    }
   }
 
-  const columns: ColumnDef<SentNotification>[] = [
+  const columns: ColumnDef<SentEntry>[] = [
     {
       key: "title",
       header: t("notificationsSend.history.columns.title"),
@@ -56,39 +78,14 @@ export default function SendNotificationsPage() {
       render: (v) => <span className="font-medium text-sm">{v as string}</span>,
     },
     {
-      key: "recipients",
-      header: t("notificationsSend.history.columns.recipients"),
+      key: "recipient",
+      header: t("notificationsSend.history.columns.recipient"),
       sortable: true,
-    },
-    {
-      key: "type",
-      header: t("notificationsSend.history.columns.type"),
-      sortable: true,
-      render: (v) => (
-        <span
-          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${typeStyle[v as string] ?? ""}`}
-        >
-          {t(`common.status.${(v as string).toLowerCase()}`, v as string)}
-        </span>
-      ),
-    },
-    {
-      key: "priority",
-      header: t("notificationsSend.history.columns.priority"),
-      sortable: true,
-      render: (v) => t(`common.status.${(v as string).toLowerCase()}`, v as string),
-    },
-    {
-      key: "delivered",
-      header: t("notificationsSend.history.columns.delivered"),
-      sortable: true,
-      align: "right",
-      render: (v) => <span className="font-semibold">{(v as number).toLocaleString()}</span>,
     },
     { key: "sentAt", header: t("notificationsSend.history.columns.sentAt"), sortable: true },
   ];
 
-  const toolbarActions: ToolbarAction<SentNotification>[] = [
+  const toolbarActions: ToolbarAction<SentEntry>[] = [
     {
       label: t("notificationsSend.compose.submit"),
       icon: Send,
@@ -100,7 +97,7 @@ export default function SendNotificationsPage() {
 
   return (
     <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("notificationsSend.topbarTitle")}>
-      <DataTable<SentNotification>
+      <DataTable<SentEntry>
         title={t("notificationsSend.history.title")}
         description={t("notificationsSend.history.description")}
         data={sentList}
@@ -108,28 +105,7 @@ export default function SendNotificationsPage() {
         rowKey="id"
         searchable
         searchPlaceholder={t("notificationsSend.history.searchPlaceholder")}
-        searchKeys={["title", "recipients"]}
-        filters={[
-          {
-            key: "type",
-            label: t("notificationsSend.history.filterType"),
-            options: [
-              { label: t("common.status.info"), value: "Info" },
-              { label: t("common.status.warning"), value: "Warning" },
-              { label: t("common.status.alert"), value: "Alert" },
-              { label: t("common.status.system"), value: "System" },
-            ],
-          },
-          {
-            key: "priority",
-            label: t("notificationsSend.history.filterPriority"),
-            options: [
-              { label: t("common.status.normal"), value: "Normal" },
-              { label: t("common.status.high"), value: "High" },
-              { label: t("common.status.critical"), value: "Critical" },
-            ],
-          },
-        ]}
+        searchKeys={["title", "recipient"]}
         toolbarActions={toolbarActions}
         defaultSort={{ key: "sentAt", direction: "desc" }}
         pagination={{ pageSize: 5 }}
@@ -140,24 +116,6 @@ export default function SendNotificationsPage() {
             icon: Bell,
             variant: "primary",
           },
-          {
-            title: t("notificationsSend.history.stats.totalDelivered"),
-            value: sentList.reduce((s, n) => s + n.delivered, 0).toLocaleString(),
-            icon: Users,
-            variant: "success",
-          },
-          {
-            title: t("notificationsSend.history.stats.highPriority"),
-            value: sentList.filter((n) => n.priority === "High").length,
-            icon: AlertTriangle,
-            variant: "warning",
-          },
-          {
-            title: t("notificationsSend.history.stats.criticalSent"),
-            value: sentList.filter((n) => n.priority === "Critical").length,
-            icon: AlertTriangle,
-            variant: "danger",
-          },
         ]}
         emptyState={{ title: t("notificationsSend.history.emptyTitle") }}
       />
@@ -165,6 +123,7 @@ export default function SendNotificationsPage() {
       <ComposeNotificationDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        vendors={vendors}
         onSubmit={handleCompose}
       />
     </DashboardLayout>

@@ -1,67 +1,89 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bell, BellOff, AlertTriangle, CheckCheck, Trash2, Eye } from "lucide-react";
-
-import { getVendorNotifications, type VendorNotificationRow } from "../utils";
+import { Bell, BellOff, Megaphone, ShoppingBag, CheckCheck, Eye } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { vendorSidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
-import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
+import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
-import type { RootState } from "@/store";
+import { getApiErrorMessage } from "@/lib/apiClient";
+import * as notificationsApi from "@/lib/notificationsApi";
+import type { NotificationRow } from "@/lib/notificationsApi";
 
-const typeStyle: Record<VendorNotificationRow["type"], { text: string; bg: string }> = {
-  Info: { text: "text-blue-700 dark:text-blue-300", bg: "bg-blue-100 dark:bg-blue-900/30" },
-  Warning: { text: "text-amber-700 dark:text-amber-300", bg: "bg-amber-100 dark:bg-amber-900/30" },
-  Alert: { text: "text-red-700 dark:text-red-300", bg: "bg-red-100 dark:bg-red-900/30" },
-  System: { text: "text-slate-700 dark:text-slate-300", bg: "bg-slate-100 dark:bg-slate-900/30" },
+const typeStyle: Record<NotificationRow["type"], { text: string; bg: string }> = {
+  order_update: { text: "text-blue-700 dark:text-blue-300", bg: "bg-blue-100 dark:bg-blue-900/30" },
+  new_order: {
+    text: "text-emerald-700 dark:text-emerald-300",
+    bg: "bg-emerald-100 dark:bg-emerald-900/30",
+  },
+  promotion: { text: "text-amber-700 dark:text-amber-300", bg: "bg-amber-100 dark:bg-amber-900/30" },
+  admin_message: { text: "text-purple-700 dark:text-purple-300", bg: "bg-purple-100 dark:bg-purple-900/30" },
 };
 
-const priorityStyle: Record<VendorNotificationRow["priority"], { text: string; dot: string }> = {
-  Normal: { text: "text-muted-foreground", dot: "bg-slate-400" },
-  High: { text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-400" },
-  Critical: { text: "text-red-600 dark:text-red-400", dot: "bg-red-500" },
-};
+function formatDateTime(value: string) {
+  return new Date(value).toLocaleString();
+}
 
 export default function VendorNotifications() {
   const { t } = useTranslation();
-  const vendorId = useSelector((state: RootState) => Number(state.auth.user?.vendorId) || 0);
-  const [rows, setRows] = useState<VendorNotificationRow[]>(() => getVendorNotifications(vendorId));
+  const [rows, setRows] = useState<NotificationRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const title = (r: VendorNotificationRow) =>
-    t(`vendor.notifications.templates.${r.kind}.title`, r.params);
-
-  const message = (r: VendorNotificationRow) =>
-    t(`vendor.notifications.templates.${r.kind}.message`, r.params);
-
-  function markAsRead(row: VendorNotificationRow) {
-    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, read: true } : r)));
+  async function load() {
+    setLoading(true);
+    try {
+      const resp = await notificationsApi.listNotifications();
+      setRows(resp.data);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t("vendor.notifications.toasts.loadFailed")));
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function remove(row: VendorNotificationRow) {
-    setRows((prev) => prev.filter((r) => r.id !== row.id));
-    toast.success(t("vendor.notifications.toasts.deleted", { title: title(row) }));
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const typeLabel = (type: NotificationRow["type"]) => t(`vendor.notifications.types.${type}`);
+
+  async function markAsRead(row: NotificationRow) {
+    try {
+      await notificationsApi.markNotificationRead(row.id);
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, isRead: true } : r)));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t("vendor.notifications.toasts.actionFailed")));
+    }
   }
 
-  const unread = rows.filter((r) => !r.read).length;
-  const high = rows.filter((r) => r.priority === "High").length;
-  const critical = rows.filter((r) => r.priority === "Critical").length;
+  async function markAllAsRead() {
+    try {
+      await notificationsApi.markAllNotificationsRead();
+      setRows((prev) => prev.map((r) => ({ ...r, isRead: true })));
+      toast.success(t("vendor.notifications.toasts.allMarkedRead"));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, t("vendor.notifications.toasts.actionFailed")));
+    }
+  }
 
-  const columns: ColumnDef<VendorNotificationRow>[] = [
+  const unread = rows.filter((r) => !r.isRead).length;
+  const newOrders = rows.filter((r) => r.type === "new_order").length;
+  const adminMessages = rows.filter((r) => r.type === "admin_message").length;
+
+  const columns: ColumnDef<NotificationRow>[] = [
     {
-      key: "kind",
+      key: "title",
       header: t("vendor.notifications.columns.notification"),
       render: (_, row) => (
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className={`text-sm truncate ${!row.read ? "font-semibold" : "font-medium"}`}>
-            {!row.read && (
+          <span className={`text-sm truncate ${!row.isRead ? "font-semibold" : "font-medium"}`}>
+            {!row.isRead && (
               <span className="inline-block w-2 h-2 rounded-full bg-primary mr-2 shrink-0" />
             )}
-            {title(row)}
+            {row.title}
           </span>
-          <span className="text-xs text-muted-foreground truncate">{message(row)}</span>
+          <span className="text-xs text-muted-foreground truncate">{row.body}</span>
         </div>
       ),
     },
@@ -70,35 +92,26 @@ export default function VendorNotifications() {
       header: t("vendor.notifications.columns.type"),
       sortable: true,
       render: (v) => {
-        const s = typeStyle[v as VendorNotificationRow["type"]];
+        const type = v as NotificationRow["type"];
+        const s = typeStyle[type];
 
         return (
           <span
             className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full ${s.text} ${s.bg}`}
           >
-            {t(`common.status.${(v as string).toLowerCase()}`, v as string)}
+            {typeLabel(type)}
           </span>
         );
       },
     },
     {
-      key: "priority",
-      header: t("vendor.notifications.columns.priority"),
+      key: "createdAt",
+      header: t("vendor.notifications.columns.received"),
       sortable: true,
-      render: (v) => {
-        const s = priorityStyle[v as VendorNotificationRow["priority"]];
-
-        return (
-          <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${s.text}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-            {t(`common.status.${(v as string).toLowerCase()}`, v as string)}
-          </span>
-        );
-      },
+      render: (v) => formatDateTime(v as string),
     },
-    { key: "sentAt", header: t("vendor.notifications.columns.received"), sortable: true },
     {
-      key: "read",
+      key: "isRead",
       header: t("vendor.notifications.columns.status"),
       sortable: true,
       render: (v) =>
@@ -110,19 +123,27 @@ export default function VendorNotifications() {
     },
   ];
 
-  const rowActions: RowAction<VendorNotificationRow>[] = [
+  const rowActions: RowAction<NotificationRow>[] = [
     {
       label: t("common.actions.view"),
       icon: Eye,
-      onClick: (r) => toast.success(message(r), { title: title(r) }),
+      onClick: (r) => toast.info(r.body, { title: r.title }),
     },
     {
       label: t("common.actions.markAsRead"),
       icon: CheckCheck,
       onClick: markAsRead,
-      hidden: (r) => r.read,
+      hidden: (r) => r.isRead,
     },
-    { label: t("common.actions.delete"), icon: Trash2, onClick: remove, variant: "destructive" },
+  ];
+
+  const toolbarActions: ToolbarAction<NotificationRow>[] = [
+    {
+      label: t("vendor.notifications.markAllRead"),
+      icon: CheckCheck,
+      requiresSelection: false,
+      onClick: () => void markAllAsRead(),
+    },
   ];
 
   return (
@@ -130,27 +151,29 @@ export default function VendorNotifications() {
       sidebarItems={vendorSidebarItems}
       topbarTitle={t("vendor.notifications.topbarTitle")}
     >
-      <DataTable<VendorNotificationRow>
+      <DataTable<NotificationRow>
         title={t("vendor.notifications.title")}
         description={t("vendor.notifications.description")}
         data={rows}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("vendor.notifications.searchPlaceholder")}
+        searchKeys={["title", "body"]}
         filters={[
           {
             key: "type",
             label: t("vendor.notifications.filterType"),
             options: [
-              { label: t("common.status.info"), value: "Info" },
-              { label: t("common.status.warning"), value: "Warning" },
-              { label: t("common.status.alert"), value: "Alert" },
-              { label: t("common.status.system"), value: "System" },
+              { label: t("vendor.notifications.types.order_update"), value: "order_update" },
+              { label: t("vendor.notifications.types.new_order"), value: "new_order" },
+              { label: t("vendor.notifications.types.promotion"), value: "promotion" },
+              { label: t("vendor.notifications.types.admin_message"), value: "admin_message" },
             ],
           },
           {
-            key: "read",
+            key: "isRead",
             label: t("vendor.notifications.filterStatus"),
             options: [
               { label: t("common.status.unread"), value: "false" },
@@ -159,7 +182,8 @@ export default function VendorNotifications() {
           },
         ]}
         rowActions={rowActions}
-        defaultSort={{ key: "sentAt", direction: "desc" }}
+        toolbarActions={toolbarActions}
+        defaultSort={{ key: "createdAt", direction: "desc" }}
         pagination={{ pageSize: 8 }}
         stats={[
           {
@@ -173,24 +197,18 @@ export default function VendorNotifications() {
             value: unread,
             icon: BellOff,
             variant: "info",
-            trend: { value: unread, label: t("notifications.stats.needAttention") },
           },
           {
-            title: t("vendor.notifications.stats.high"),
-            value: high,
-            icon: AlertTriangle,
+            title: t("vendor.notifications.stats.newOrders"),
+            value: newOrders,
+            icon: ShoppingBag,
+            variant: "success",
+          },
+          {
+            title: t("vendor.notifications.stats.adminMessages"),
+            value: adminMessages,
+            icon: Megaphone,
             variant: "warning",
-          },
-          {
-            title: t("vendor.notifications.stats.critical"),
-            value: critical,
-            icon: AlertTriangle,
-            variant: "danger",
-            trend: {
-              value: critical,
-              label: t("notifications.stats.actionRequired"),
-              positiveIsGood: false,
-            },
           },
         ]}
         emptyState={{

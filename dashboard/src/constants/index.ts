@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Tag,
   RotateCcw,
+  HelpCircle,
 } from "lucide-react";
 
 import type { SidebarItem } from "@/components/Dashboard/types";
@@ -58,6 +59,12 @@ export const sidebarItems: SidebarItem[] = [
     labelKey: "sidebar.refunds",
     icon: RotateCcw,
     path: "/admin/refunds",
+  },
+  {
+    label: "FAQ",
+    labelKey: "sidebar.faq",
+    icon: HelpCircle,
+    path: "/admin/faqs",
   },
   {
     label: "Notifications",

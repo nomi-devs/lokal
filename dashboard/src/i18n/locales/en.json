@@ -12,6 +12,7 @@
     "reviews": "Reviews",
     "promoCodes": "Promo Codes",
     "refunds": "Refunds",
+    "faq": "FAQ",
     "notifications": "Notifications",
     "settings": "Settings",
     "send": "Send",
@@ -83,6 +84,12 @@
     "departments": {
       "men": "Men",
       "women": "Women",
+      "kids": "Kids",
+      "unisex": "Unisex"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
       "kids": "Kids",
       "unisex": "Unisex"
     }
@@ -277,6 +284,104 @@
       "activateDesc": "This will restore access for \"{{name}}\".",
       "deleteTitle": "Delete User?",
       "deleteDesc": "This will move \"{{name}}\" to the deleted users list. You can restore them later."
+    },
+    "addDialog": {
+      "title": "Add New User",
+      "description": "Fill in the user details below",
+      "firstName": "First name",
+      "firstNamePlaceholder": "Ahmed",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Al-Rashid",
+      "phone": "Phone",
+      "email": "Email (optional)",
+      "emailPlaceholder": "you@example.com",
+      "role": "Role",
+      "roleCustomer": "Customer",
+      "roleAdmin": "Admin",
+      "status": "Status",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Add User",
+      "submitting": "Adding…",
+      "createdSuccess": "{{name}} was added.",
+      "createdTitle": "User created",
+      "createFailed": "Couldn't create the user",
+      "createFailedTitle": "Create failed"
+    },
+    "viewDialog": {
+      "tabs": {
+        "details": "Details",
+        "wishlist": "Wishlist",
+        "addresses": "Addresses"
+      },
+      "contactInfo": "Contact Information",
+      "account": "Account",
+      "phone": "Phone",
+      "email": "Email",
+      "language": "Language",
+      "phoneVerified": "Phone verified",
+      "yes": "Yes",
+      "no": "No",
+      "created": "Created",
+      "lastLogin": "Last login",
+      "never": "Never",
+      "wishlistColumns": {
+        "product": "Product",
+        "price": "Price",
+        "added": "Added"
+      },
+      "addressColumns": {
+        "recipient": "Recipient",
+        "phone": "Phone",
+        "address": "Address",
+        "default": "Default"
+      },
+      "emptyWishlist": "No wishlist items",
+      "emptyWishlistDesc": "This user hasn't saved any products.",
+      "emptyAddresses": "No addresses",
+      "emptyAddressesDesc": "This user hasn't saved any addresses.",
+      "loadWishlistFailed": "Couldn't load wishlist",
+      "loadAddressesFailed": "Couldn't load addresses"
+    },
+    "management": {
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "joined": "Joined"
+      },
+      "actions": {
+        "view": "View",
+        "suspend": "Suspend",
+        "activate": "Activate",
+        "deletePermanent": "Delete permanently",
+        "addUser": "Add User"
+      },
+      "filters": {
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "suspended": "Suspended"
+      },
+      "confirm": {
+        "suspendTitle": "Suspend user?",
+        "suspendDesc": "This user will be unable to log in until reactivated.",
+        "activateTitle": "Activate user?",
+        "activateDesc": "This user will regain access immediately.",
+        "deleteTitle": "Delete user permanently?",
+        "deleteDesc": "This cannot be undone — the account and its data are removed immediately.",
+        "deleteButton": "Delete"
+      },
+      "toasts": {
+        "activated": "User activated",
+        "suspended": "User suspended",
+        "deleted": "User permanently deleted",
+        "loadFailed": "Failed to load users",
+        "actionFailed": "Failed to update user"
+      }
     }
   },
   "banners": {
@@ -462,20 +567,18 @@
     "topbarTitle": "Products",
     "list": {
       "title": "Marketplace Products",
-      "description": "Manage the products listed for sale across the marketplace.",
+      "description": "Manage the products vendors list for sale.",
       "searchPlaceholder": "Search products…",
       "filterStatus": "Status",
       "filterCategory": "Category",
-      "filterDepartment": "Department",
-      "variantsCount": "{{count}} variants",
-      "addProduct": "Add Product",
+      "filterGender": "Gender",
       "emptyTitle": "No products found",
       "emptyDescription": "Try adjusting your search or filters.",
       "columns": {
         "product": "Product",
         "vendor": "Vendor",
         "category": "Category",
-        "department": "Department",
+        "gender": "Gender",
         "price": "Price",
         "stock": "Stock",
         "status": "Status",
@@ -484,69 +587,67 @@
       "status": {
         "active": "Active",
         "inactive": "Inactive",
-        "outOfStock": "Out of Stock"
+        "rejected": "Rejected"
       },
       "stats": {
         "total": "Total Products",
         "active": "Active",
-        "outOfStock": "Out of Stock",
-        "totalStockUnits": "Total Stock Units"
+        "inactive": "Inactive",
+        "rejected": "Rejected"
       },
       "toasts": {
-        "created": "\"{{name}}\" created.",
-        "edited": "\"{{name}}\" updated.",
+        "loadFailed": "Couldn't load products.",
+        "updated": "\"{{name}}\" updated.",
         "deleted": "\"{{name}}\" deleted.",
-        "deletedSelected_one": "Deleted {{count}} product.",
-        "deletedSelected_other": "Deleted {{count}} products."
+        "reinstated": "\"{{name}}\" reinstated.",
+        "rejected": "\"{{name}}\" rejected.",
+        "actionFailed": "That action couldn't be completed."
       },
       "confirm": {
         "deleteTitle": "Delete product?",
-        "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone.",
-        "deleteSelectedTitle_one": "Delete {{count}} product?",
-        "deleteSelectedTitle_other": "Delete {{count}} products?",
-        "deleteSelectedDescription": "This will permanently remove the selected products and cannot be undone."
+        "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone."
       }
     },
     "dialog": {
-      "addTitle": "Add New Product",
       "editTitle": "Edit Product",
-      "addDescription": "Create a new product for the marketplace.",
       "editDescription": "Update details for \"{{name}}\".",
       "nameEnglish": "Name (English)",
       "nameEnglishPlaceholder": "Modular Sofa Set",
-      "nameArabic": "Name (Arabic)",
+      "nameArabic": "Name (Arabic, optional)",
       "nameArabicPlaceholder": "طقم كنب معياري",
       "descriptionEnglish": "Description (English)",
       "descriptionEnglishPlaceholder": "3-seat modular sofa with washable covers.",
-      "descriptionArabic": "Description (Arabic)",
+      "descriptionArabic": "Description (Arabic, optional)",
       "descriptionArabicPlaceholder": "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
-      "productImage": "Product Image",
-      "chooseImage": "Choose an image…",
-      "vendor": "Vendor",
-      "selectVendor": "— Select vendor —",
+      "images": "Images",
+      "addImage": "Add image…",
+      "uploading": "Uploading…",
       "category": "Category",
       "selectCategory": "— Select category —",
-      "department": "Department",
+      "gender": "Gender",
       "price": "Price",
       "compareAtPrice": "Compare-at price",
       "compareAtPricePlaceholder": "Original price before discount",
       "compareAtPriceHint": "Shown struck through with a discount badge when higher than the price.",
-      "currency": "Currency",
-      "currencyKWD": "KWD",
-      "currencySAR": "SAR",
       "sizes": "Sizes",
       "sizesPlaceholder": "S, M, L, XL",
       "colors": "Colors",
       "colorsPlaceholder": "Beige, Charcoal, Sand",
       "stock": "Stock",
-      "stockDerivedHint": "Derived automatically from the variant stock below.",
-      "variants": "Variant stock",
-      "generateVariants": "Generate from sizes & colors",
-      "variantsHint": "Add sizes and colors, then generate per-variant stock.",
       "status": "Status",
       "close": "Close",
-      "save": "Save",
-      "add": "Add"
+      "save": "Save"
+    },
+    "reject": {
+      "title": "Reject product",
+      "description": "Tell {{name}}'s vendor why this listing was taken down.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Explain what's wrong with this listing…",
+      "cancel": "Cancel",
+      "reject": "Reject",
+      "errors": {
+        "reasonRequired": "A reason is required (5-500 characters)."
+      }
     }
   },
   "orders": {
@@ -1079,6 +1180,134 @@
         "reviews": "No reviews yet",
         "documents": "No documents uploaded"
       }
+    },
+    "management": {
+      "columns": {
+        "store": "Store",
+        "owner": "Owner",
+        "phone": "Phone",
+        "city": "City",
+        "status": "Status",
+        "joined": "Joined"
+      },
+      "actions": {
+        "view": "View",
+        "approve": "Approve",
+        "reject": "Reject",
+        "suspend": "Suspend",
+        "activate": "Activate",
+        "addVendor": "Add Vendor"
+      },
+      "filters": {
+        "status": "Status",
+        "pendingApproval": "Pending approval",
+        "active": "Active",
+        "suspended": "Suspended",
+        "inactive": "Inactive"
+      },
+      "empty": {
+        "title": "No vendors found",
+        "description": "Try adjusting your search or filter."
+      },
+      "toasts": {
+        "approved": "Vendor approved",
+        "rejected": "Vendor rejected",
+        "suspended": "Vendor suspended",
+        "loadFailed": "Failed to load vendors",
+        "actionFailed": "Failed to update vendor"
+      }
+    },
+    "addDialog": {
+      "title": "Add New Vendor",
+      "description": "Fill in the vendor details below",
+      "storeName": "Store name",
+      "storeNamePlaceholder": "Fashion Store",
+      "firstName": "Owner first name",
+      "firstNamePlaceholder": "Ahmed",
+      "lastName": "Owner last name",
+      "lastNamePlaceholder": "Al-Rashid",
+      "phone": "Phone",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "status": "Status",
+      "statusPending": "Pending approval",
+      "statusActive": "Active",
+      "city": "City (optional)",
+      "address": "Address (optional)",
+      "storeDescription": "Store description (optional)",
+      "submit": "Add Vendor",
+      "submitting": "Adding…",
+      "createdSuccess": "Vendor was added successfully.",
+      "createdTitle": "Vendor created",
+      "createFailed": "Couldn't create the vendor",
+      "createFailedTitle": "Create failed"
+    },
+    "viewDialog": {
+      "tabs": {
+        "details": "Details",
+        "products": "Products",
+        "verification": "Verification"
+      },
+      "storeInfo": "Store Information",
+      "storeName": "Store name",
+      "city": "City",
+      "submitted": "Submitted",
+      "owner": "Owner",
+      "ownerName": "Owner name",
+      "phone": "Phone",
+      "email": "Email",
+      "kycDocument": "KYC Document",
+      "businessLicense": "Business license / ID document",
+      "noDocument": "No document submitted.",
+      "productsColumns": {
+        "product": "Product",
+        "department": "Department",
+        "price": "Price",
+        "stock": "Stock",
+        "status": "Status"
+      },
+      "emptyProducts": "No products yet",
+      "emptyProductsDesc": "This vendor hasn't listed any products.",
+      "loadProductsFailed": "Couldn't load products"
+    },
+    "approveModal": {
+      "title": "Approve vendor",
+      "description": "{{storeName}} will be able to log in and start selling.",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Documents verified and correct",
+      "cancel": "Cancel",
+      "approve": "Approve"
+    },
+    "rejectModal": {
+      "title": "Reject vendor",
+      "description": "{{storeName}}'s registration will be rejected.",
+      "categoryLabel": "Category",
+      "selectReason": "Select a reason",
+      "detailsLabel": "Details",
+      "detailsPlaceholder": "Explain why this registration is being rejected",
+      "cancel": "Cancel",
+      "reject": "Reject",
+      "categories": {
+        "expired": "Document expired",
+        "invalid": "Document invalid",
+        "incomplete": "Information incomplete",
+        "fraud": "Suspected fraud"
+      },
+      "errors": {
+        "categoryRequired": "Select a category",
+        "reasonRequired": "Rejection reason is required"
+      }
+    },
+    "suspendModal": {
+      "title": "Suspend vendor",
+      "description": "{{storeName}} won't be able to log in or list products until reinstated.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Multiple complaints from customers",
+      "durationLabel": "Duration in days (optional — leave blank for indefinite)",
+      "cancel": "Cancel",
+      "suspend": "Suspend"
     }
   },
   "kyc": {
@@ -1156,6 +1385,36 @@
       "approvedBody": "\"{{name}}\" has been approved.",
       "rejectedTitle": "Vendor KYC Rejected",
       "rejectedBody": "\"{{name}}\" has been rejected."
+    },
+    "management": {
+      "topbarTitle": "KYC Verification",
+      "columns": {
+        "store": "Store",
+        "owner": "Owner",
+        "phone": "Phone",
+        "city": "City",
+        "document": "Document",
+        "submitted": "Submitted"
+      },
+      "document": {
+        "view": "View",
+        "notProvided": "Not provided"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "empty": {
+        "title": "No vendors pending review",
+        "description": "New registrations will show up here."
+      },
+      "toasts": {
+        "loadFailed": "Failed to load pending vendors",
+        "approved": "Vendor approved",
+        "approveFailed": "Failed to approve vendor",
+        "rejected": "Vendor rejected",
+        "rejectFailed": "Failed to reject vendor"
+      }
     }
   },
   "vendor": {
@@ -1202,15 +1461,14 @@
         "description": "Manage the products you sell on the marketplace.",
         "searchPlaceholder": "Search products…",
         "filterStatus": "Status",
-        "filterDepartment": "Department",
-        "variantsCount": "{{count}} variants",
+        "filterGender": "Gender",
         "addProduct": "Add Product",
         "emptyTitle": "No products found",
         "emptyDescription": "Try adjusting your search or filters.",
         "columns": {
           "product": "Product",
           "category": "Category",
-          "department": "Department",
+          "gender": "Gender",
           "price": "Price",
           "stock": "Stock",
           "status": "Status",
@@ -1219,61 +1477,53 @@
         "status": {
           "active": "Active",
           "inactive": "Inactive",
-          "outOfStock": "Out of Stock"
+          "rejected": "Rejected"
         },
         "stats": {
           "total": "Total Products",
           "active": "Active",
-          "outOfStock": "Out of Stock",
-          "totalStockUnits": "Total Stock Units"
+          "inactive": "Inactive",
+          "rejected": "Rejected"
         },
         "toasts": {
+          "loadFailed": "Couldn't load your products.",
           "created": "\"{{name}}\" created.",
           "edited": "\"{{name}}\" updated.",
           "deleted": "\"{{name}}\" deleted.",
-          "deletedSelected_one": "Deleted {{count}} product.",
-          "deletedSelected_other": "Deleted {{count}} products."
+          "actionFailed": "That action couldn't be completed."
         },
         "confirm": {
           "deleteTitle": "Delete product?",
-          "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone.",
-          "deleteSelectedTitle_one": "Delete {{count}} product?",
-          "deleteSelectedTitle_other": "Delete {{count}} products?",
-          "deleteSelectedDescription": "This will permanently remove the selected products and cannot be undone."
+          "deleteDescription": "This will permanently remove \"{{name}}\" and cannot be undone."
         }
       },
       "dialog": {
         "addTitle": "Add New Product",
         "editTitle": "Edit Product",
-        "addDescription": "Create a new product for your store.",
+        "addDescription": "Create a new product for your store. It goes live immediately — the admin team may take it down later if it looks inappropriate.",
         "editDescription": "Update details for \"{{name}}\".",
         "nameEnglish": "Name (English)",
         "nameEnglishPlaceholder": "Modular Sofa Set",
-        "nameArabic": "Name (Arabic)",
+        "nameArabic": "Name (Arabic, optional)",
         "nameArabicPlaceholder": "طقم كنب معياري",
         "descriptionEnglish": "Description (English)",
-        "descriptionArabic": "Description (Arabic)",
-        "productImage": "Product Image",
-        "chooseImage": "Choose an image…",
+        "descriptionArabic": "Description (Arabic, optional)",
+        "images": "Images",
+        "addImage": "Add image…",
+        "uploading": "Uploading…",
         "category": "Category",
         "selectCategory": "— Select category —",
-        "department": "Department",
+        "gender": "Gender",
         "price": "Price",
         "compareAtPrice": "Compare-at price",
         "compareAtPricePlaceholder": "Original price before discount",
         "compareAtPriceHint": "Shown struck through with a discount badge when higher than the price.",
-        "currency": "Currency",
-        "currencyKWD": "KWD",
-        "currencySAR": "SAR",
         "sizes": "Sizes",
         "sizesPlaceholder": "S, M, L, XL",
         "colors": "Colors",
         "colorsPlaceholder": "Beige, Charcoal, Sand",
         "stock": "Stock",
-        "stockDerivedHint": "Derived automatically from the variant stock below.",
-        "variants": "Variant stock",
-        "generateVariants": "Generate from sizes & colors",
-        "variantsHint": "Add sizes and colors, then generate per-variant stock.",
+        "inStock": "In stock",
         "status": "Status",
         "close": "Close",
         "save": "Save",
@@ -1369,45 +1619,35 @@
     "notifications": {
       "topbarTitle": "Notifications",
       "title": "Notifications",
-      "description": "Updates about your orders and products.",
+      "description": "Updates about your orders and messages from the admin team.",
       "searchPlaceholder": "Search notifications…",
       "filterType": "Type",
       "filterStatus": "Status",
+      "markAllRead": "Mark all as read",
       "emptyTitle": "No notifications",
       "emptyDescription": "You're all caught up.",
       "columns": {
         "notification": "Notification",
         "type": "Type",
-        "priority": "Priority",
         "received": "Received",
         "status": "Status"
+      },
+      "types": {
+        "order_update": "Order update",
+        "new_order": "New order",
+        "promotion": "Promotion",
+        "admin_message": "Admin message"
       },
       "stats": {
         "total": "Total",
         "unread": "Unread",
-        "high": "High",
-        "critical": "Critical"
+        "newOrders": "New Orders",
+        "adminMessages": "Admin Messages"
       },
       "toasts": {
-        "deleted": "\"{{title}}\" deleted."
-      },
-      "templates": {
-        "newOrder": {
-          "title": "New order {{orderNumber}}",
-          "message": "You received a new order worth {{amount}} KWD."
-        },
-        "lowStock": {
-          "title": "Low stock: {{name}}",
-          "message": "Only {{stock}} left in stock — consider restocking soon."
-        },
-        "outOfStock": {
-          "title": "Out of stock: {{name}}",
-          "message": "This product is out of stock and hidden from customers."
-        },
-        "welcome": {
-          "title": "Welcome to your vendor dashboard",
-          "message": "Manage your products, orders, and store profile from here."
-        }
+        "loadFailed": "Couldn't load your notifications.",
+        "actionFailed": "That action couldn't be completed.",
+        "allMarkedRead": "All notifications marked as read."
       }
     },
     "earnings": {
@@ -1496,45 +1736,36 @@
   },
   "notificationsSend": {
     "topbarTitle": "Send Notification",
+    "toasts": {
+      "loadVendorsFailed": "Couldn't load the vendor list."
+    },
     "compose": {
-      "title": "Compose Notification",
-      "description": "Send a notification to one or more user groups.",
+      "title": "Message Vendors",
+      "description": "Send a message to one vendor, or broadcast to all of them.",
+      "recipient": "Recipient",
+      "allVendors": "All vendors",
       "titleLabel": "Title",
       "titlePlaceholder": "Notification title…",
+      "titleArLabel": "Title (Arabic, optional)",
       "messageLabel": "Message",
       "messagePlaceholder": "Write your message here…",
-      "recipients": "Recipients",
-      "recipientOptions": {
-        "all": "All Users",
-        "admins": "Admins only",
-        "vendors": "Vendors only",
-        "users": "Regular Users only"
-      },
-      "type": "Type",
-      "priority": "Priority",
+      "messageArLabel": "Message (Arabic, optional)",
       "submit": "Send Notification",
-      "sentConfirmation": "✓ Notification sent successfully"
+      "sentConfirmation": "✓ Notification sent successfully",
+      "sendFailed": "Couldn't send that notification."
     },
     "history": {
-      "title": "Sent History",
-      "description": "Previously sent notifications.",
+      "title": "Sent This Session",
+      "description": "Messages you've sent since opening this page.",
       "searchPlaceholder": "Search sent notifications…",
-      "filterType": "Type",
-      "filterPriority": "Priority",
       "emptyTitle": "No notifications sent yet",
       "columns": {
         "title": "Title",
-        "recipients": "Recipients",
-        "type": "Type",
-        "priority": "Priority",
-        "delivered": "Delivered",
+        "recipient": "Recipient",
         "sentAt": "Sent At"
       },
       "stats": {
-        "totalSent": "Total Sent",
-        "totalDelivered": "Total Delivered",
-        "highPriority": "High Priority",
-        "criticalSent": "Critical Sent"
+        "totalSent": "Total Sent"
       }
     }
   },
@@ -1665,7 +1896,49 @@
       "passwordsDontMatch": "Passwords do not match",
       "backToLogin": "Back to Login",
       "forgotOldOne": "Forgot old one?",
-      "resetPassword": "Reset Password"
+      "resetPassword": "Reset Password",
+      "pageTitle": "Become a vendor",
+      "pageSubtitle": "Create your store account — an admin will review and approve it before you can start selling.",
+      "storeNameLabel": "Store name",
+      "storeNamePlaceholder": "Fashion Store",
+      "firstNameLabel": "First name",
+      "firstNamePlaceholder": "Ahmed",
+      "lastNameLabel": "Last name",
+      "lastNamePlaceholder": "Al-Rashid",
+      "phoneLabel": "Phone",
+      "kycDocumentLabel": "KYC document — business license or ID",
+      "submitText": "Continue",
+      "submittingText": "Sending code…",
+      "kycRequired": "Please upload a KYC document (business license or ID) to register.",
+      "kycRequiredTitle": "KYC document required",
+      "uploadFailed": "Couldn't upload the KYC document. Please try again.",
+      "uploadFailedTitle": "Upload failed",
+      "codeSentSuccess": "We've emailed a verification code to {{email}}.",
+      "checkInboxTitle": "Check your inbox",
+      "sendFailed": "Couldn't send the verification code",
+      "sendFailedTitle": "Send failed",
+      "otpTitle": "Enter Verification Code",
+      "otpSubtitle": "We've sent a 6-digit code to",
+      "changeEmail": "Change email",
+      "enterCodeError": "Enter the code we emailed you",
+      "verifyButton": "Verify Code",
+      "verifying": "Verifying…",
+      "didntReceive": "Didn't receive the code?",
+      "resendIn": "Resend code in {{seconds}}s",
+      "resendButton": "Resend code",
+      "codeResent": "We've re-sent the code to {{email}}.",
+      "codeResentTitle": "Code resent",
+      "verificationFailed": "Verification failed",
+      "registeredTitle": "You're registered",
+      "registeredPending": "is now pending KYC approval.",
+      "goToLogin": "Go to login",
+      "validation": {
+        "phoneFormat": "Phone must be in E.164 format, e.g. +96500000000",
+        "tooShort": "Too short",
+        "invalidEmail": "Invalid email",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordsDontMatch": "Passwords do not match"
+      }
     },
     "forgotPassword": {
       "title": "Forgot Password",
@@ -1679,9 +1952,27 @@
       "codeSentToast": {
         "title": "Check your inbox"
       },
+      "codeVerificationTitle": "Enter Verification Code",
+      "codeSentTo": "We've sent a code to",
+      "changeEmail": "Change email",
+      "enterCodeError": "Enter the code we emailed you",
+      "verifyButton": "Verify Code",
+      "verifying": "Verifying…",
+      "didntReceive": "Didn't receive the code?",
+      "resendIn": "Resend code in {{seconds}}s",
+      "resendButton": "Resend code",
+      "codeResent": "We've re-sent the code to {{email}}.",
+      "codeResentTitle": "Code resent",
+      "invalidCode": "Invalid or expired code",
+      "verificationFailed": "Verification failed",
+      "sendFailed": "Couldn't send the reset code",
+      "sendFailedTitle": "Send failed",
+      "resetFailed": "Couldn't reset your password",
+      "resetFailedTitle": "Reset failed",
       "reset": {
         "title": "Reset Password",
         "subtitle": "Enter the code we emailed to {{email}} along with your new password.",
+        "formSubtitle": "Choose a new password for your account.",
         "changeEmail": "Change email",
         "codeLabel": "Verification code",
         "newPasswordLabel": "New Password",
@@ -1693,6 +1984,65 @@
           "body": "Your password has been reset. You can now log in."
         }
       }
+    }
+  },
+  "faqs": {
+    "topbarTitle": "FAQ",
+    "list": {
+      "title": "Frequently Asked Questions",
+      "description": "Manage the FAQ entries shown on the mobile app's Profile screen.",
+      "searchPlaceholder": "Search FAQs…",
+      "filterStatus": "Status",
+      "addFaq": "Add FAQ",
+      "loadFailed": "Failed to load FAQs",
+      "emptyTitle": "No FAQs found",
+      "emptyDescription": "Try adjusting your search or filters.",
+      "columns": {
+        "question": "Question",
+        "answer": "Answer",
+        "order": "Order",
+        "status": "Status"
+      },
+      "stats": {
+        "total": "Total FAQs",
+        "active": "Active"
+      },
+      "toasts": {
+        "created": "FAQ created.",
+        "edited": "FAQ updated.",
+        "deleted": "FAQ deleted.",
+        "deletedSelected": "Deleted {{count}} FAQs.",
+        "hidden": "FAQ hidden.",
+        "unhidden": "FAQ is now active."
+      },
+      "confirm": {
+        "deleteTitle": "Delete FAQ?",
+        "deleteDescription": "This will permanently remove \"{{question}}\" and cannot be undone.",
+        "deleteSelectedTitle": "Delete {{count}} FAQs?",
+        "deleteSelectedDescription": "This will permanently remove the selected FAQs and cannot be undone.",
+        "hideTitle": "Hide FAQ?",
+        "hideDescription": "This FAQ will no longer be visible to users.",
+        "unhideTitle": "Unhide FAQ?",
+        "unhideDescription": "This FAQ will become visible to users again."
+      }
+    },
+    "dialog": {
+      "addTitle": "Add New FAQ",
+      "editTitle": "Edit FAQ",
+      "addDescription": "Create a new FAQ entry for the mobile app.",
+      "editDescription": "Update this FAQ entry.",
+      "questionEn": "Question (English)",
+      "questionEnPlaceholder": "How do I track my order?",
+      "questionAr": "Question (Arabic)",
+      "questionArPlaceholder": "كيف أتتبع طلبي؟",
+      "answerEn": "Answer (English)",
+      "answerEnPlaceholder": "You can track your order from the Orders screen in the app.",
+      "answerAr": "Answer (Arabic)",
+      "answerArPlaceholder": "يمكنك تتبع طلبك من شاشة الطلبات في التطبيق.",
+      "sortOrder": "Display Order",
+      "close": "Close",
+      "save": "Save",
+      "add": "Add"
     }
   },
   "notFound": {

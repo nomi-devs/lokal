@@ -8,13 +8,13 @@ export class Address {
   userId: string;
 
   @ApiProperty({ enum: ['home', 'office', 'other'] })
-  type: string;
+  label: string;
 
   @ApiProperty()
-  recipientName: string;
+  name: string;
 
-  @ApiProperty()
-  country: string;
+  @ApiProperty({ required: false })
+  country?: string;
 
   @ApiProperty()
   city: string;
@@ -23,13 +23,10 @@ export class Address {
   phone: string;
 
   @ApiProperty()
-  address: string;
+  addressLine: string;
 
   @ApiProperty()
   isPrimary: boolean;
-
-  @ApiProperty()
-  isDefault: boolean;
 
   @ApiProperty()
   createdAt: Date;

@@ -34,6 +34,29 @@ export class EmailService {
     await this.send(email, subject, text, html);
   }
 
+  async sendOrderConfirmation(
+    email: string,
+    orderNumber: string,
+    total: number,
+  ): Promise<void> {
+    const subject = `Order ${orderNumber} confirmed`;
+    const text = `Your order ${orderNumber} (total ${total.toFixed(2)}) has been confirmed after successful payment.`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #2c3e50;">Thanks for your order!</h2>
+        <p>We've received your payment and your order is now confirmed.</p>
+        <table style="margin: 20px 0; border-collapse: collapse;">
+          <tr><td style="padding: 4px 12px 4px 0; color: #888;">Order number</td><td><strong>${orderNumber}</strong></td></tr>
+          <tr><td style="padding: 4px 12px 4px 0; color: #888;">Total</td><td><strong>${total.toFixed(2)}</strong></td></tr>
+        </table>
+        <p>You can track its status from the app at any time.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #888;">&copy; ${new Date().getFullYear()} Lokal Team</p>
+      </div>
+    `;
+    await this.send(email, subject, text, html);
+  }
+
   private async send(
     to: string,
     subject: string,

@@ -22,7 +22,7 @@ import {
 } from './dto/auth-response.dto';
 
 // Password-only — no OTP anywhere on this controller. See MobileAuthController
-// for the OTP-based customer/driver flow at /mobile/auth.
+// for the OTP-based customer flow at /mobile/auth.
 @ApiTags('Auth - Dashboard')
 @Controller('dashboard/auth')
 export class DashboardAuthController {

@@ -18,6 +18,13 @@ export class CreateUploadUrlDto {
   contentType: string;
 
   @IsOptional()
-  @IsIn(['avatar', 'vendor-logo', 'banner', 'misc'])
+  @IsIn([
+    'avatar',
+    'vendor-logo',
+    'banner',
+    'product-image',
+    'category-icon',
+    'misc',
+  ])
   purpose?: string;
 }

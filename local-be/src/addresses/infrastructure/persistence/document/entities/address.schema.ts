@@ -15,13 +15,13 @@ export class AddressSchemaClass extends EntityDocumentHelper {
   userId: Types.ObjectId;
 
   @Prop({ enum: ['home', 'office', 'other'], default: 'home' })
-  type: string;
+  label: string;
 
   @Prop({ required: true })
-  recipientName: string;
+  name: string;
 
-  @Prop({ required: true })
-  country: string;
+  @Prop()
+  country?: string;
 
   @Prop({ required: true })
   city: string;
@@ -30,13 +30,10 @@ export class AddressSchemaClass extends EntityDocumentHelper {
   phone: string;
 
   @Prop({ required: true })
-  address: string;
+  addressLine: string;
 
   @Prop({ default: false })
   isPrimary: boolean;
-
-  @Prop({ default: false })
-  isDefault: boolean;
 
   @Prop()
   deletedAt?: Date;

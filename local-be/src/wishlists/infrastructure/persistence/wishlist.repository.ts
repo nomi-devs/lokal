@@ -1,3 +1,4 @@
+import { NullableType } from '../../../utils/types/nullable.type';
 import { Wishlist } from '../../domain/wishlist';
 
 export abstract class WishlistRepository {
@@ -11,6 +12,11 @@ export abstract class WishlistRepository {
     page: number,
     limit: number,
   ): Promise<{ data: Wishlist[]; total: number }>;
+
+  abstract findOneByUserAndProduct(
+    userId: string,
+    productId: string,
+  ): Promise<NullableType<Wishlist>>;
 
   abstract remove(id: string): Promise<void>;
 

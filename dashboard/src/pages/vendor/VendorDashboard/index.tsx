@@ -229,27 +229,33 @@ export default function VendorDashboard() {
             <h2 className="font-bold text-base mb-5">
               {t("vendor.dashboard.ordersByStatus.title")}
             </h2>
-            <div className="flex items-center gap-6 h-56">
-              <div className="flex-1 h-full">
-                <Chart type="doughnut" data={doughnutData} options={doughnutOptions} />
-              </div>
-              <div className="flex flex-col gap-3 shrink-0">
-                {statusCounts.map((s) => (
-                  <div key={s.status} className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: STATUS_COLORS[s.status] }}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {t(`common.status.${s.status}`, s.status)}
-                      </span>
+            {rows.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                {t("vendor.dashboard.recentOrders.empty")}
+              </p>
+            ) : (
+              <div className="flex items-center gap-6 h-56">
+                <div className="flex-1 h-full">
+                  <Chart type="doughnut" data={doughnutData} options={doughnutOptions} />
+                </div>
+                <div className="flex flex-col gap-3 shrink-0">
+                  {statusCounts.map((s) => (
+                    <div key={s.status} className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: STATUS_COLORS[s.status] }}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {t(`common.status.${s.status}`, s.status)}
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold pl-4">{s.count}</span>
                     </div>
-                    <span className="text-sm font-bold pl-4">{s.count}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Recent orders */}

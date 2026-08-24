@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { FolderTree, Plus, Pencil, Trash2, Eye, Power, Layers, FileText } from "lucide-react";
 
@@ -11,8 +11,14 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
-import { categories as initialCategories, type Category } from "@/data/categories";
+import {
+  listAdminCategories,
+  createAdminCategory,
+  updateAdminCategory,
+  deleteAdminCategory,
+  type AdminCategory,
+} from "@/lib/adminApi";
+import { getApiErrorMessage } from "@/lib/apiClient";
 import type { Department } from "@/data/products";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
@@ -23,105 +29,114 @@ const catStatusStyle: Record<"Active" | "Hidden", string> = {
 
 // ── Confirm dialog state ───────────────────────────────────────────────────────
 type PendingAction =
-  | { type: "delete"; category: Category }
-  | { type: "deleteSelected"; categories: Category[] }
-  | { type: "toggle"; category: Category }
+  | { type: "delete"; category: AdminCategory }
+  | { type: "deleteSelected"; categories: AdminCategory[] }
+  | { type: "toggle"; category: AdminCategory }
   | null;
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const { t } = useTranslation();
-  const loading = useSimulatedLoading();
-  const [categoryList, setCategoryList] = useState<Category[]>(initialCategories);
+  const [loading, setLoading] = useState(true);
+  const [categoryList, setCategoryList] = useState<AdminCategory[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await listAdminCategories(1, 200);
+      setCategoryList(res.data);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load categories"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+
   const activeCategories = categoryList.filter((c) => c.isActive).length;
-  const topLevel = categoryList.filter((c) => c.parentId === null).length;
+  const topLevel = categoryList.filter((c) => !c.parentId).length;
 
   const parentOptions = categoryList
-    .filter((c) => c.parentId === null)
+    .filter((c) => !c.parentId)
     .map((c) => ({ id: c.id, name: c.nameEn }));
-  const categoryName = (id: number | null) => categoryList.find((c) => c.id === id)?.nameEn ?? null;
+
+  const categoryName = (id: string | null | undefined) =>
+    categoryList.find((c) => c.id === id)?.nameEn ?? null;
 
   function openAddDialog() {
     setEditingCategory(null);
     setDialogOpen(true);
   }
 
-  function openEditDialog(category: Category) {
+  function openEditDialog(category: AdminCategory) {
     setEditingCategory(category);
     setDialogOpen(true);
   }
 
-  function handleFormSubmit(values: CategoryFormValues, editingId: number | null) {
-    const parentId = values.parentId ? Number(values.parentId) : null;
-    const now = new Date().toISOString();
+  async function handleFormSubmit(values: CategoryFormValues, editingId: string | null) {
+    const payload = {
+      nameEn: values.nameEn,
+      nameAr: values.nameAr,
+      descriptionEn: values.descriptionEn,
+      descriptionAr: values.descriptionAr,
+      imageUrl: values.imageUrl,
+      parentId: values.parentId || null,
+      department: values.department,
+      sortOrder: values.sortOrder,
+    };
 
-    if (editingId != null) {
-      setCategoryList((prev) =>
-        prev.map((c) => (c.id === editingId ? { ...c, ...values, parentId, updatedAt: now } : c))
-      );
-      toast.success(t("categories.list.toasts.edited", { name: values.nameEn }));
-
-      return;
-    }
-
-    const nextId = Math.max(0, ...categoryList.map((c) => c.id)) + 1;
-
-    setCategoryList((prev) => [
-      ...prev,
-      {
-        ...values,
-        parentId,
-        id: nextId,
-        itemsCount: 0,
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      },
-    ]);
-    toast.success(t("categories.list.toasts.created", { name: values.nameEn }));
-  }
-
-  function confirmPendingAction() {
-    if (!pendingAction) {
-      return;
-    }
-
-    if (pendingAction.type === "delete") {
-      const { category } = pendingAction;
-
-      setCategoryList((prev) => prev.filter((c) => c.id !== category.id));
-      toast.error(t("categories.list.toasts.deleted", { name: category.nameEn }));
-    } else if (pendingAction.type === "deleteSelected") {
-      const ids = new Set(pendingAction.categories.map((c) => c.id));
-
-      setCategoryList((prev) => prev.filter((c) => !ids.has(c.id)));
-      toast.error(
-        t("categories.list.toasts.deletedSelected", { count: pendingAction.categories.length })
-      );
-    } else if (pendingAction.type === "toggle") {
-      const { category } = pendingAction;
-      const nextActive = !category.isActive;
-
-      setCategoryList((prev) =>
-        prev.map((c) =>
-          c.id === category.id
-            ? { ...c, isActive: nextActive, updatedAt: new Date().toISOString() }
-            : c
-        )
-      );
-      toast.success(
-        t(nextActive ? "categories.list.toasts.unhidden" : "categories.list.toasts.hidden", {
-          name: category.nameEn,
-        })
-      );
+    try {
+      if (editingId) {
+        const updated = await updateAdminCategory(editingId, payload);
+        setCategoryList((prev) => prev.map((c) => (c.id === editingId ? updated : c)));
+        toast.success(t("categories.list.toasts.edited", { name: values.nameEn }));
+      } else {
+        const created = await createAdminCategory({ ...payload, isActive: true });
+        setCategoryList((prev) => [...prev, created]);
+        toast.success(t("categories.list.toasts.created", { name: values.nameEn }));
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
     }
   }
 
-  const categoryColumns: ColumnDef<Category>[] = [
+  async function confirmPendingAction() {
+    if (!pendingAction) return;
+
+    try {
+      if (pendingAction.type === "delete") {
+        const { category } = pendingAction;
+        await deleteAdminCategory(category.id);
+        setCategoryList((prev) => prev.filter((c) => c.id !== category.id));
+        toast.error(t("categories.list.toasts.deleted", { name: category.nameEn }));
+      } else if (pendingAction.type === "deleteSelected") {
+        await Promise.all(pendingAction.categories.map((c) => deleteAdminCategory(c.id)));
+        const ids = new Set(pendingAction.categories.map((c) => c.id));
+        setCategoryList((prev) => prev.filter((c) => !ids.has(c.id)));
+        toast.error(
+          t("categories.list.toasts.deletedSelected", { count: pendingAction.categories.length })
+        );
+      } else if (pendingAction.type === "toggle") {
+        const { category } = pendingAction;
+        const nextActive = !category.isActive;
+        const updated = await updateAdminCategory(category.id, { isActive: nextActive });
+        setCategoryList((prev) => prev.map((c) => (c.id === category.id ? updated : c)));
+        toast.success(
+          t(nextActive ? "categories.list.toasts.unhidden" : "categories.list.toasts.hidden", {
+            name: category.nameEn,
+          })
+        );
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    }
+  }
+
+  const categoryColumns: ColumnDef<AdminCategory>[] = [
     {
       key: "nameEn",
       header: t("categories.list.columns.category"),
@@ -140,8 +155,7 @@ export default function CategoriesPage() {
       header: t("categories.list.columns.parent"),
       sortable: true,
       render: (v) => {
-        const name = categoryName(v as number | null);
-
+        const name = categoryName(v as string | null);
         return name ? (
           name
         ) : (
@@ -156,8 +170,8 @@ export default function CategoriesPage() {
       render: (v) => t(`common.departments.${v as Department}`),
     },
     {
-      key: "itemsCount",
-      header: t("categories.list.columns.listings"),
+      key: "sortOrder",
+      header: t("categories.list.columns.order"),
       sortable: true,
       align: "right",
     },
@@ -167,7 +181,6 @@ export default function CategoriesPage() {
       sortable: true,
       render: (v) => {
         const label = v ? "Active" : "Hidden";
-
         return (
           <span
             className={cn(
@@ -180,15 +193,9 @@ export default function CategoriesPage() {
         );
       },
     },
-    {
-      key: "sortOrder",
-      header: t("categories.list.columns.order"),
-      sortable: true,
-      align: "right",
-    },
   ];
 
-  const categoryRowActions: RowAction<Category>[] = [
+  const categoryRowActions: RowAction<AdminCategory>[] = [
     {
       label: t("common.actions.edit"),
       icon: Pencil,
@@ -216,7 +223,7 @@ export default function CategoriesPage() {
     },
   ];
 
-  const categoryToolbarActions: ToolbarAction<Category>[] = [
+  const categoryToolbarActions: ToolbarAction<AdminCategory>[] = [
     {
       label: t("common.actions.deleteSelected"),
       icon: Trash2,
@@ -235,7 +242,7 @@ export default function CategoriesPage() {
 
   return (
     <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("categories.topbarTitle")}>
-      <DataTable<Category>
+      <DataTable<AdminCategory>
         title={t("categories.list.title")}
         description={t("categories.list.description")}
         data={categoryList}
@@ -291,7 +298,7 @@ export default function CategoriesPage() {
           },
           {
             title: t("categories.list.stats.totalListings"),
-            value: categoryList.reduce((sum, c) => sum + c.itemsCount, 0).toLocaleString(),
+            value: categoryList.length.toLocaleString(),
             icon: FileText,
             variant: "warning",
           },

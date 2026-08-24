@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ShieldOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export default function VendorSuspendDialog({ open, onOpenChange, vendor, onSuspend }: Props) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState("");
   const [duration, setDuration] = useState("");
 
@@ -56,9 +58,9 @@ export default function VendorSuspendDialog({ open, onOpenChange, vendor, onSusp
             <ShieldOff className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <div className="min-w-0">
-            <DialogTitle>Suspend vendor</DialogTitle>
+            <DialogTitle>{t("vendors.suspendModal.title")}</DialogTitle>
             <DialogDescription>
-              {vendor.storeName} won't be able to log in or list products until reinstated.
+              {t("vendors.suspendModal.description", { storeName: vendor.storeName })}
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -66,28 +68,28 @@ export default function VendorSuspendDialog({ open, onOpenChange, vendor, onSusp
         <DialogBody className="flex flex-col gap-4">
           <div>
             <Label className="mb-1.5 block">
-              Reason <span className="text-destructive">*</span>
+              {t("vendors.suspendModal.reasonLabel")} <span className="text-destructive">*</span>
             </Label>
             <textarea
               className={textareaCls}
-              placeholder="Multiple complaints from customers"
+              placeholder={t("vendors.suspendModal.reasonPlaceholder")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
           </div>
           <div>
-            <Label className="mb-1.5 block">Duration in days (optional — leave blank for indefinite)</Label>
+            <Label className="mb-1.5 block">{t("vendors.suspendModal.durationLabel")}</Label>
             <Input type="number" min={1} value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
         </DialogBody>
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("vendors.suspendModal.cancel")}
           </Button>
           <Button type="button" variant="destructive" onClick={submit} disabled={!reason.trim()}>
             <ShieldOff className="w-4 h-4" />
-            Suspend
+            {t("vendors.suspendModal.suspend")}
           </Button>
         </DialogFooter>
       </DialogContent>

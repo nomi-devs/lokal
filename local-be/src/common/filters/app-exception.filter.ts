@@ -11,6 +11,7 @@ import type { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { AppException, AppExceptionDetail } from '../exceptions/app.exception';
 import { ERROR_CODES } from '../exceptions/error-codes';
+import { statusToBilingual } from '../constants/messages.constant';
 
 interface ValidationExceptionBody {
   message?: string | string[];
@@ -34,9 +35,12 @@ export class AppExceptionFilter implements ExceptionFilter {
       );
     }
 
+    const messageAr = statusToBilingual(status).ar;
+
     response.status(status).json({
       success: false,
       error: { code, message, details },
+      messageAr,
       timestamp: new Date().toISOString(),
       path: request.url,
       requestId: randomUUID(),

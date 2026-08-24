@@ -15,6 +15,7 @@ import {
   TokensDto,
 } from './dto/auth-response.dto';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 // Token issuing/refresh/logout/me are identical for mobile and dashboard —
 // both DashboardAuthService and MobileAuthService delegate here so that
@@ -108,7 +109,11 @@ export class SessionService {
       await this.usersService.removeFcmTokenByToken(userId, dto.fcmToken);
     }
 
-    return { success: true, message: 'Logged out successfully' };
+    return {
+      success: true,
+      message: MESSAGES.AUTH.LOGGED_OUT.en,
+      messageAr: MESSAGES.AUTH.LOGGED_OUT.ar,
+    };
   }
 
   async me(userId: string): Promise<MeResponseDto> {

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from '../../products/domain/product';
+import { Vendor } from '../../vendors/domain/vendor';
 
 class AdminVendorListItemDto {
   @ApiProperty()
@@ -71,44 +72,27 @@ export class AdminVendorProductsListResponseDto {
   pagination: PaginationDto;
 }
 
-class ApproveVendorSummaryDto {
-  @ApiProperty({
-    enum: ['pending_approval', 'active', 'suspended', 'inactive'],
-  })
-  status: string;
+export class AdminVendorDetailResponseDto {
+  @ApiProperty({ example: true })
+  success: boolean;
 
-  @ApiProperty()
-  approvedAt: Date;
+  @ApiProperty({ type: Vendor })
+  vendor: Vendor;
 }
 
-export class ApproveVendorResponseDto {
+// One response shape for every status transition (approve/reject/suspend —
+// see UpdateVendorStatusDto/VendorsService.updateStatus), instead of a
+// separate narrow DTO per transition.
+export class UpdateVendorStatusResponseDto {
   @ApiProperty({ example: true })
   success: boolean;
 
   @ApiProperty()
   message: string;
 
-  @ApiProperty({ type: ApproveVendorSummaryDto })
-  vendor: ApproveVendorSummaryDto;
-}
+  @ApiProperty({ required: false })
+  messageAr?: string;
 
-class RejectVendorSummaryDto {
-  @ApiProperty({
-    enum: ['pending_approval', 'active', 'suspended', 'inactive'],
-  })
-  status: string;
-
-  @ApiProperty()
-  rejectionReason: string;
-}
-
-export class RejectVendorResponseDto {
-  @ApiProperty({ example: true })
-  success: boolean;
-
-  @ApiProperty()
-  message: string;
-
-  @ApiProperty({ type: RejectVendorSummaryDto })
-  vendor: RejectVendorSummaryDto;
+  @ApiProperty({ type: Vendor })
+  vendor: Vendor;
 }

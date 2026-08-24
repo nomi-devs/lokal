@@ -8,6 +8,9 @@ export class SendOtpResponseDto {
   @ApiProperty()
   message: string;
 
+  @ApiProperty({ required: false })
+  messageAr?: string;
+
   @ApiProperty({ description: 'Seconds until the OTP expires' })
   expiresIn: number;
 }
@@ -26,8 +29,8 @@ export class TokensDto {
   refreshExpiresIn: number;
 }
 
-// Shared shape for every mobile flow that ends with the user logged in:
-// verify-registration-otp, login, reset-password.
+// Response shape for verify-otp, the only mobile flow that ends with the
+// user logged in.
 export class MobileAuthResponseDto {
   @ApiProperty({ example: true })
   success: boolean;

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,14 +17,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-
-// Matches local-be's RejectVendorDto.rejectionCategory enum exactly.
-const REJECTION_CATEGORIES = [
-  { value: "expired", label: "Document expired" },
-  { value: "invalid", label: "Document invalid" },
-  { value: "incomplete", label: "Information incomplete" },
-  { value: "fraud", label: "Suspected fraud" },
-] as const;
 
 const rejectSchema = z.object({
   rejectionCategory: z.string().min(1, "Select a category"),
@@ -48,6 +41,15 @@ interface Props {
 }
 
 export default function VendorRejectDialog({ open, onOpenChange, vendor, onReject }: Props) {
+  const { t } = useTranslation();
+
+  const rejectionCategories = [
+    { value: "expired", label: t("vendors.rejectModal.categories.expired") },
+    { value: "invalid", label: t("vendors.rejectModal.categories.invalid") },
+    { value: "incomplete", label: t("vendors.rejectModal.categories.incomplete") },
+    { value: "fraud", label: t("vendors.rejectModal.categories.fraud") },
+  ] as const;
+
   const {
     register,
     handleSubmit,
@@ -77,50 +79,50 @@ export default function VendorRejectDialog({ open, onOpenChange, vendor, onRejec
             <XCircle className="w-5 h-5 text-destructive" />
           </div>
           <div className="min-w-0">
-            <DialogTitle>Reject vendor</DialogTitle>
-            <DialogDescription>{vendor.storeName}'s registration will be rejected.</DialogDescription>
+            <DialogTitle>{t("vendors.rejectModal.title")}</DialogTitle>
+            <DialogDescription>{t("vendors.rejectModal.description", { storeName: vendor.storeName })}</DialogDescription>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
             <div>
-              <Label className="mb-1.5 block">Category</Label>
+              <Label className="mb-1.5 block">{t("vendors.rejectModal.categoryLabel")}</Label>
               <select className={selectCls} {...register("rejectionCategory")}>
-                <option value="">Select a reason</option>
-                {REJECTION_CATEGORIES.map((c) => (
+                <option value="">{t("vendors.rejectModal.selectReason")}</option>
+                {rejectionCategories.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
                   </option>
                 ))}
               </select>
               {errors.rejectionCategory && (
-                <p className="text-xs text-destructive mt-1">{errors.rejectionCategory.message}</p>
+                <p className="text-xs text-destructive mt-1">{t("vendors.rejectModal.errors.categoryRequired")}</p>
               )}
             </div>
 
             <div>
               <Label className="mb-1.5 block">
-                Details <span className="text-destructive">*</span>
+                {t("vendors.rejectModal.detailsLabel")} <span className="text-destructive">*</span>
               </Label>
               <textarea
                 className={textareaCls}
-                placeholder="Explain why this registration is being rejected"
+                placeholder={t("vendors.rejectModal.detailsPlaceholder")}
                 {...register("rejectionReason")}
               />
               {errors.rejectionReason && (
-                <p className="text-xs text-destructive mt-1">{errors.rejectionReason.message}</p>
+                <p className="text-xs text-destructive mt-1">{t("vendors.rejectModal.errors.reasonRequired")}</p>
               )}
             </div>
           </DialogBody>
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("vendors.rejectModal.cancel")}
             </Button>
             <Button type="submit" variant="destructive">
               <XCircle className="w-4 h-4" />
-              Reject
+              {t("vendors.rejectModal.reject")}
             </Button>
           </DialogFooter>
         </form>

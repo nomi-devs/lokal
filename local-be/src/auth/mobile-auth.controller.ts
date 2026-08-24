@@ -8,11 +8,8 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.type'
 import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { MobileAuthService } from './mobile-auth.service';
 import { SessionService } from './session.service';
-import { MobileRegisterDto } from './dto/mobile-register.dto';
-import { VerifyRegistrationOtpDto } from './dto/verify-registration-otp.dto';
-import { MobileLoginDto } from './dto/mobile-login.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendMobileOtpDto } from './dto/send-mobile-otp.dto';
+import { VerifyMobileOtpDto } from './dto/verify-mobile-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogoutDto } from './dto/logout.dto';
 import {
@@ -22,10 +19,9 @@ import {
   SendOtpResponseDto,
 } from './dto/auth-response.dto';
 
-// Password-based login for customers/drivers. OTP only appears on
-// register/verify-registration and forgot-password/reset-password — never on
-// login itself. See DashboardAuthController for the vendor/admin equivalent
-// at /dashboard/auth.
+// Pure OTP auth for the mobile app (customer only) — no password
+// anywhere. See DashboardAuthController for the vendor/admin password-based
+// equivalent at /dashboard/auth.
 @ApiTags('Auth - Mobile')
 @Controller('mobile/auth')
 export class MobileAuthController {
@@ -36,45 +32,21 @@ export class MobileAuthController {
 
   @ApiOkResponse({ type: SendOtpResponseDto })
   @Throttle({ default: { limit: 5, ttl: 60 * 60 * 1000 } })
-  @Post('register')
-  register(@Body() dto: MobileRegisterDto): Promise<SendOtpResponseDto> {
-    return this.mobileAuthService.sendRegistrationOtp(dto);
+  @Post('send-otp')
+  sendOtp(@Body() dto: SendMobileOtpDto): Promise<SendOtpResponseDto> {
+    return this.mobileAuthService.sendOtp(dto);
   }
 
+  // Creates the account on first use, logs in on every use after — see
+  // MobileAuthResponseDto.isNewUser to tell the two apart client-side.
   @ApiOkResponse({ type: MobileAuthResponseDto })
   @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
-  @Post('verify-registration')
-  verifyRegistration(
-    @Body() dto: VerifyRegistrationOtpDto,
+  @Post('verify-otp')
+  verifyOtp(
+    @Body() dto: VerifyMobileOtpDto,
     @Req() request: Request,
   ): Promise<MobileAuthResponseDto> {
-    return this.mobileAuthService.verifyRegistrationOtp(dto, request);
-  }
-
-  @ApiOkResponse({ type: MobileAuthResponseDto })
-  @Post('login')
-  login(
-    @Body() dto: MobileLoginDto,
-    @Req() request: Request,
-  ): Promise<MobileAuthResponseDto> {
-    return this.mobileAuthService.login(dto, request);
-  }
-
-  @ApiOkResponse({ type: SendOtpResponseDto })
-  @Throttle({ default: { limit: 5, ttl: 60 * 60 * 1000 } })
-  @Post('forgot-password')
-  forgotPassword(@Body() dto: ForgotPasswordDto): Promise<SendOtpResponseDto> {
-    return this.mobileAuthService.forgotPassword(dto);
-  }
-
-  @ApiOkResponse({ type: MobileAuthResponseDto })
-  @Throttle({ default: { limit: 10, ttl: 15 * 60 * 1000 } })
-  @Post('reset-password')
-  resetPassword(
-    @Body() dto: ResetPasswordDto,
-    @Req() request: Request,
-  ): Promise<MobileAuthResponseDto> {
-    return this.mobileAuthService.resetPassword(dto, request);
+    return this.mobileAuthService.verifyOtp(dto, request);
   }
 
   @ApiOkResponse({ type: RefreshTokenResponseDto })

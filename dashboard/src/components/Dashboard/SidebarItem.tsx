@@ -105,7 +105,7 @@ export default function SidebarItem({ item }: SidebarItemProps) {
         />
       </button>
       {open && (
-        <div className="ml-7 border-l border-sidebar-border pl-3 mt-1 space-y-1">
+        <div className="ms-7 border-s border-sidebar-border ps-3 mt-1 space-y-1">
           {item.children.map((child) =>
             isDesktop ? (
               <Link

@@ -26,6 +26,7 @@ export class UserMapper {
       addedAt: t.addedAt,
       lastUsedAt: t.lastUsedAt,
     }));
+    domainEntity.notificationsEnabled = raw.notificationsEnabled;
     domainEntity.lastLogin = raw.lastLogin;
     domainEntity.lastLoginIp = raw.lastLoginIp;
     domainEntity.loginAttempts = raw.loginAttempts;
@@ -68,6 +69,8 @@ export class UserMapper {
       persistence.lastLoginIp = domainEntity.lastLoginIp;
     if (domainEntity.isPhoneVerified !== undefined)
       persistence.isPhoneVerified = domainEntity.isPhoneVerified;
+    if (domainEntity.notificationsEnabled !== undefined)
+      persistence.notificationsEnabled = domainEntity.notificationsEnabled;
     if (domainEntity.deletedAt !== undefined)
       persistence.deletedAt = domainEntity.deletedAt;
     return persistence;

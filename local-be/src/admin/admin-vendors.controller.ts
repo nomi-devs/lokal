@@ -3,31 +3,36 @@ import {
   Controller,
   Get,
   Param,
+  Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.type';
-import { MessageResponseDto } from '../common/dto/message-response.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { VendorsService } from '../vendors/vendors.service';
 import { UsersService } from '../users/users.service';
 import { ProductsService } from '../products/products.service';
 import { ListVendorsQueryDto } from './dto/list-vendors-query.dto';
-import { ApproveVendorDto } from './dto/approve-vendor.dto';
-import { RejectVendorDto } from './dto/reject-vendor.dto';
-import { SuspendVendorDto } from './dto/suspend-vendor.dto';
+import { ListVendorProductsQueryDto } from './dto/list-vendor-products-query.dto';
+import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
+import { UpdateVendorStatusDto } from './dto/update-vendor-status.dto';
 import {
+  AdminVendorDetailResponseDto,
   AdminVendorProductsListResponseDto,
   AdminVendorsListResponseDto,
-  ApproveVendorResponseDto,
-  RejectVendorResponseDto,
+  UpdateVendorStatusResponseDto,
 } from './dto/admin-vendor-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 @ApiTags('Admin - Vendors')
 @ApiBearerAuth('JWT-auth')
@@ -73,16 +78,26 @@ export class AdminVendorsController {
     };
   }
 
+  @ApiCreatedResponse({ type: AdminVendorDetailResponseDto })
+  @Post()
+  async create(
+    @Body() dto: AdminCreateVendorDto,
+  ): Promise<AdminVendorDetailResponseDto> {
+    const vendor = await this.vendorsService.createByAdmin(dto);
+    return { success: true, vendor };
+  }
+
   @ApiOkResponse({ type: AdminVendorProductsListResponseDto })
   @Get(':id/products')
   async products(
     @Param('id') id: string,
-    @Query() query: PaginationQueryDto,
+    @Query() query: ListVendorProductsQueryDto,
   ): Promise<AdminVendorProductsListResponseDto> {
     const { data, total } = await this.productsService.findManyByVendorId(
       id,
       query.page,
       query.limit,
+      query.categoryId,
     );
     return {
       success: true,
@@ -91,53 +106,33 @@ export class AdminVendorsController {
     };
   }
 
-  @ApiOkResponse({ type: ApproveVendorResponseDto })
-  @Put(':id/approve')
-  async approve(
+  // One endpoint for every status transition — approve (status: 'active'),
+  // reject (status: 'inactive'), suspend (status: 'suspended'). Previously
+  // three separate PUT endpoints; see UpdateVendorStatusDto for which fields
+  // apply to which status.
+  @ApiOkResponse({ type: UpdateVendorStatusResponseDto })
+  @Put(':id/status')
+  async updateStatus(
     @Param('id') id: string,
-    @Body() dto: ApproveVendorDto,
+    @Body() dto: UpdateVendorStatusDto,
     @CurrentUser() admin: AuthenticatedUser,
-  ): Promise<ApproveVendorResponseDto> {
-    const vendor = await this.vendorsService.approve(
+  ): Promise<UpdateVendorStatusResponseDto> {
+    const vendor = await this.vendorsService.updateStatus(
       id,
       admin.userId,
-      dto.approvalNotes,
+      dto,
     );
+    const message =
+      dto.status === 'active'
+        ? MESSAGES.VENDOR.APPROVED
+        : dto.status === 'inactive'
+          ? MESSAGES.VENDOR.REJECTED
+          : MESSAGES.VENDOR.SUSPENDED;
     return {
       success: true,
-      message: 'Vendor approved successfully',
-      vendor: { status: vendor.status, approvedAt: vendor.approvedAt as Date },
+      message: message.en,
+      messageAr: message.ar,
+      vendor,
     };
-  }
-
-  @ApiOkResponse({ type: RejectVendorResponseDto })
-  @Put(':id/reject')
-  async reject(
-    @Param('id') id: string,
-    @Body() dto: RejectVendorDto,
-  ): Promise<RejectVendorResponseDto> {
-    const vendor = await this.vendorsService.reject(
-      id,
-      dto.rejectionReason,
-      dto.rejectionCategory,
-    );
-    return {
-      success: true,
-      message: 'Vendor rejected',
-      vendor: {
-        status: vendor.status,
-        rejectionReason: vendor.rejectionReason as string,
-      },
-    };
-  }
-
-  @ApiOkResponse({ type: MessageResponseDto })
-  @Put(':id/suspend')
-  async suspend(
-    @Param('id') id: string,
-    @Body() dto: SuspendVendorDto,
-  ): Promise<MessageResponseDto> {
-    await this.vendorsService.suspend(id, dto.reason, dto.duration);
-    return { success: true, message: 'Vendor suspended' };
   }
 }

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Eye, ShieldOff, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { CheckCircle2, Eye, ShieldOff, Store, XCircle } from "lucide-react";
 
 import VendorViewDialog from "./VendorViewDialog";
+import VendorAddDialog from "./VendorAddDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
-import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
+import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import * as adminApi from "@/lib/adminApi";
@@ -23,12 +25,14 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 export default function VendorsPage() {
+  const { t } = useTranslation();
   const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewTarget, setViewTarget] = useState<AdminVendorRow | null>(null);
   const [approveTarget, setApproveTarget] = useState<AdminVendorRow | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminVendorRow | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<AdminVendorRow | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -36,7 +40,7 @@ export default function VendorsPage() {
       const { data } = await adminApi.listVendors();
       setVendors(data);
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to load vendors"));
+      toast.error(getApiErrorMessage(error, t("vendors.management.toasts.loadFailed")));
     } finally {
       setLoading(false);
     }
@@ -49,72 +53,72 @@ export default function VendorsPage() {
   async function handleApprove(id: string, notes: string) {
     try {
       await adminApi.approveVendor(id, notes || undefined);
-      toast.success("Vendor approved");
+      toast.success(t("vendors.management.toasts.approved"));
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to approve vendor"));
+      toast.error(getApiErrorMessage(error, t("vendors.management.toasts.actionFailed")));
     }
   }
 
   async function handleReject(id: string, reason: string, category: string) {
     try {
       await adminApi.rejectVendor(id, reason, category);
-      toast.success("Vendor rejected");
+      toast.success(t("vendors.management.toasts.rejected"));
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to reject vendor"));
+      toast.error(getApiErrorMessage(error, t("vendors.management.toasts.actionFailed")));
     }
   }
 
   async function handleSuspend(id: string, reason: string, duration?: number) {
     try {
       await adminApi.suspendVendor(id, reason, duration);
-      toast.success("Vendor suspended");
+      toast.success(t("vendors.management.toasts.suspended"));
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to suspend vendor"));
+      toast.error(getApiErrorMessage(error, t("vendors.management.toasts.actionFailed")));
     }
   }
 
   const columns: ColumnDef<AdminVendorRow>[] = [
-    { key: "storeName", header: "Store", render: (v) => <span className="font-medium">{v as string}</span> },
-    { key: "ownerName", header: "Owner", render: (v) => (v as string) || "—" },
-    { key: "ownerPhone", header: "Phone", render: (v) => (v as string) || "—" },
-    { key: "ownerEmail", header: "Email", render: (v) => (v as string) || "—" },
+    { key: "storeName", header: t("vendors.management.columns.store"), render: (v) => <span className="font-medium">{v as string}</span> },
+    { key: "ownerName", header: t("vendors.management.columns.owner"), render: (v) => (v as string) || "—" },
+    { key: "ownerPhone", header: t("vendors.management.columns.phone"), render: (v) => (v as string) || "—" },
+    { key: "ownerEmail", header: t("users.management.columns.email"), render: (v) => (v as string) || "—" },
     {
       key: "status",
-      header: "Status",
+      header: t("vendors.management.columns.status"),
       render: (v) => (
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}>
-          {(v as string).replace("_", " ")}
+          {t(`common.status.${v as string}`, (v as string).replace("_", " "))}
         </span>
       ),
     },
     {
       key: "createdAt",
-      header: "Submitted",
+      header: t("vendors.management.columns.joined"),
       sortable: true,
       render: (v) => new Date(v as string).toLocaleDateString(),
     },
   ];
 
   const rowActions: RowAction<AdminVendorRow>[] = [
-    { label: "View", icon: Eye, onClick: (row) => setViewTarget(row) },
+    { label: t("vendors.management.actions.view"), icon: Eye, onClick: (row) => setViewTarget(row) },
     {
-      label: "Approve",
+      label: t("vendors.management.actions.approve"),
       icon: CheckCircle2,
       hidden: (row) => row.status !== "pending_approval",
       onClick: (row) => setApproveTarget(row),
     },
     {
-      label: "Reject",
+      label: t("vendors.management.actions.reject"),
       icon: XCircle,
       variant: "destructive",
       hidden: (row) => row.status !== "pending_approval",
       onClick: (row) => setRejectTarget(row),
     },
     {
-      label: "Suspend",
+      label: t("vendors.management.actions.suspend"),
       icon: ShieldOff,
       variant: "warning",
       hidden: (row) => row.status !== "active",
@@ -122,8 +126,12 @@ export default function VendorsPage() {
     },
   ];
 
+  const toolbarActions: ToolbarAction<AdminVendorRow>[] = [
+    { label: t("vendors.management.actions.addVendor"), icon: Store, onClick: () => setAddOpen(true) },
+  ];
+
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle="Vendors">
+    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("vendors.topbarTitle")}>
       <DataTable<AdminVendorRow>
         data={vendors}
         columns={columns}
@@ -133,20 +141,27 @@ export default function VendorsPage() {
         filters={[
           {
             key: "status",
-            label: "Status",
+            label: t("vendors.management.filters.status"),
             options: [
-              { label: "Pending approval", value: "pending_approval" },
-              { label: "Active", value: "active" },
-              { label: "Suspended", value: "suspended" },
-              { label: "Inactive", value: "inactive" },
+              { label: t("vendors.management.filters.pendingApproval"), value: "pending_approval" },
+              { label: t("vendors.management.filters.active"), value: "active" },
+              { label: t("vendors.management.filters.suspended"), value: "suspended" },
+              { label: t("vendors.management.filters.inactive"), value: "inactive" },
             ],
           },
         ]}
         rowActions={rowActions}
+        toolbarActions={toolbarActions}
         pagination={{ pageSize: 10 }}
         loading={loading}
         striped
+        emptyState={{
+          title: t("vendors.management.empty.title"),
+          description: t("vendors.management.empty.description"),
+        }}
       />
+
+      <VendorAddDialog open={addOpen} onOpenChange={setAddOpen} onCreated={() => void load()} />
 
       <VendorViewDialog open={!!viewTarget} onOpenChange={(o) => !o && setViewTarget(null)} vendor={viewTarget} />
       <VendorApproveDialog

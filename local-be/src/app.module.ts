@@ -5,11 +5,22 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VendorsModule } from './vendors/vendors.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
 import { OtpModule } from './otp/otp.module';
 import { SmsModule } from './sms/sms.module';
 import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
 import { FilesModule } from './files/files.module';
 import { AdminModule } from './admin/admin.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { WishlistsModule } from './wishlists/wishlists.module';
+import { CartModule } from './cart/cart.module';
+import { PaymentsModule } from './payments/payments.module';
+import { OrdersModule } from './orders/orders.module';
+import { FaqsModule } from './faqs/faqs.module';
+import { BannersModule } from './banners/banners.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { PushModule } from './push/push.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -20,6 +31,9 @@ import authConfig from './auth/config/auth.config';
 import smsConfig from './sms/config/sms.config';
 import emailConfig from './email/config/email.config';
 import fileConfig from './files/config/file.config';
+import cartConfig from './cart/config/cart.config';
+import myfatoorahConfig from './payments/config/myfatoorah.config';
+import pushConfig from './push/config/push.config';
 import { AllConfigType } from './config/config.type';
 
 @Module({
@@ -33,6 +47,9 @@ import { AllConfigType } from './config/config.type';
         smsConfig,
         emailConfig,
         fileConfig,
+        cartConfig,
+        myfatoorahConfig,
+        pushConfig,
       ],
     }),
     MongooseModule.forRootAsync({
@@ -46,11 +63,22 @@ import { AllConfigType } from './config/config.type';
     AuthModule,
     UsersModule,
     VendorsModule,
+    CategoriesModule,
+    ProductsModule,
     OtpModule,
     SmsModule,
     RefreshTokensModule,
     FilesModule,
     AdminModule,
+    AddressesModule,
+    WishlistsModule,
+    CartModule,
+    PaymentsModule,
+    OrdersModule,
+    FaqsModule,
+    BannersModule,
+    PushModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,8 @@
+import axios from "axios";
+
 import { apiClient } from "./apiClient";
 import type { AuthUser } from "./authApi";
+import type { Product } from "./productsApi";
 
 export interface Pagination {
   page: number;
@@ -59,6 +62,24 @@ export async function deleteUser(id: string, reason?: string) {
   return data;
 }
 
+export interface CreateUserPayload {
+  phone: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  // Only meaningful for role "admin" — customer is the mobile-app, OTP-only
+  // role with no password login anywhere.
+  password?: string;
+  role: "customer" | "admin";
+  status?: "active" | "inactive";
+}
+
+export async function createUser(payload: CreateUserPayload) {
+  const { data } = await apiClient.post<{ success: true; user: AdminUserRow }>("/admin/users", payload);
+
+  return data.user;
+}
+
 export interface AdminVendorRow {
   id: string;
   storeName: string;
@@ -90,60 +111,73 @@ export async function listVendors(params: ListVendorsParams = {}) {
   return data;
 }
 
-export async function approveVendor(id: string, approvalNotes?: string) {
-  const { data } = await apiClient.put<{
-    success: true;
-    message: string;
-    vendor: { status: string; approvedAt: string };
-  }>(`/admin/vendors/${id}/approve`, { approvalNotes });
+// One endpoint for every status transition (previously three: approve/
+// reject/suspend) — see local-be's UpdateVendorStatusDto. approveVendor/
+// rejectVendor/suspendVendor below are thin, purpose-named wrappers around
+// it so call sites (VendorsPage, KycVerificationPage) don't change.
+interface UpdateVendorStatusResponse {
+  success: true;
+  message: string;
+  vendor: { status: string; approvedAt?: string; rejectionReason?: string };
+}
+
+async function updateVendorStatus(
+  id: string,
+  payload: {
+    status: "active" | "inactive" | "suspended";
+    approvalNotes?: string;
+    rejectionReason?: string;
+    rejectionCategory?: string;
+    suspendReason?: string;
+    duration?: number;
+  }
+) {
+  const { data } = await apiClient.put<UpdateVendorStatusResponse>(`/admin/vendors/${id}/status`, payload);
 
   return data;
 }
 
-export async function rejectVendor(id: string, rejectionReason: string, rejectionCategory: string) {
-  const { data } = await apiClient.put<{
-    success: true;
-    message: string;
-    vendor: { status: string; rejectionReason: string };
-  }>(`/admin/vendors/${id}/reject`, { rejectionReason, rejectionCategory });
-
-  return data;
+export function approveVendor(id: string, approvalNotes?: string) {
+  return updateVendorStatus(id, { status: "active", approvalNotes });
 }
 
-export async function suspendVendor(id: string, reason: string, duration?: number) {
-  const { data } = await apiClient.put<{ success: true; message: string }>(`/admin/vendors/${id}/suspend`, {
-    reason,
-    duration,
-  });
-
-  return data;
+export function rejectVendor(id: string, rejectionReason: string, rejectionCategory: string) {
+  return updateVendorStatus(id, { status: "inactive", rejectionReason, rejectionCategory });
 }
 
-// Mirrors local-be's products/domain/product.ts.
-export interface AdminProduct {
-  id: string;
-  vendorId: string;
-  categoryId?: string;
-  department: "men" | "women" | "kids" | "unisex";
-  nameEn: string;
-  nameAr: string;
-  descriptionEn?: string;
-  descriptionAr?: string;
-  images: string[];
-  price: { base: number; currency: string; compareAt?: number };
-  sizes: string[];
-  colors: string[];
-  stock: number;
-  status: "active" | "inactive" | "out_of_stock";
-  ratings: { average: number; count: number };
-  createdAt: string;
-  updatedAt: string;
-  // DataTable's RowData constraint requires an index signature.
-  [key: string]: unknown;
+export function suspendVendor(id: string, reason: string, duration?: number) {
+  return updateVendorStatus(id, { status: "suspended", suspendReason: reason, duration });
 }
 
+export interface CreateVendorPayload {
+  phone: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  storeName: string;
+  storeDescription?: string;
+  city?: string;
+  address?: string;
+  kycDocumentUrl?: string;
+  status?: "pending_approval" | "active";
+}
+
+export async function createVendor(payload: CreateVendorPayload) {
+  const { data } = await apiClient.post<{ success: true; vendor: { id: string; storeName: string } }>(
+    "/admin/vendors",
+    payload
+  );
+
+  return data.vendor;
+}
+
+// See ./productsApi.ts for the full Product shape/type (mirrors local-be's
+// products/domain/product.ts) and the dedicated vendor/admin product CRUD.
+// This one stays here since it hangs off the vendor-detail view, not the
+// Products pages themselves.
 export async function getVendorProducts(vendorId: string, page = 1, limit = 10) {
-  const { data } = await apiClient.get<{ success: true; data: AdminProduct[]; pagination: Pagination }>(
+  const { data } = await apiClient.get<{ success: true; data: Product[]; pagination: Pagination }>(
     `/admin/vendors/${vendorId}/products`,
     { params: { page, limit } }
   );
@@ -154,8 +188,8 @@ export async function getVendorProducts(vendorId: string, page = 1, limit = 10) 
 export interface AdminWishlistItem {
   id: string;
   productId: string;
-  addedAt: string;
-  product: AdminProduct | null;
+  createdAt: string;
+  product: Product | null;
   // DataTable's RowData constraint requires an index signature.
   [key: string]: unknown;
 }
@@ -194,4 +228,133 @@ export async function getUserAddresses(userId: string, page = 1, limit = 10) {
   );
 
   return data;
+}
+
+// ── Categories ────────────────────────────────────────────────────────────────
+
+export type CategoryDepartment = 'men' | 'women' | 'kids' | 'unisex';
+
+export interface AdminCategory {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  descriptionEn?: string;
+  descriptionAr?: string;
+  imageUrl?: string;
+  parentId?: string | null;
+  department: CategoryDepartment;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // DataTable's RowData constraint requires an index signature.
+  [key: string]: unknown;
+}
+
+export async function listAdminCategories(page = 1, limit = 100) {
+  const { data } = await apiClient.get<{ success: true; data: AdminCategory[]; pagination: Pagination }>(
+    '/admin/categories',
+    { params: { page, limit } }
+  );
+
+  return data;
+}
+
+export interface CategoryPayload {
+  nameEn: string;
+  nameAr: string;
+  descriptionEn?: string;
+  descriptionAr?: string;
+  imageUrl?: string;
+  parentId?: string | null;
+  department?: CategoryDepartment;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export async function createAdminCategory(payload: CategoryPayload) {
+  const { data } = await apiClient.post<{ success: true; category: AdminCategory }>(
+    '/admin/categories',
+    payload
+  );
+
+  return data.category;
+}
+
+export async function updateAdminCategory(id: string, payload: Partial<CategoryPayload>) {
+  const { data } = await apiClient.put<{ success: true; category: AdminCategory }>(
+    `/admin/categories/${id}`,
+    payload
+  );
+
+  return data.category;
+}
+
+export async function deleteAdminCategory(id: string) {
+  const { data } = await apiClient.delete<{ success: true; message: string }>(
+    `/admin/categories/${id}`
+  );
+
+  return data;
+}
+
+// ── FAQs ──────────────────────────────────────────────────────────────────────
+
+export interface AdminFaq {
+  id: string;
+  questionEn: string;
+  questionAr: string;
+  answerEn: string;
+  answerAr: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+export interface FaqPayload {
+  questionEn: string;
+  questionAr: string;
+  answerEn: string;
+  answerAr: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export async function listAdminFaqs(page = 1, limit = 100) {
+  const { data } = await apiClient.get<{ success: true; data: AdminFaq[]; pagination: Pagination }>(
+    '/admin/faqs',
+    { params: { page, limit } }
+  );
+
+  return data;
+}
+
+export async function createAdminFaq(payload: FaqPayload) {
+  const { data } = await apiClient.post<{ success: true; faq: AdminFaq }>('/admin/faqs', payload);
+
+  return data.faq;
+}
+
+export async function updateAdminFaq(id: string, payload: Partial<FaqPayload>) {
+  const { data } = await apiClient.put<{ success: true; faq: AdminFaq }>(`/admin/faqs/${id}`, payload);
+
+  return data.faq;
+}
+
+export async function deleteAdminFaq(id: string) {
+  const { data } = await apiClient.delete<{ success: true; message: string }>(`/admin/faqs/${id}`);
+
+  return data;
+}
+
+export async function uploadCategoryIcon(file: File): Promise<string> {
+  const { data } = await apiClient.post<{ success: true; uploadUrl: string; fileUrl: string }>(
+    "/files/upload-url",
+    { fileName: file.name, contentType: file.type, purpose: "category-icon" }
+  );
+  await axios.put(data.uploadUrl, file, { headers: { "Content-Type": file.type } });
+
+  return data.fileUrl;
 }

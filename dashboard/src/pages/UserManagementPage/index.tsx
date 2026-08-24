@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Eye, ShieldOff, ShieldCheck, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Eye, ShieldOff, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 
 import UserViewDialog from "./UserViewDialog";
+import UserAddDialog from "./UserAddDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
-import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
+import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "@/components/ui/Toast";
 import { getApiErrorMessage } from "@/lib/apiClient";
@@ -27,10 +29,10 @@ const ROLE_BADGE: Record<string, string> = {
   admin: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
   vendor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   customer: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  driver: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
 };
 
 export default function UserManagementPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,7 @@ export default function UserManagementPage() {
   const [viewTarget, setViewTarget] = useState<AdminUserRow | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<AdminUserRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -59,7 +62,7 @@ export default function UserManagementPage() {
       setUsers(resp.data);
       setTotal(resp.pagination.total);
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to load users"));
+      toast.error(getApiErrorMessage(error, t("users.management.toasts.loadFailed")));
     } finally {
       setLoading(false);
     }
@@ -78,29 +81,33 @@ export default function UserManagementPage() {
     const nextStatus = user.status === "suspended" ? "active" : "suspended";
     try {
       await adminApi.updateUserStatus(user.id, nextStatus);
-      toast.success(`${user.firstName || user.phone} is now ${nextStatus}`);
+      toast.success(
+        nextStatus === "active"
+          ? t("users.management.toasts.activated")
+          : t("users.management.toasts.suspended")
+      );
       setSuspendTarget(null);
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to update status"));
+      toast.error(getApiErrorMessage(error, t("users.management.toasts.actionFailed")));
     }
   }
 
   async function handleDeleteConfirm(user: AdminUserRow) {
     try {
       await adminApi.deleteUser(user.id);
-      toast.success(`${user.firstName || user.phone} deleted permanently`);
+      toast.success(t("users.management.toasts.deleted"));
       setDeleteTarget(null);
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to delete user"));
+      toast.error(getApiErrorMessage(error, t("users.management.toasts.actionFailed")));
     }
   }
 
   const columns: ColumnDef<AdminUserRow>[] = [
     {
       key: "name",
-      header: "Name",
+      header: t("users.management.columns.name"),
       render: (_v, row) => (
         <div>
           <p className="font-medium">
@@ -110,55 +117,59 @@ export default function UserManagementPage() {
         </div>
       ),
     },
-    { key: "email", header: "Email", render: (v) => (v as string) || "—" },
+    { key: "email", header: t("users.management.columns.email"), render: (v) => (v as string) || "—" },
     {
       key: "role",
-      header: "Role",
+      header: t("users.management.columns.role"),
       render: (v) => (
         <span
           className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${ROLE_BADGE[v as string] ?? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}
         >
-          {v as string}
+          {t(`common.status.${v as string}`, v as string)}
         </span>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: t("users.management.columns.status"),
       render: (v) => (
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}>
-          {v as string}
+          {t(`common.status.${v as string}`, v as string)}
         </span>
       ),
     },
     {
       key: "createdAt",
-      header: "Joined",
+      header: t("users.management.columns.joined"),
       sortable: true,
       render: (v) => new Date(v as string).toLocaleDateString(),
     },
   ];
 
   const rowActions: RowAction<AdminUserRow>[] = [
-    { label: "View", icon: Eye, onClick: (row) => setViewTarget(row) },
+    { label: t("users.management.actions.view"), icon: Eye, onClick: (row) => setViewTarget(row) },
     {
-      label: "Suspend",
+      label: t("users.management.actions.suspend"),
       icon: ShieldOff,
       variant: "warning",
       hidden: (row) => row.status === "suspended",
       onClick: (row) => setSuspendTarget(row),
     },
     {
-      label: "Activate",
+      label: t("users.management.actions.activate"),
       icon: ShieldCheck,
       hidden: (row) => row.status !== "suspended",
       onClick: (row) => setSuspendTarget(row),
     },
-    { label: "Delete permanently", icon: Trash2, variant: "destructive", onClick: (row) => setDeleteTarget(row) },
+    { label: t("users.management.actions.deletePermanent"), icon: Trash2, variant: "destructive", onClick: (row) => setDeleteTarget(row) },
+  ];
+
+  const toolbarActions: ToolbarAction<AdminUserRow>[] = [
+    { label: t("users.management.actions.addUser"), icon: UserPlus, onClick: () => setAddOpen(true) },
   ];
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle="User Management">
+    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("users.topbarTitle")}>
       <DataTable<AdminUserRow>
         data={users}
         columns={columns}
@@ -171,11 +182,11 @@ export default function UserManagementPage() {
         filters={[
           {
             key: "status",
-            label: "Status",
+            label: t("users.management.filters.status"),
             options: [
-              { label: "Active", value: "active" },
-              { label: "Inactive", value: "inactive" },
-              { label: "Suspended", value: "suspended" },
+              { label: t("users.management.filters.active"), value: "active" },
+              { label: t("users.management.filters.inactive"), value: "inactive" },
+              { label: t("users.management.filters.suspended"), value: "suspended" },
             ],
           },
         ]}
@@ -186,6 +197,7 @@ export default function UserManagementPage() {
           }
         }}
         rowActions={rowActions}
+        toolbarActions={toolbarActions}
         pagination={{
           pageSize,
           serverSide: true,
@@ -199,16 +211,25 @@ export default function UserManagementPage() {
         striped
       />
 
+      <UserAddDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onCreated={() => {
+          setPage(1);
+          void load();
+        }}
+      />
+
       <UserViewDialog open={!!viewTarget} onOpenChange={(o) => !o && setViewTarget(null)} user={viewTarget} />
 
       <ConfirmDialog
         open={!!suspendTarget}
         onOpenChange={(o) => !o && setSuspendTarget(null)}
-        title={suspendTarget?.status === "suspended" ? "Activate user?" : "Suspend user?"}
+        title={suspendTarget?.status === "suspended" ? t("users.management.confirm.activateTitle") : t("users.management.confirm.suspendTitle")}
         description={
           suspendTarget?.status === "suspended"
-            ? "This user will regain access immediately."
-            : "This user will be unable to log in until reactivated."
+            ? t("users.management.confirm.activateDesc")
+            : t("users.management.confirm.suspendDesc")
         }
         variant={suspendTarget?.status === "suspended" ? "default" : "destructive"}
         onConfirm={() => suspendTarget && handleSuspendConfirm(suspendTarget)}
@@ -217,10 +238,10 @@ export default function UserManagementPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Delete user permanently?"
-        description="This cannot be undone — the account and its data are removed immediately."
+        title={t("users.management.confirm.deleteTitle")}
+        description={t("users.management.confirm.deleteDesc")}
         variant="destructive"
-        confirmLabel="Delete"
+        confirmLabel={t("users.management.confirm.deleteButton")}
         onConfirm={() => deleteTarget && handleDeleteConfirm(deleteTarget)}
       />
     </DashboardLayout>

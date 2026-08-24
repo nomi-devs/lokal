@@ -7,7 +7,7 @@ export class WishlistMapper {
     domainEntity.id = raw._id.toString();
     domainEntity.userId = raw.userId.toString();
     domainEntity.productId = raw.productId.toString();
-    domainEntity.addedAt = raw.createdAt as Date;
+    domainEntity.createdAt = raw.createdAt as Date;
     return domainEntity;
   }
 }

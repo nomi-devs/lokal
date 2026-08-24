@@ -122,4 +122,18 @@ export class VendorsDocumentRepository implements VendorRepository {
   async countAll(): Promise<number> {
     return this.vendorModel.countDocuments({});
   }
+
+  async findAllIdsByStatus(status: VendorStatus): Promise<string[]> {
+    const found = await this.vendorModel
+      .find({ status, deletedAt: { $exists: false } })
+      .select('_id');
+    return found.map((v) => v._id.toString());
+  }
+
+  async findAllUserIds(): Promise<string[]> {
+    const found = await this.vendorModel
+      .find({ deletedAt: { $exists: false } })
+      .select('userId');
+    return found.map((v) => v.userId.toString());
+  }
 }

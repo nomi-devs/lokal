@@ -39,7 +39,7 @@ export class User {
   @Exclude({ toPlainOnly: true })
   passwordHash?: string;
 
-  @ApiProperty({ enum: ['customer', 'driver', 'vendor', 'admin'] })
+  @ApiProperty({ enum: ['customer', 'vendor', 'admin'] })
   role: Role;
 
   @ApiProperty({ enum: ['active', 'inactive', 'suspended', 'deleted'] })
@@ -56,6 +56,9 @@ export class User {
 
   @ApiProperty({ type: [FcmTokenEntry] })
   fcmTokens: FcmTokenEntry[];
+
+  @ApiProperty()
+  notificationsEnabled: boolean;
 
   @ApiProperty({ type: Date, nullable: true })
   lastLogin?: Date;

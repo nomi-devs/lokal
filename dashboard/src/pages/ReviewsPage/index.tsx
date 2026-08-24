@@ -22,6 +22,7 @@ import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { recomputeProductRating } from "@/lib/ratings";
+import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
 import { reviews as initialReviews, type Review, type ReviewStatus } from "@/data/reviews";
 import { products } from "@/data/products";
 import { orders } from "@/data/orders";
@@ -85,6 +86,7 @@ type PendingAction =
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ReviewsPage() {
   const { t } = useTranslation();
+  const loading = useSimulatedLoading();
   const [reviewList, setReviewList] = useState<Review[]>(initialReviews);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
@@ -322,6 +324,7 @@ export default function ReviewsPage() {
         data={reviewList}
         columns={reviewColumns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("reviews.list.searchPlaceholder")}
         searchKeys={["titleEn", "commentEn"]}

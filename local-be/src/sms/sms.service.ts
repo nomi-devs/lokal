@@ -15,7 +15,7 @@ export class SmsService {
       this.configService.get('app.nodeEnv', { infer: true }) !== 'production'
     ) {
       // Dev/staging fallback so the auth flow is testable end-to-end even
-      // before the real SMSBox query contract below has been verified.
+      // without SMS_BASE_URL configured.
       this.logger.log(`[DEV ONLY] OTP for ${phone}: ${otp}`);
     }
 
@@ -35,23 +35,27 @@ export class SmsService {
     }
   }
 
-  // NOTE: query param names are a best-effort guess at SMSBox's Http_SendSMS
-  // contract (User/Password/CustomerID/Sender/Mobile/Message is the common
-  // convention for this class of ASMX SMS gateway). Verify against SMSBox's
-  // actual API docs and adjust this one function if OTPs aren't arriving.
+  // Confirmed SMSBox Http_SendSMS contract, e.g.:
+  // https://smsbox.com/smsgateway/services/messaging.asmx/Http_SendSMS?username=...&password=...&customerid=...&sendertext=V+G+A&messagebody=...&recipientnumbers=%2B965...&defdate=&isblink=false&isflash=false
+  // URLSearchParams handles the encoding: spaces in sendertext/messagebody
+  // become "+", and the leading "+" on recipientnumbers becomes "%2B" —
+  // don't strip it.
   private async dispatch(
     baseUrl: string,
     phone: string,
     message: string,
   ): Promise<void> {
     const params = new URLSearchParams({
-      User: this.configService.get('sms.username', { infer: true }) ?? '',
-      Password: this.configService.get('sms.password', { infer: true }) ?? '',
-      CustomerID:
+      username: this.configService.get('sms.username', { infer: true }) ?? '',
+      password: this.configService.get('sms.password', { infer: true }) ?? '',
+      customerid:
         this.configService.get('sms.customerId', { infer: true }) ?? '',
-      Sender: this.configService.get('sms.sender', { infer: true }) ?? '',
-      Mobile: phone.replace('+', ''),
-      Message: message,
+      sendertext: this.configService.get('sms.sender', { infer: true }) ?? '',
+      messagebody: message,
+      recipientnumbers: phone,
+      defdate: '',
+      isblink: 'false',
+      isflash: 'false',
     });
 
     const url = `${baseUrl}${params.toString()}`;

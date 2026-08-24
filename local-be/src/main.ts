@@ -2,6 +2,7 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
 import {
   DocumentBuilder,
   SwaggerCustomOptions,
@@ -23,7 +24,7 @@ async function bootstrap() {
   app.enableCors({
     origin: configService.getOrThrow('app.corsOrigins', { infer: true }),
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
@@ -38,7 +39,10 @@ async function bootstrap() {
   // Strips @Exclude()-marked fields (e.g. User.passwordHash) from every
   // response automatically — domain entities declare this once, controllers
   // don't need a manual toPublic()-style mapping per endpoint.
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(
+    new TransformResponseInterceptor(),
+    new ClassSerializerInterceptor(app.get(Reflector)),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Lokal E-Commerce API')

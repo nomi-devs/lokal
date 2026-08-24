@@ -14,9 +14,10 @@ import { DashboardVerifyResetOtpDto } from './dto/dashboard-verify-reset-otp.dto
 import { DashboardResetPasswordDto } from './dto/dashboard-reset-password.dto';
 import { LoginResponseDto, SendOtpResponseDto } from './dto/auth-response.dto';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 // Password-only login for the dashboard (vendor + admin) — no OTP anywhere in
-// the login flow itself. Mobile (customer/driver) has its own
+// the login flow itself. Mobile (customer) has its own
 // MobileAuthService, phone+SMS based; forgotPassword/resetPassword below are
 // this controller's own email+SMTP equivalent, since the dashboard collects
 // email rather than phone.
@@ -127,9 +128,11 @@ export class DashboardAuthService {
       await this.emailService.sendOtp(dto.email, otp);
     }
 
+    const msg = MESSAGES.AUTH.FORGOT_PASSWORD(dto.email);
     return {
       success: true,
-      message: `If an account exists for ${dto.email}, we've sent a reset code.`,
+      message: msg.en,
+      messageAr: msg.ar,
       expiresIn: this.otpService.expirySeconds,
     };
   }
@@ -152,7 +155,11 @@ export class DashboardAuthService {
 
     await this.otpService.checkValid(dto.email, dto.otp);
 
-    return { success: true, message: 'Code verified' };
+    return {
+      success: true,
+      message: MESSAGES.AUTH.OTP_VERIFIED.en,
+      messageAr: MESSAGES.AUTH.OTP_VERIFIED.ar,
+    };
   }
 
   async resetPassword(
@@ -170,6 +177,10 @@ export class DashboardAuthService {
     await this.otpService.verify(dto.email, dto.otp);
     await this.usersService.setPassword(user.id, dto.newPassword);
 
-    return { success: true, message: 'Password reset successfully' };
+    return {
+      success: true,
+      message: MESSAGES.AUTH.PASSWORD_RESET.en,
+      messageAr: MESSAGES.AUTH.PASSWORD_RESET.ar,
+    };
   }
 }

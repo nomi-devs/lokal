@@ -26,6 +26,7 @@ import {
 } from './dto/vendor-response.dto';
 import { SendOtpResponseDto } from '../auth/dto/auth-response.dto';
 import { FilesS3PresignedService } from '../files/infrastructure/uploader/s3-presigned/files.service';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 @ApiTags('Vendors')
 @Controller('vendors')
@@ -82,7 +83,8 @@ export class VendorsController {
     const vendor = await this.vendorsService.verifyRegistration(dto);
     return {
       success: true,
-      message: 'Vendor registration successful',
+      message: MESSAGES.VENDOR.REGISTRATION_SUCCESS.en,
+      messageAr: MESSAGES.VENDOR.REGISTRATION_SUCCESS.ar,
       vendor: {
         id: vendor.id,
         userId: vendor.userId,

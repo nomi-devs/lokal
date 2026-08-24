@@ -7,19 +7,20 @@ import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
 import { resolveDeviceInfo } from '../common/utils/device-info.util';
 import { SessionService } from './session.service';
-import { MobileRegisterDto } from './dto/mobile-register.dto';
-import { VerifyRegistrationOtpDto } from './dto/verify-registration-otp.dto';
-import { MobileLoginDto } from './dto/mobile-login.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendMobileOtpDto } from './dto/send-mobile-otp.dto';
+import { VerifyMobileOtpDto } from './dto/verify-mobile-otp.dto';
 import {
   MobileAuthResponseDto,
   SendOtpResponseDto,
 } from './dto/auth-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
-// Password-based login for customers/drivers (mobile app). OTP is used only
-// to verify phone ownership at registration and for forgot-password — never
-// on every login. Dashboard (vendor/admin) has its own DashboardAuthService.
+// Pure OTP auth for the mobile app (customers only — the only roles are
+// customer, vendor, admin) — phone in, code back, logged in. No password
+// anywhere in this flow: sendOtp behaves
+// identically whether the phone is new or returning, and verifyOtp creates
+// the account on first use. Dashboard (vendor/admin) is unrelated — see
+// DashboardAuthService for that password-based flow at /dashboard/auth.
 @Injectable()
 export class MobileAuthService {
   constructor(
@@ -29,55 +30,38 @@ export class MobileAuthService {
     private readonly sessionService: SessionService,
   ) {}
 
-  async sendRegistrationOtp(
-    dto: MobileRegisterDto,
-  ): Promise<SendOtpResponseDto> {
+  async sendOtp(dto: SendMobileOtpDto): Promise<SendOtpResponseDto> {
     const existing = await this.usersService.findByPhone(dto.phone);
-    if (existing?.passwordHash) {
-      throw new AppException(
-        ERROR_CODES.USER_ALREADY_EXISTS,
-        'An account already exists for this phone',
-        409,
-      );
-    }
-    if (existing?.status === 'suspended') {
-      throw new AppException(
-        ERROR_CODES.USER_SUSPENDED,
-        'Your account has been suspended',
-        403,
-      );
+    if (existing) {
+      this.assertMobileAccessible(existing.role, existing.status);
     }
 
     await this.otpService.assertNotRateLimited(dto.phone);
     const otp = await this.otpService.generate(dto.phone);
     await this.smsService.sendOtp(dto.phone, otp);
 
+    const msg = MESSAGES.AUTH.OTP_SENT(dto.phone);
     return {
       success: true,
-      message: `OTP sent to ${dto.phone}`,
+      message: msg.en,
+      messageAr: msg.ar,
       expiresIn: this.otpService.expirySeconds,
     };
   }
 
-  async verifyRegistrationOtp(
-    dto: VerifyRegistrationOtpDto,
+  async verifyOtp(
+    dto: VerifyMobileOtpDto,
     request: Request,
   ): Promise<MobileAuthResponseDto> {
     await this.otpService.verify(dto.phone, dto.otp);
 
-    const user = await this.usersService.createWithPassword({
-      phone: dto.phone,
-      firstName: dto.firstName ?? '',
-      lastName: dto.lastName ?? '',
-      password: dto.password,
-      role: 'customer',
-    });
+    let user = await this.usersService.findByPhone(dto.phone);
+    const isNewUser = !user;
 
-    if (dto.fcmToken && dto.device) {
-      await this.usersService.registerFcmToken(user.id, {
-        fcmToken: dto.fcmToken,
-        device: dto.device,
-      });
+    if (user) {
+      this.assertMobileAccessible(user.role, user.status);
+    } else {
+      user = await this.usersService.createCustomer(dto.phone);
     }
 
     const deviceInfo = resolveDeviceInfo(request, dto.deviceInfo);
@@ -88,111 +72,26 @@ export class MobileAuthService {
     );
     await this.usersService.touchLogin(user.id, deviceInfo.ip);
 
-    return { success: true, user, tokens, isNewUser: true };
+    return { success: true, user, tokens, isNewUser };
   }
 
-  async login(
-    dto: MobileLoginDto,
-    request: Request,
-  ): Promise<MobileAuthResponseDto> {
-    const user = await this.usersService.findByIdentifierWithPassword(
-      dto.phone,
-    );
-    if (!user || !user.passwordHash) {
-      throw new AppException(
-        ERROR_CODES.UNAUTHORIZED,
-        'Invalid credentials',
-        401,
-      );
-    }
-    if (user.role !== 'customer' && user.role !== 'driver') {
+  // Shared guard for an existing account hit via sendOtp or verifyOtp —
+  // vendor/admin phones belong on the dashboard, not this app, and a
+  // suspended account can't get in either way.
+  private assertMobileAccessible(role: string, status: string): void {
+    if (role !== 'customer') {
       throw new AppException(
         ERROR_CODES.FORBIDDEN,
         'Use the dashboard to log in to this account',
         403,
       );
     }
-    if (user.status === 'suspended') {
+    if (status === 'suspended') {
       throw new AppException(
         ERROR_CODES.USER_SUSPENDED,
         'Your account has been suspended',
         403,
       );
     }
-
-    const matches = await this.usersService.verifyPassword(user, dto.password);
-    if (!matches) {
-      throw new AppException(
-        ERROR_CODES.UNAUTHORIZED,
-        'Invalid credentials',
-        401,
-      );
-    }
-
-    const deviceInfo = resolveDeviceInfo(request, dto.deviceInfo);
-    const tokens = await this.sessionService.issueTokens(
-      user.id,
-      user.role,
-      deviceInfo,
-    );
-    await this.usersService.touchLogin(user.id, deviceInfo.ip);
-
-    return { success: true, user, tokens, isNewUser: false };
-  }
-
-  async forgotPassword(dto: ForgotPasswordDto): Promise<SendOtpResponseDto> {
-    const user = await this.usersService.findByPhone(dto.phone);
-    if (!user || !user.passwordHash) {
-      throw new AppException(
-        ERROR_CODES.USER_NOT_FOUND,
-        'No account found for this phone',
-        404,
-      );
-    }
-    if (user.status === 'suspended') {
-      throw new AppException(
-        ERROR_CODES.USER_SUSPENDED,
-        'Your account has been suspended',
-        403,
-      );
-    }
-
-    await this.otpService.assertNotRateLimited(dto.phone);
-    const otp = await this.otpService.generate(dto.phone);
-    await this.smsService.sendOtp(dto.phone, otp);
-
-    return {
-      success: true,
-      message: `OTP sent to ${dto.phone}`,
-      expiresIn: this.otpService.expirySeconds,
-    };
-  }
-
-  async resetPassword(
-    dto: ResetPasswordDto,
-    request: Request,
-  ): Promise<MobileAuthResponseDto> {
-    await this.otpService.verify(dto.phone, dto.otp);
-
-    const user = await this.usersService.findByPhone(dto.phone);
-    if (!user) {
-      throw new AppException(
-        ERROR_CODES.USER_NOT_FOUND,
-        'No account found for this phone',
-        404,
-      );
-    }
-
-    await this.usersService.setPassword(user.id, dto.newPassword);
-
-    const deviceInfo = resolveDeviceInfo(request, dto.deviceInfo);
-    const tokens = await this.sessionService.issueTokens(
-      user.id,
-      user.role,
-      deviceInfo,
-    );
-    await this.usersService.touchLogin(user.id, deviceInfo.ip);
-
-    return { success: true, user, tokens, isNewUser: false };
   }
 }

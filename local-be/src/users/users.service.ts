@@ -49,6 +49,7 @@ export class UsersService {
       language: 'en',
       timezone: 'Asia/Kuwait',
       fcmTokens: [],
+      notificationsEnabled: true,
       loginAttempts: 0,
       isPhoneVerified: true,
       rating: 0,
@@ -56,13 +57,17 @@ export class UsersService {
     });
   }
 
+  // password is optional because this is also how admins create
+  // customer accounts (mobile app, OTP-only login — no password is ever
+  // usable for that role). vendor/admin creation always passes one.
   async createWithPassword(data: {
     phone: string;
     email?: string;
     firstName: string;
     lastName: string;
-    password: string;
+    password?: string;
     role: Role;
+    status?: 'active' | 'inactive';
   }): Promise<User> {
     const existingPhone = await this.userRepository.findByPhone(data.phone);
     if (existingPhone) {
@@ -86,7 +91,9 @@ export class UsersService {
     const rounds = this.configService.getOrThrow('auth.bcryptRounds', {
       infer: true,
     });
-    const passwordHash = await hashWithBcrypt(data.password, rounds);
+    const passwordHash = data.password
+      ? await hashWithBcrypt(data.password, rounds)
+      : undefined;
 
     return this.userRepository.create({
       phone: data.phone,
@@ -95,10 +102,11 @@ export class UsersService {
       lastName: data.lastName,
       passwordHash,
       role: data.role,
-      status: 'active',
+      status: data.status ?? 'active',
       language: 'en',
       timezone: 'Asia/Kuwait',
       fcmTokens: [],
+      notificationsEnabled: true,
       loginAttempts: 0,
       isPhoneVerified: true,
       rating: 0,
@@ -173,6 +181,13 @@ export class UsersService {
 
   removeFcmTokenByToken(userId: string, token: string): Promise<void> {
     return this.userRepository.pullFcmTokenByToken(userId, token);
+  }
+
+  async setNotificationsEnabled(
+    userId: string,
+    enabled: boolean,
+  ): Promise<void> {
+    await this.userRepository.update(userId, { notificationsEnabled: enabled });
   }
 
   async softDelete(userId: string): Promise<void> {

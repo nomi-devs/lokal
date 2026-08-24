@@ -20,6 +20,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { DeleteAccountDto } from './dto/delete-account.dto';
 import { UpdateProfileResponseDto } from './dto/user-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 @ApiTags('Users')
 @ApiBearerAuth('JWT-auth')
@@ -35,7 +36,12 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ): Promise<UpdateProfileResponseDto> {
     const user = await this.usersService.updateProfile(currentUser.userId, dto);
-    return { success: true, message: 'Profile updated successfully', user };
+    return {
+      success: true,
+      message: MESSAGES.USER.PROFILE_UPDATED.en,
+      messageAr: MESSAGES.USER.PROFILE_UPDATED.ar,
+      user,
+    };
   }
 
   @ApiOkResponse({ type: MessageResponseDto })
@@ -49,7 +55,11 @@ export class UsersController {
       dto.currentPassword,
       dto.newPassword,
     );
-    return { success: true, message: 'Password changed successfully' };
+    return {
+      success: true,
+      message: MESSAGES.USER.PASSWORD_CHANGED.en,
+      messageAr: MESSAGES.USER.PASSWORD_CHANGED.ar,
+    };
   }
 
   @ApiOkResponse({ type: MessageResponseDto })
@@ -59,7 +69,11 @@ export class UsersController {
     @Body() dto: RegisterFcmTokenDto,
   ): Promise<MessageResponseDto> {
     await this.usersService.registerFcmToken(currentUser.userId, dto);
-    return { success: true, message: 'FCM token registered successfully' };
+    return {
+      success: true,
+      message: MESSAGES.USER.FCM_REGISTERED.en,
+      messageAr: MESSAGES.USER.FCM_REGISTERED.ar,
+    };
   }
 
   @ApiOkResponse({ type: MessageResponseDto })
@@ -69,7 +83,11 @@ export class UsersController {
     @Param('tokenId') tokenId: string,
   ): Promise<MessageResponseDto> {
     await this.usersService.removeFcmTokenById(currentUser.userId, tokenId);
-    return { success: true, message: 'FCM token removed' };
+    return {
+      success: true,
+      message: MESSAGES.USER.FCM_REMOVED.en,
+      messageAr: MESSAGES.USER.FCM_REMOVED.ar,
+    };
   }
 
   @ApiOkResponse({ type: MessageResponseDto })
@@ -95,6 +113,10 @@ export class UsersController {
       }
     }
     await this.usersService.softDelete(currentUser.userId);
-    return { success: true, message: 'Account deleted successfully' };
+    return {
+      success: true,
+      message: MESSAGES.USER.ACCOUNT_DELETED.en,
+      messageAr: MESSAGES.USER.ACCOUNT_DELETED.ar,
+    };
   }
 }

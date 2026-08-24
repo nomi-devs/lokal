@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { NullableType } from '../../../../../utils/types/nullable.type';
 import { Wishlist } from '../../../../domain/wishlist';
 import { WishlistRepository } from '../../wishlist.repository';
 import {
@@ -41,6 +42,18 @@ export class WishlistsDocumentRepository implements WishlistRepository {
     ]);
 
     return { data: data.map((w) => WishlistMapper.toDomain(w)), total };
+  }
+
+  async findOneByUserAndProduct(
+    userId: string,
+    productId: string,
+  ): Promise<NullableType<Wishlist>> {
+    if (!Types.ObjectId.isValid(productId)) return null;
+    const found = await this.wishlistModel.findOne({
+      userId: new Types.ObjectId(userId),
+      productId: new Types.ObjectId(productId),
+    });
+    return found ? WishlistMapper.toDomain(found) : null;
   }
 
   async remove(id: string): Promise<void> {

@@ -19,6 +19,7 @@ import PaymentsPage from "@/pages/PaymentsPage";
 import ReviewsPage from "@/pages/ReviewsPage";
 import PromoCodesPage from "@/pages/PromoCodesPage";
 import RefundsPage from "@/pages/RefundsPage";
+import FaqPage from "@/pages/FaqPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import SendNotificationsPage from "@/pages/NotificationsPage/Send";
 import VendorDashboard from "@/pages/vendor/VendorDashboard";
@@ -61,6 +62,7 @@ export const routes: AppRoute[] = [
   { path: "/admin/reviews", element: <ReviewsPage />, protected: true, role: "admin" },
   { path: "/admin/promo-codes", element: <PromoCodesPage />, protected: true, role: "admin" },
   { path: "/admin/refunds", element: <RefundsPage />, protected: true, role: "admin" },
+  { path: "/admin/faqs", element: <FaqPage />, protected: true, role: "admin" },
   {
     path: "/admin/notifications",
     element: <NotificationsPage />,

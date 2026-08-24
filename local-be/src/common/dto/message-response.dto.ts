@@ -8,4 +8,7 @@ export class MessageResponseDto {
 
   @ApiProperty({ example: 'Done' })
   message: string;
+
+  @ApiProperty({ required: false })
+  messageAr?: string;
 }

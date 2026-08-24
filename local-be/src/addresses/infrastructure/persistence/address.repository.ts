@@ -22,4 +22,9 @@ export abstract class AddressRepository {
   abstract remove(id: string): Promise<void>;
 
   abstract countByUserId(userId: string): Promise<number>;
+
+  abstract unsetPrimaryForUser(
+    userId: string,
+    exceptId?: string,
+  ): Promise<void>;
 }

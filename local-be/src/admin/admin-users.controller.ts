@@ -5,12 +5,18 @@ import {
   Get,
   Logger,
   Param,
+  Post,
   Put,
   Query,
   SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -24,6 +30,7 @@ import { UsersService } from '../users/users.service';
 import { WishlistsService } from '../wishlists/wishlists.service';
 import { AddressesService } from '../addresses/addresses.service';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
+import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import {
@@ -33,6 +40,7 @@ import {
   AdminUserWishlistListResponseDto,
   AdminUsersListResponseDto,
 } from './dto/admin-user-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 @ApiTags('Admin - Users')
 @ApiBearerAuth('JWT-auth')
@@ -61,6 +69,23 @@ export class AdminUsersController {
       data,
       pagination: { page: query.page, limit: query.limit, total },
     };
+  }
+
+  @ApiCreatedResponse({ type: AdminUserDetailResponseDto })
+  @Post()
+  async create(
+    @Body() dto: AdminCreateUserDto,
+  ): Promise<AdminUserDetailResponseDto> {
+    const user = await this.usersService.createWithPassword({
+      phone: dto.phone,
+      email: dto.email,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      password: dto.password,
+      role: dto.role,
+      status: dto.status,
+    });
+    return { success: true, user };
   }
 
   @ApiOkResponse({ type: AdminUserDetailResponseDto })
@@ -123,7 +148,8 @@ export class AdminUsersController {
     );
     return {
       success: true,
-      message: 'User status updated',
+      message: MESSAGES.USER.STATUS_UPDATED.en,
+      messageAr: MESSAGES.USER.STATUS_UPDATED.ar,
       user: { status: user.status },
     };
   }
@@ -140,6 +166,10 @@ export class AdminUsersController {
       `Hard-deleting user ${id}${dto.reason ? ` (reason: ${dto.reason})` : ''}`,
     );
     await this.usersService.hardDelete(id);
-    return { success: true, message: 'User deleted permanently' };
+    return {
+      success: true,
+      message: MESSAGES.USER.DELETED.en,
+      messageAr: MESSAGES.USER.DELETED.ar,
+    };
   }
 }

@@ -22,7 +22,7 @@ class WishlistItemDto {
   productId: string;
 
   @ApiProperty()
-  addedAt: Date;
+  createdAt: Date;
 
   @ApiProperty({ type: Product, nullable: true })
   product: Product | null;
@@ -80,6 +80,9 @@ export class AdminUpdateUserStatusResponseDto {
 
   @ApiProperty()
   message: string;
+
+  @ApiProperty({ required: false })
+  messageAr?: string;
 
   @ApiProperty({ type: UserStatusSummaryDto })
   user: UserStatusSummaryDto;

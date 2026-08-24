@@ -51,7 +51,7 @@ export default function UserMenu() {
 
   const localPart = user.email?.split("@")[0] ?? user.firstName ?? user.phone;
   const displayName = titleCase(localPart);
-  const roleLabel = titleCase(user.role);
+  const roleLabel = t(`common.status.${user.role}`, titleCase(user.role));
   const initials = localPart.slice(0, 2).toUpperCase();
   const settingsPath = user.role === "vendor" ? "/vendor/store" : "/admin/settings";
 

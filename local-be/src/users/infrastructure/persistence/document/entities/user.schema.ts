@@ -44,7 +44,7 @@ export class UserSchemaClass extends EntityDocumentHelper {
   @Prop()
   photoUrl?: string;
 
-  // Only set for vendor/admin — customers and drivers authenticate via OTP only.
+  // Only set for vendor/admin — customers authenticate via OTP only.
   @Prop({ select: false })
   passwordHash?: string;
 
@@ -65,6 +65,9 @@ export class UserSchemaClass extends EntityDocumentHelper {
 
   @Prop({ type: [FcmTokenSchema], default: [] })
   fcmTokens: FcmTokenSchema[];
+
+  @Prop({ default: true })
+  notificationsEnabled: boolean;
 
   @Prop()
   lastLogin?: Date;

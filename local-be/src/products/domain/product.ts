@@ -1,14 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class ProductPrice {
-  @ApiProperty() base: number;
-  @ApiProperty() currency: string;
-  @ApiProperty({ required: false }) compareAt?: number;
-}
-
-class ProductRatings {
-  @ApiProperty() average: number;
-  @ApiProperty() count: number;
+class LocalizedText {
+  @ApiProperty() en: string;
+  @ApiProperty({ required: false }) ar?: string;
 }
 
 export class Product {
@@ -18,29 +12,26 @@ export class Product {
   @ApiProperty({ type: String })
   vendorId: string;
 
-  @ApiProperty({ type: String, nullable: true })
-  categoryId?: string;
+  @ApiProperty({ type: String })
+  categoryId: string;
 
-  @ApiProperty({ enum: ['men', 'women', 'kids', 'unisex'] })
-  department: string;
+  @ApiProperty({ enum: ['male', 'female', 'kids', 'unisex'] })
+  gender: string;
 
-  @ApiProperty()
-  nameEn: string;
+  @ApiProperty({ type: LocalizedText })
+  name: LocalizedText;
 
-  @ApiProperty()
-  nameAr: string;
-
-  @ApiProperty({ nullable: true })
-  descriptionEn?: string;
-
-  @ApiProperty({ nullable: true })
-  descriptionAr?: string;
+  @ApiProperty({ type: LocalizedText })
+  description: LocalizedText;
 
   @ApiProperty({ type: [String] })
   images: string[];
 
-  @ApiProperty({ type: ProductPrice })
-  price: ProductPrice;
+  @ApiProperty()
+  price: number;
+
+  @ApiProperty({ required: false })
+  compareAtPrice?: number;
 
   @ApiProperty({ type: [String] })
   sizes: string[];
@@ -51,11 +42,29 @@ export class Product {
   @ApiProperty()
   stock: number;
 
-  @ApiProperty({ enum: ['active', 'inactive', 'out_of_stock'] })
+  @ApiProperty()
+  inStock: boolean;
+
+  // No separate approval workflow — new/edited products are live immediately
+  // (status: 'active'). Admin can flag one as 'rejected' after the fact if
+  // it's inappropriate; vendor toggles 'active'/'inactive' themselves.
+  @ApiProperty({ enum: ['active', 'inactive', 'rejected'] })
   status: string;
 
-  @ApiProperty({ type: ProductRatings })
-  ratings: ProductRatings;
+  @ApiProperty({ type: String, nullable: true })
+  rejectionReason?: string;
+
+  @ApiProperty()
+  rating: number;
+
+  @ApiProperty()
+  ratingCount: number;
+
+  @ApiProperty()
+  salesCount: number;
+
+  @ApiProperty()
+  viewCount: number;
 
   @ApiProperty()
   createdAt: Date;

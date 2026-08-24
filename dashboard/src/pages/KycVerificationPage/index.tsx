@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle2, FileText, XCircle } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
@@ -17,6 +18,7 @@ import VendorRejectDialog from "@/components/vendor/VendorRejectDialog";
 // care about the review queue. See local-be's "KYC" == vendor pending_approval
 // + the optional kycDocumentUrl captured at registration.
 export default function KycVerificationPage() {
+  const { t } = useTranslation();
   const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [approveTarget, setApproveTarget] = useState<AdminVendorRow | null>(null);
@@ -28,7 +30,7 @@ export default function KycVerificationPage() {
       const { data } = await adminApi.listVendors({ status: "pending_approval" });
       setVendors(data);
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to load pending vendors"));
+      toast.error(getApiErrorMessage(error, t("kyc.management.toasts.loadFailed")));
     } finally {
       setLoading(false);
     }
@@ -41,31 +43,31 @@ export default function KycVerificationPage() {
   async function handleApprove(id: string, notes: string) {
     try {
       await adminApi.approveVendor(id, notes || undefined);
-      toast.success("Vendor approved");
+      toast.success(t("kyc.management.toasts.approved"));
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to approve vendor"));
+      toast.error(getApiErrorMessage(error, t("kyc.management.toasts.approveFailed")));
     }
   }
 
   async function handleReject(id: string, reason: string, category: string) {
     try {
       await adminApi.rejectVendor(id, reason, category);
-      toast.success("Vendor rejected");
+      toast.success(t("kyc.management.toasts.rejected"));
       void load();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to reject vendor"));
+      toast.error(getApiErrorMessage(error, t("kyc.management.toasts.rejectFailed")));
     }
   }
 
   const columns: ColumnDef<AdminVendorRow>[] = [
-    { key: "storeName", header: "Store", render: (v) => <span className="font-medium">{v as string}</span> },
-    { key: "ownerName", header: "Owner", render: (v) => (v as string) || "—" },
-    { key: "ownerPhone", header: "Phone", render: (v) => (v as string) || "—" },
-    { key: "city", header: "City", render: (v) => (v as string) || "—" },
+    { key: "storeName", header: t("kyc.management.columns.store"), render: (v) => <span className="font-medium">{v as string}</span> },
+    { key: "ownerName", header: t("kyc.management.columns.owner"), render: (v) => (v as string) || "—" },
+    { key: "ownerPhone", header: t("kyc.management.columns.phone"), render: (v) => (v as string) || "—" },
+    { key: "city", header: t("kyc.management.columns.city"), render: (v) => (v as string) || "—" },
     {
       key: "kycDocumentUrl",
-      header: "Document",
+      header: t("kyc.management.columns.document"),
       render: (v) =>
         v ? (
           <a
@@ -75,27 +77,27 @@ export default function KycVerificationPage() {
             className="inline-flex items-center gap-1.5 text-primary hover:underline"
           >
             <FileText className="w-4 h-4" />
-            View
+            {t("kyc.management.document.view")}
           </a>
         ) : (
-          <span className="text-gray-400">Not provided</span>
+          <span className="text-gray-400">{t("kyc.management.document.notProvided")}</span>
         ),
     },
     {
       key: "createdAt",
-      header: "Submitted",
+      header: t("kyc.management.columns.submitted"),
       sortable: true,
       render: (v) => new Date(v as string).toLocaleDateString(),
     },
   ];
 
   const rowActions: RowAction<AdminVendorRow>[] = [
-    { label: "Approve", icon: CheckCircle2, onClick: (row) => setApproveTarget(row) },
-    { label: "Reject", icon: XCircle, variant: "destructive", onClick: (row) => setRejectTarget(row) },
+    { label: t("kyc.management.actions.approve"), icon: CheckCircle2, onClick: (row) => setApproveTarget(row) },
+    { label: t("kyc.management.actions.reject"), icon: XCircle, variant: "destructive", onClick: (row) => setRejectTarget(row) },
   ];
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} topbarTitle="KYC Verification">
+    <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("kyc.management.topbarTitle")}>
       <DataTable<AdminVendorRow>
         data={vendors}
         columns={columns}
@@ -106,7 +108,10 @@ export default function KycVerificationPage() {
         pagination={{ pageSize: 10 }}
         loading={loading}
         striped
-        emptyState={{ title: "No vendors pending review", description: "New registrations will show up here." }}
+        emptyState={{
+          title: t("kyc.management.empty.title"),
+          description: t("kyc.management.empty.description"),
+        }}
       />
 
       <VendorApproveDialog

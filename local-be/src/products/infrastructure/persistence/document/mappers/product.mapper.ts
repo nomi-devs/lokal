@@ -7,31 +7,29 @@ export class ProductMapper {
     const domainEntity = new Product();
     domainEntity.id = raw._id.toString();
     domainEntity.vendorId = raw.vendorId.toString();
-    domainEntity.categoryId = raw.categoryId
-      ? raw.categoryId.toString()
-      : undefined;
-    domainEntity.department = raw.department;
-    domainEntity.nameEn = raw.nameEn;
-    domainEntity.nameAr = raw.nameAr;
-    domainEntity.descriptionEn = raw.descriptionEn;
-    domainEntity.descriptionAr = raw.descriptionAr;
-    domainEntity.images = raw.images ?? [];
+    domainEntity.categoryId = raw.categoryId;
+    domainEntity.gender = raw.gender;
     // Plain-copy the embedded subdocuments — assigning the Mongoose
     // subdocument instance directly leaves circular internal refs on the
     // domain object, which blows the stack when class-transformer serializes it.
-    domainEntity.price = {
-      base: raw.price?.base ?? 0,
-      currency: raw.price?.currency ?? 'KWD',
-      compareAt: raw.price?.compareAt,
+    domainEntity.name = { en: raw.name?.en ?? '', ar: raw.name?.ar };
+    domainEntity.description = {
+      en: raw.description?.en ?? '',
+      ar: raw.description?.ar,
     };
+    domainEntity.images = raw.images ?? [];
+    domainEntity.price = raw.price;
+    domainEntity.compareAtPrice = raw.compareAtPrice;
     domainEntity.sizes = raw.sizes ?? [];
     domainEntity.colors = raw.colors ?? [];
     domainEntity.stock = raw.stock;
+    domainEntity.inStock = raw.inStock;
     domainEntity.status = raw.status;
-    domainEntity.ratings = {
-      average: raw.ratings?.average ?? 0,
-      count: raw.ratings?.count ?? 0,
-    };
+    domainEntity.rejectionReason = raw.rejectionReason;
+    domainEntity.rating = raw.rating ?? 0;
+    domainEntity.ratingCount = raw.ratingCount ?? 0;
+    domainEntity.salesCount = raw.salesCount ?? 0;
+    domainEntity.viewCount = raw.viewCount ?? 0;
     domainEntity.createdAt = raw.createdAt as Date;
     domainEntity.updatedAt = raw.updatedAt as Date;
     return domainEntity;
@@ -44,31 +42,38 @@ export class ProductMapper {
     if (domainEntity.vendorId !== undefined)
       persistence.vendorId = new Types.ObjectId(domainEntity.vendorId);
     if (domainEntity.categoryId !== undefined)
-      persistence.categoryId = new Types.ObjectId(domainEntity.categoryId);
-    if (domainEntity.department !== undefined)
-      persistence.department = domainEntity.department;
-    if (domainEntity.nameEn !== undefined)
-      persistence.nameEn = domainEntity.nameEn;
-    if (domainEntity.nameAr !== undefined)
-      persistence.nameAr = domainEntity.nameAr;
-    if (domainEntity.descriptionEn !== undefined)
-      persistence.descriptionEn = domainEntity.descriptionEn;
-    if (domainEntity.descriptionAr !== undefined)
-      persistence.descriptionAr = domainEntity.descriptionAr;
+      persistence.categoryId = domainEntity.categoryId;
+    if (domainEntity.gender !== undefined)
+      persistence.gender = domainEntity.gender;
+    if (domainEntity.name !== undefined) persistence.name = domainEntity.name;
+    if (domainEntity.description !== undefined)
+      persistence.description = domainEntity.description;
     if (domainEntity.images !== undefined)
       persistence.images = domainEntity.images;
     if (domainEntity.price !== undefined)
       persistence.price = domainEntity.price;
+    if (domainEntity.compareAtPrice !== undefined)
+      persistence.compareAtPrice = domainEntity.compareAtPrice;
     if (domainEntity.sizes !== undefined)
       persistence.sizes = domainEntity.sizes;
     if (domainEntity.colors !== undefined)
       persistence.colors = domainEntity.colors;
     if (domainEntity.stock !== undefined)
       persistence.stock = domainEntity.stock;
+    if (domainEntity.inStock !== undefined)
+      persistence.inStock = domainEntity.inStock;
     if (domainEntity.status !== undefined)
       persistence.status = domainEntity.status;
-    if (domainEntity.ratings !== undefined)
-      persistence.ratings = domainEntity.ratings;
+    if (domainEntity.rejectionReason !== undefined)
+      persistence.rejectionReason = domainEntity.rejectionReason;
+    if (domainEntity.rating !== undefined)
+      persistence.rating = domainEntity.rating;
+    if (domainEntity.ratingCount !== undefined)
+      persistence.ratingCount = domainEntity.ratingCount;
+    if (domainEntity.salesCount !== undefined)
+      persistence.salesCount = domainEntity.salesCount;
+    if (domainEntity.viewCount !== undefined)
+      persistence.viewCount = domainEntity.viewCount;
     return persistence;
   }
 }

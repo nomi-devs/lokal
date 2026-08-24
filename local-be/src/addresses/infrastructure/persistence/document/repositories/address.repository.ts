@@ -49,7 +49,7 @@ export class AddressesDocumentRepository implements AddressRepository {
     const [data, total] = await Promise.all([
       this.addressModel
         .find(query)
-        .sort({ isDefault: -1, createdAt: -1 })
+        .sort({ isPrimary: -1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
       this.addressModel.countDocuments(query),
@@ -79,5 +79,14 @@ export class AddressesDocumentRepository implements AddressRepository {
       userId: new Types.ObjectId(userId),
       deletedAt: { $exists: false },
     });
+  }
+
+  async unsetPrimaryForUser(userId: string, exceptId?: string): Promise<void> {
+    const query: Record<string, unknown> = {
+      userId: new Types.ObjectId(userId),
+      isPrimary: true,
+    };
+    if (exceptId) query._id = { $ne: exceptId };
+    await this.addressModel.updateMany(query, { isPrimary: false });
   }
 }

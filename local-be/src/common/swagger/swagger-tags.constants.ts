@@ -3,13 +3,37 @@
 // dashboard auth are now fully separate controllers/URLs (/mobile/auth/*,
 // /dashboard/auth/*) with no shared routes, so each tag only needs to
 // appear in one list.
-export const MOBILE_API_TAGS = ['Auth - Mobile', 'Users', 'Files'];
+export const MOBILE_API_TAGS = [
+  'Auth - Mobile',
+  'Users',
+  'Files',
+  'Categories',
+  'Products',
+  'Addresses',
+  'Wishlist',
+  'Cart',
+  'Orders',
+  'Payments',
+  'FAQ',
+  'Banners',
+  'Notifications',
+];
 
 export const DASHBOARD_API_TAGS = [
   'Auth - Dashboard',
   'Vendors',
   'Files',
+  'Categories',
   'Admin - Users',
   'Admin - Vendors',
+  'Admin - Categories',
+  'Admin - Products',
   'Admin - Dashboard',
+  'Admin - Orders',
+  'Admin - FAQ',
+  'Admin - Banners',
+  'Vendor - Products',
+  'Vendor - Orders',
+  'Notifications',
+  'Admin - Notifications',
 ];

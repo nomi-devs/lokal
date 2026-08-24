@@ -7,14 +7,13 @@ export class AddressMapper {
     const domainEntity = new Address();
     domainEntity.id = raw._id.toString();
     domainEntity.userId = raw.userId.toString();
-    domainEntity.type = raw.type;
-    domainEntity.recipientName = raw.recipientName;
+    domainEntity.label = raw.label;
+    domainEntity.name = raw.name;
     domainEntity.country = raw.country;
     domainEntity.city = raw.city;
     domainEntity.phone = raw.phone;
-    domainEntity.address = raw.address;
+    domainEntity.addressLine = raw.addressLine;
     domainEntity.isPrimary = raw.isPrimary;
-    domainEntity.isDefault = raw.isDefault;
     domainEntity.createdAt = raw.createdAt as Date;
     domainEntity.updatedAt = raw.updatedAt as Date;
     return domainEntity;
@@ -26,20 +25,18 @@ export class AddressMapper {
     const persistence: Partial<AddressSchemaClass> = {};
     if (domainEntity.userId !== undefined)
       persistence.userId = new Types.ObjectId(domainEntity.userId);
-    if (domainEntity.type !== undefined) persistence.type = domainEntity.type;
-    if (domainEntity.recipientName !== undefined)
-      persistence.recipientName = domainEntity.recipientName;
+    if (domainEntity.label !== undefined)
+      persistence.label = domainEntity.label;
+    if (domainEntity.name !== undefined) persistence.name = domainEntity.name;
     if (domainEntity.country !== undefined)
       persistence.country = domainEntity.country;
     if (domainEntity.city !== undefined) persistence.city = domainEntity.city;
     if (domainEntity.phone !== undefined)
       persistence.phone = domainEntity.phone;
-    if (domainEntity.address !== undefined)
-      persistence.address = domainEntity.address;
+    if (domainEntity.addressLine !== undefined)
+      persistence.addressLine = domainEntity.addressLine;
     if (domainEntity.isPrimary !== undefined)
       persistence.isPrimary = domainEntity.isPrimary;
-    if (domainEntity.isDefault !== undefined)
-      persistence.isDefault = domainEntity.isDefault;
     return persistence;
   }
 }

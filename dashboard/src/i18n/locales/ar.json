@@ -12,6 +12,7 @@
     "reviews": "التقييمات",
     "promoCodes": "أكواد الخصم",
     "refunds": "المبالغ المستردة",
+    "faq": "الأسئلة الشائعة",
     "notifications": "الإشعارات",
     "settings": "الإعدادات",
     "send": "إرسال",
@@ -83,6 +84,12 @@
     "departments": {
       "men": "رجال",
       "women": "نساء",
+      "kids": "أطفال",
+      "unisex": "للجميع"
+    },
+    "genders": {
+      "male": "رجال",
+      "female": "نساء",
       "kids": "أطفال",
       "unisex": "للجميع"
     }
@@ -277,6 +284,104 @@
       "activateDesc": "سيؤدي هذا إلى استعادة وصول \"{{name}}\".",
       "deleteTitle": "حذف المستخدم؟",
       "deleteDesc": "سيؤدي هذا إلى نقل \"{{name}}\" إلى قائمة المستخدمين المحذوفين. يمكنك استعادتهم لاحقًا."
+    },
+    "addDialog": {
+      "title": "إضافة مستخدم جديد",
+      "description": "املأ تفاصيل المستخدم أدناه",
+      "firstName": "الاسم الأول",
+      "firstNamePlaceholder": "أحمد",
+      "lastName": "اسم العائلة",
+      "lastNamePlaceholder": "الراشد",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني (اختياري)",
+      "emailPlaceholder": "you@example.com",
+      "role": "الدور",
+      "roleCustomer": "عميل",
+      "roleAdmin": "مسؤول",
+      "status": "الحالة",
+      "statusActive": "نشط",
+      "statusInactive": "غير نشط",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "••••••••",
+      "submit": "إضافة مستخدم",
+      "submitting": "جارٍ الإضافة…",
+      "createdSuccess": "تمت إضافة {{name}} بنجاح.",
+      "createdTitle": "تم إنشاء المستخدم",
+      "createFailed": "تعذر إنشاء المستخدم",
+      "createFailedTitle": "فشل الإنشاء"
+    },
+    "viewDialog": {
+      "tabs": {
+        "details": "التفاصيل",
+        "wishlist": "المفضلة",
+        "addresses": "العناوين"
+      },
+      "contactInfo": "معلومات الاتصال",
+      "account": "الحساب",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "language": "اللغة",
+      "phoneVerified": "الهاتف موثق",
+      "yes": "نعم",
+      "no": "لا",
+      "created": "تاريخ الإنشاء",
+      "lastLogin": "آخر تسجيل دخول",
+      "never": "أبداً",
+      "wishlistColumns": {
+        "product": "المنتج",
+        "price": "السعر",
+        "added": "تاريخ الإضافة"
+      },
+      "addressColumns": {
+        "recipient": "المستلم",
+        "phone": "الهاتف",
+        "address": "العنوان",
+        "default": "افتراضي"
+      },
+      "emptyWishlist": "قائمة المفضلة فارغة",
+      "emptyWishlistDesc": "لم يقم هذا المستخدم بحفظ أي منتجات.",
+      "emptyAddresses": "لا توجد عناوين",
+      "emptyAddressesDesc": "لم يقم هذا المستخدم بحفظ أي عناوين.",
+      "loadWishlistFailed": "تعذر تحميل المفضلة",
+      "loadAddressesFailed": "تعذر تحميل العناوين"
+    },
+    "management": {
+      "columns": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "status": "الحالة",
+        "joined": "تاريخ الانضمام"
+      },
+      "actions": {
+        "view": "عرض",
+        "suspend": "تعليق",
+        "activate": "تفعيل",
+        "deletePermanent": "حذف نهائي",
+        "addUser": "إضافة مستخدم"
+      },
+      "filters": {
+        "status": "الحالة",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "suspended": "معلّق"
+      },
+      "confirm": {
+        "suspendTitle": "تعليق المستخدم؟",
+        "suspendDesc": "لن يتمكن هذا المستخدم من تسجيل الدخول حتى إعادة تفعيله.",
+        "activateTitle": "تفعيل المستخدم؟",
+        "activateDesc": "سيستعيد هذا المستخدم إمكانية الوصول فوراً.",
+        "deleteTitle": "حذف المستخدم نهائياً؟",
+        "deleteDesc": "لا يمكن التراجع عن هذا الإجراء — سيتم حذف الحساب وبياناته فوراً.",
+        "deleteButton": "حذف"
+      },
+      "toasts": {
+        "activated": "تم تفعيل المستخدم",
+        "suspended": "تم تعليق المستخدم",
+        "deleted": "تم حذف المستخدم نهائياً",
+        "loadFailed": "فشل تحميل المستخدمين",
+        "actionFailed": "فشل تحديث المستخدم"
+      }
     }
   },
   "banners": {
@@ -462,20 +567,18 @@
     "topbarTitle": "المنتجات",
     "list": {
       "title": "منتجات السوق",
-      "description": "إدارة المنتجات المعروضة للبيع في السوق.",
+      "description": "إدارة المنتجات التي يعرضها الموردون للبيع.",
       "searchPlaceholder": "بحث عن منتجات…",
       "filterStatus": "الحالة",
       "filterCategory": "الفئة",
-      "filterDepartment": "القسم",
-      "variantsCount": "{{count}} متغيرات",
-      "addProduct": "إضافة منتج",
+      "filterGender": "الفئة العمرية",
       "emptyTitle": "لا توجد منتجات",
       "emptyDescription": "حاول تعديل البحث أو الفلاتر.",
       "columns": {
         "product": "المنتج",
         "vendor": "البائع",
         "category": "الفئة",
-        "department": "القسم",
+        "gender": "الفئة العمرية",
         "price": "السعر",
         "stock": "المخزون",
         "status": "الحالة",
@@ -484,69 +587,67 @@
       "status": {
         "active": "نشط",
         "inactive": "غير نشط",
-        "outOfStock": "نفدت الكمية"
+        "rejected": "مرفوض"
       },
       "stats": {
         "total": "إجمالي المنتجات",
         "active": "نشط",
-        "outOfStock": "نفدت الكمية",
-        "totalStockUnits": "إجمالي وحدات المخزون"
+        "inactive": "غير نشط",
+        "rejected": "مرفوض"
       },
       "toasts": {
-        "created": "تم إنشاء \"{{name}}\".",
-        "edited": "تم تحديث \"{{name}}\".",
+        "loadFailed": "تعذر تحميل المنتجات.",
+        "updated": "تم تحديث \"{{name}}\".",
         "deleted": "تم حذف \"{{name}}\".",
-        "deletedSelected_one": "تم حذف {{count}} منتج.",
-        "deletedSelected_other": "تم حذف {{count}} منتجات."
+        "reinstated": "تمت إعادة تفعيل \"{{name}}\".",
+        "rejected": "تم رفض \"{{name}}\".",
+        "actionFailed": "تعذر إتمام هذا الإجراء."
       },
       "confirm": {
         "deleteTitle": "حذف المنتج؟",
-        "deleteDescription": "سيتم حذف \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك.",
-        "deleteSelectedTitle_one": "حذف {{count}} منتج؟",
-        "deleteSelectedTitle_other": "حذف {{count}} منتجات؟",
-        "deleteSelectedDescription": "سيتم حذف المنتجات المحددة نهائيًا ولا يمكن التراجع عن ذلك."
+        "deleteDescription": "سيتم حذف \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك."
       }
     },
     "dialog": {
-      "addTitle": "إضافة منتج جديد",
       "editTitle": "تعديل المنتج",
-      "addDescription": "إنشاء منتج جديد للسوق.",
       "editDescription": "تحديث تفاصيل \"{{name}}\".",
       "nameEnglish": "الاسم (إنجليزي)",
       "nameEnglishPlaceholder": "طقم كنب معياري",
-      "nameArabic": "الاسم (عربي)",
+      "nameArabic": "الاسم (عربي، اختياري)",
       "nameArabicPlaceholder": "طقم كنب معياري",
       "descriptionEnglish": "الوصف (إنجليزي)",
       "descriptionEnglishPlaceholder": "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
-      "descriptionArabic": "الوصف (عربي)",
+      "descriptionArabic": "الوصف (عربي، اختياري)",
       "descriptionArabicPlaceholder": "كنبة معيارية 3 مقاعد بأغطية قابلة للغسل.",
-      "productImage": "صورة المنتج",
-      "chooseImage": "اختر صورة…",
-      "vendor": "البائع",
-      "selectVendor": "— اختر بائعًا —",
+      "images": "الصور",
+      "addImage": "إضافة صورة…",
+      "uploading": "جارٍ الرفع…",
       "category": "الفئة",
       "selectCategory": "— اختر فئة —",
-      "department": "القسم",
+      "gender": "الفئة العمرية",
       "price": "السعر",
       "compareAtPrice": "السعر قبل الخصم",
       "compareAtPricePlaceholder": "السعر الأصلي قبل الخصم",
       "compareAtPriceHint": "يُعرض بخط مشطوب مع شارة خصم عند أن يكون أعلى من السعر الحالي.",
-      "currency": "العملة",
-      "currencyKWD": "دينار كويتي",
-      "currencySAR": "ريال سعودي",
       "sizes": "المقاسات",
       "sizesPlaceholder": "S, M, L, XL",
       "colors": "الألوان",
       "colorsPlaceholder": "بيج، رمادي غامق، رملي",
       "stock": "المخزون",
-      "stockDerivedHint": "يُحسب تلقائيًا من مخزون المتغيرات أدناه.",
-      "variants": "مخزون المتغيرات",
-      "generateVariants": "إنشاء من المقاسات والألوان",
-      "variantsHint": "أضف المقاسات والألوان، ثم أنشئ مخزون كل متغير.",
       "status": "الحالة",
       "close": "إغلاق",
-      "save": "حفظ",
-      "add": "إضافة"
+      "save": "حفظ"
+    },
+    "reject": {
+      "title": "رفض المنتج",
+      "description": "أخبر بائع \"{{name}}\" بسبب إزالة هذا المنتج.",
+      "reasonLabel": "السبب",
+      "reasonPlaceholder": "اشرح ما هي المشكلة في هذا المنتج…",
+      "cancel": "إلغاء",
+      "reject": "رفض",
+      "errors": {
+        "reasonRequired": "السبب مطلوب (5-500 حرف)."
+      }
     }
   },
   "orders": {
@@ -1079,6 +1180,134 @@
         "reviews": "لا توجد تقييمات بعد",
         "documents": "لم يتم رفع أي مستندات"
       }
+    },
+    "management": {
+      "columns": {
+        "store": "المتجر",
+        "owner": "المالك",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "status": "الحالة",
+        "joined": "تاريخ الانضمام"
+      },
+      "actions": {
+        "view": "عرض",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "suspend": "تعليق",
+        "activate": "تفعيل",
+        "addVendor": "إضافة مورد"
+      },
+      "filters": {
+        "status": "الحالة",
+        "pendingApproval": "قيد المراجعة",
+        "active": "نشط",
+        "suspended": "معلّق",
+        "inactive": "غير نشط"
+      },
+      "empty": {
+        "title": "لم يتم العثور على موردين",
+        "description": "حاول تعديل البحث أو عوامل التصفية."
+      },
+      "toasts": {
+        "approved": "تمت الموافقة على المورد",
+        "rejected": "تم رفض المورد",
+        "suspended": "تم تعليق المورد",
+        "loadFailed": "فشل تحميل الموردين",
+        "actionFailed": "فشل تحديث المورد"
+      }
+    },
+    "addDialog": {
+      "title": "إضافة مورد جديد",
+      "description": "املأ تفاصيل المورد أدناه",
+      "storeName": "اسم المتجر",
+      "storeNamePlaceholder": "متجر الأزياء",
+      "firstName": "الاسم الأول للمالك",
+      "firstNamePlaceholder": "أحمد",
+      "lastName": "اسم العائلة للمالك",
+      "lastNamePlaceholder": "الراشد",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "••••••••",
+      "status": "الحالة",
+      "statusPending": "قيد المراجعة",
+      "statusActive": "نشط",
+      "city": "المدينة (اختياري)",
+      "address": "العنوان (اختياري)",
+      "storeDescription": "وصف المتجر (اختياري)",
+      "submit": "إضافة مورد",
+      "submitting": "جارٍ الإضافة…",
+      "createdSuccess": "تمت إضافة المورد بنجاح.",
+      "createdTitle": "تم إنشاء المورد",
+      "createFailed": "تعذر إنشاء المورد",
+      "createFailedTitle": "فشل الإنشاء"
+    },
+    "viewDialog": {
+      "tabs": {
+        "details": "التفاصيل",
+        "products": "المنتجات",
+        "verification": "التحقق"
+      },
+      "storeInfo": "معلومات المتجر",
+      "storeName": "اسم المتجر",
+      "city": "المدينة",
+      "submitted": "تاريخ التقديم",
+      "owner": "المالك",
+      "ownerName": "اسم المالك",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "kycDocument": "مستند التحقق (KYC)",
+      "businessLicense": "رخصة تجارية / بطاقة هوية",
+      "noDocument": "لم يتم تقديم أي مستند.",
+      "productsColumns": {
+        "product": "المنتج",
+        "department": "القسم",
+        "price": "السعر",
+        "stock": "المخزون",
+        "status": "الحالة"
+      },
+      "emptyProducts": "لا توجد منتجات بعد",
+      "emptyProductsDesc": "لم يقم هذا المورد بإدراج أي منتجات.",
+      "loadProductsFailed": "تعذر تحميل المنتجات"
+    },
+    "approveModal": {
+      "title": "الموافقة على المورد",
+      "description": "سيتمكن {{storeName}} من تسجيل الدخول وبدء البيع.",
+      "notesLabel": "ملاحظات (اختياري)",
+      "notesPlaceholder": "تم التحقق من المستندات وصحتها",
+      "cancel": "إلغاء",
+      "approve": "موافقة"
+    },
+    "rejectModal": {
+      "title": "رفض المورد",
+      "description": "سيتم رفض طلب تسجيل {{storeName}}.",
+      "categoryLabel": "الفئة",
+      "selectReason": "اختر سبباً",
+      "detailsLabel": "التفاصيل",
+      "detailsPlaceholder": "اشرح سبب رفض هذا التسجيل",
+      "cancel": "إلغاء",
+      "reject": "رفض",
+      "categories": {
+        "expired": "المستند منتهي الصلاحية",
+        "invalid": "المستند غير صالح",
+        "incomplete": "المعلومات غير مكتملة",
+        "fraud": "اشتباه في احتيال"
+      },
+      "errors": {
+        "categoryRequired": "اختر فئة الرفض",
+        "reasonRequired": "سبب الرفض مطلوب"
+      }
+    },
+    "suspendModal": {
+      "title": "تعليق حساب المورد",
+      "description": "لن يتمكن {{storeName}} من تسجيل الدخول أو إدراج منتجات حتى يتم رفع التعليق.",
+      "reasonLabel": "السبب",
+      "reasonPlaceholder": "شكاوى متعددة من العملاء",
+      "durationLabel": "المدة بالأيام (اختياري — اترك فارغاً للتعليق غير المحدود)",
+      "cancel": "إلغاء",
+      "suspend": "تعليق"
     }
   },
   "kyc": {
@@ -1156,6 +1385,36 @@
       "approvedBody": "تمت الموافقة على \"{{name}}\".",
       "rejectedTitle": "تم رفض تحقق المورد",
       "rejectedBody": "تم رفض \"{{name}}\"."
+    },
+    "management": {
+      "topbarTitle": "التحقق من الهوية (KYC)",
+      "columns": {
+        "store": "المتجر",
+        "owner": "المالك",
+        "phone": "الهاتف",
+        "city": "المدينة",
+        "document": "المستند",
+        "submitted": "تاريخ التقديم"
+      },
+      "document": {
+        "view": "عرض",
+        "notProvided": "غير متوفر"
+      },
+      "actions": {
+        "approve": "موافقة",
+        "reject": "رفض"
+      },
+      "empty": {
+        "title": "لا يوجد موردون قيد المراجعة",
+        "description": "ستظهر طلبات التسجيل الجديدة هنا."
+      },
+      "toasts": {
+        "loadFailed": "فشل تحميل الموردين المعلقين",
+        "approved": "تمت الموافقة على المورد",
+        "approveFailed": "فشل في الموافقة على المورد",
+        "rejected": "تم رفض المورد",
+        "rejectFailed": "فشل في رفض المورد"
+      }
     }
   },
   "vendor": {
@@ -1202,15 +1461,14 @@
         "description": "إدارة المنتجات التي تبيعها في السوق.",
         "searchPlaceholder": "بحث عن منتجات…",
         "filterStatus": "الحالة",
-        "filterDepartment": "القسم",
-        "variantsCount": "{{count}} متغيرات",
+        "filterGender": "الفئة العمرية",
         "addProduct": "إضافة منتج",
         "emptyTitle": "لا توجد منتجات",
         "emptyDescription": "حاول تعديل البحث أو الفلاتر.",
         "columns": {
           "product": "المنتج",
           "category": "الفئة",
-          "department": "القسم",
+          "gender": "الفئة العمرية",
           "price": "السعر",
           "stock": "المخزون",
           "status": "الحالة",
@@ -1219,61 +1477,53 @@
         "status": {
           "active": "نشط",
           "inactive": "غير نشط",
-          "outOfStock": "نفدت الكمية"
+          "rejected": "مرفوض"
         },
         "stats": {
           "total": "إجمالي المنتجات",
           "active": "نشط",
-          "outOfStock": "نفدت الكمية",
-          "totalStockUnits": "إجمالي وحدات المخزون"
+          "inactive": "غير نشط",
+          "rejected": "مرفوض"
         },
         "toasts": {
+          "loadFailed": "تعذر تحميل منتجاتك.",
           "created": "تم إنشاء \"{{name}}\".",
           "edited": "تم تحديث \"{{name}}\".",
           "deleted": "تم حذف \"{{name}}\".",
-          "deletedSelected_one": "تم حذف {{count}} منتج.",
-          "deletedSelected_other": "تم حذف {{count}} منتجات."
+          "actionFailed": "تعذر إتمام هذا الإجراء."
         },
         "confirm": {
           "deleteTitle": "حذف المنتج؟",
-          "deleteDescription": "سيتم حذف \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك.",
-          "deleteSelectedTitle_one": "حذف {{count}} منتج؟",
-          "deleteSelectedTitle_other": "حذف {{count}} منتجات؟",
-          "deleteSelectedDescription": "سيتم حذف المنتجات المحددة نهائيًا ولا يمكن التراجع عن ذلك."
+          "deleteDescription": "سيتم حذف \"{{name}}\" نهائيًا ولا يمكن التراجع عن ذلك."
         }
       },
       "dialog": {
         "addTitle": "إضافة منتج جديد",
         "editTitle": "تعديل المنتج",
-        "addDescription": "إنشاء منتج جديد لمتجرك.",
+        "addDescription": "إنشاء منتج جديد لمتجرك. يُنشر فورًا — وقد يزيله فريق الإدارة لاحقًا إذا بدا غير مناسب.",
         "editDescription": "تحديث تفاصيل \"{{name}}\".",
         "nameEnglish": "الاسم (إنجليزي)",
         "nameEnglishPlaceholder": "طقم كنب معياري",
-        "nameArabic": "الاسم (عربي)",
+        "nameArabic": "الاسم (عربي، اختياري)",
         "nameArabicPlaceholder": "طقم كنب معياري",
         "descriptionEnglish": "الوصف (إنجليزي)",
-        "descriptionArabic": "الوصف (عربي)",
-        "productImage": "صورة المنتج",
-        "chooseImage": "اختر صورة…",
+        "descriptionArabic": "الوصف (عربي، اختياري)",
+        "images": "الصور",
+        "addImage": "إضافة صورة…",
+        "uploading": "جارٍ الرفع…",
         "category": "الفئة",
         "selectCategory": "— اختر فئة —",
-        "department": "القسم",
+        "gender": "الفئة العمرية",
         "price": "السعر",
         "compareAtPrice": "السعر قبل الخصم",
         "compareAtPricePlaceholder": "السعر الأصلي قبل الخصم",
         "compareAtPriceHint": "يُعرض بخط مشطوب مع شارة خصم عند أن يكون أعلى من السعر الحالي.",
-        "currency": "العملة",
-        "currencyKWD": "دينار كويتي",
-        "currencySAR": "ريال سعودي",
         "sizes": "المقاسات",
         "sizesPlaceholder": "S, M, L, XL",
         "colors": "الألوان",
         "colorsPlaceholder": "بيج، رمادي غامق، رملي",
         "stock": "المخزون",
-        "stockDerivedHint": "يُحسب تلقائيًا من مخزون المتغيرات أدناه.",
-        "variants": "مخزون المتغيرات",
-        "generateVariants": "إنشاء من المقاسات والألوان",
-        "variantsHint": "أضف المقاسات والألوان، ثم أنشئ مخزون كل متغير.",
+        "inStock": "متوفر بالمخزون",
         "status": "الحالة",
         "close": "إغلاق",
         "save": "حفظ",
@@ -1369,45 +1619,35 @@
     "notifications": {
       "topbarTitle": "الإشعارات",
       "title": "الإشعارات",
-      "description": "تحديثات حول طلباتك ومنتجاتك.",
+      "description": "تحديثات حول طلباتك ورسائل من فريق الإدارة.",
       "searchPlaceholder": "بحث في الإشعارات…",
       "filterType": "النوع",
       "filterStatus": "الحالة",
+      "markAllRead": "تحديد الكل كمقروء",
       "emptyTitle": "لا توجد إشعارات",
       "emptyDescription": "لا يوجد جديد حاليًا.",
       "columns": {
         "notification": "الإشعار",
         "type": "النوع",
-        "priority": "الأولوية",
         "received": "تاريخ الاستلام",
         "status": "الحالة"
+      },
+      "types": {
+        "order_update": "تحديث الطلب",
+        "new_order": "طلب جديد",
+        "promotion": "عرض ترويجي",
+        "admin_message": "رسالة من الإدارة"
       },
       "stats": {
         "total": "الإجمالي",
         "unread": "غير مقروء",
-        "high": "مرتفع",
-        "critical": "حرج"
+        "newOrders": "طلبات جديدة",
+        "adminMessages": "رسائل الإدارة"
       },
       "toasts": {
-        "deleted": "تم حذف \"{{title}}\"."
-      },
-      "templates": {
-        "newOrder": {
-          "title": "طلب جديد {{orderNumber}}",
-          "message": "استلمت طلبًا جديدًا بقيمة {{amount}} د.ك."
-        },
-        "lowStock": {
-          "title": "مخزون منخفض: {{name}}",
-          "message": "تبقّى {{stock}} فقط في المخزون — يُفضّل إعادة التخزين قريبًا."
-        },
-        "outOfStock": {
-          "title": "نفدت الكمية: {{name}}",
-          "message": "هذا المنتج نفدت كميته وأصبح مخفيًا عن العملاء."
-        },
-        "welcome": {
-          "title": "مرحبًا بك في لوحة تحكم البائع",
-          "message": "أدر منتجاتك وطلباتك وملف متجرك من هنا."
-        }
+        "loadFailed": "تعذّر تحميل الإشعارات.",
+        "actionFailed": "تعذّر إتمام هذا الإجراء.",
+        "allMarkedRead": "تم تحديد كل الإشعارات كمقروءة."
       }
     },
     "earnings": {
@@ -1496,45 +1736,36 @@
   },
   "notificationsSend": {
     "topbarTitle": "إرسال إشعار",
+    "toasts": {
+      "loadVendorsFailed": "تعذّر تحميل قائمة الموردين."
+    },
     "compose": {
-      "title": "إنشاء إشعار",
-      "description": "أرسل إشعارًا إلى مجموعة واحدة أو أكثر من المستخدمين.",
+      "title": "مراسلة الموردين",
+      "description": "أرسل رسالة إلى مورد واحد أو إلى جميع الموردين.",
+      "recipient": "المستلم",
+      "allVendors": "جميع الموردين",
       "titleLabel": "العنوان",
       "titlePlaceholder": "عنوان الإشعار…",
+      "titleArLabel": "العنوان (بالعربية، اختياري)",
       "messageLabel": "الرسالة",
       "messagePlaceholder": "اكتب رسالتك هنا…",
-      "recipients": "المستلمون",
-      "recipientOptions": {
-        "all": "جميع المستخدمين",
-        "admins": "المسؤولون فقط",
-        "vendors": "الموردون فقط",
-        "users": "المستخدمون العاديون فقط"
-      },
-      "type": "النوع",
-      "priority": "الأولوية",
+      "messageArLabel": "الرسالة (بالعربية، اختياري)",
       "submit": "إرسال الإشعار",
-      "sentConfirmation": "✓ تم إرسال الإشعار بنجاح"
+      "sentConfirmation": "✓ تم إرسال الإشعار بنجاح",
+      "sendFailed": "تعذّر إرسال هذا الإشعار."
     },
     "history": {
-      "title": "سجل الإرسال",
-      "description": "الإشعارات المرسلة سابقًا.",
+      "title": "المرسل في هذه الجلسة",
+      "description": "الرسائل التي أرسلتها منذ فتح هذه الصفحة.",
       "searchPlaceholder": "البحث في الإشعارات المرسلة…",
-      "filterType": "النوع",
-      "filterPriority": "الأولوية",
       "emptyTitle": "لم يتم إرسال أي إشعارات بعد",
       "columns": {
         "title": "العنوان",
-        "recipients": "المستلمون",
-        "type": "النوع",
-        "priority": "الأولوية",
-        "delivered": "تم التسليم",
+        "recipient": "المستلم",
         "sentAt": "تاريخ الإرسال"
       },
       "stats": {
-        "totalSent": "إجمالي المرسل",
-        "totalDelivered": "إجمالي المُسلَّم",
-        "highPriority": "أولوية مرتفعة",
-        "criticalSent": "حرج مُرسَل"
+        "totalSent": "إجمالي المرسل"
       }
     }
   },
@@ -1665,7 +1896,49 @@
       "passwordsDontMatch": "كلمتا المرور غير متطابقتين",
       "backToLogin": "العودة لتسجيل الدخول",
       "forgotOldOne": "نسيت كلمة المرور القديمة؟",
-      "resetPassword": "إعادة تعيين كلمة المرور"
+      "resetPassword": "إعادة تعيين كلمة المرور",
+      "pageTitle": "كن مورداً",
+      "pageSubtitle": "أنشئ حساب متجرك — سيقوم المسؤول بمراجعته والموافقة عليه قبل أن تتمكن من البدء في البيع.",
+      "storeNameLabel": "اسم المتجر",
+      "storeNamePlaceholder": "متجر الأزياء",
+      "firstNameLabel": "الاسم الأول",
+      "firstNamePlaceholder": "أحمد",
+      "lastNameLabel": "اسم العائلة",
+      "lastNamePlaceholder": "الراشد",
+      "phoneLabel": "رقم الهاتف",
+      "kycDocumentLabel": "مستند التحقق (KYC) — رخصة تجارية أو بطاقة هوية",
+      "submitText": "متابعة",
+      "submittingText": "جارٍ إرسال الرمز…",
+      "kycRequired": "يرجى تحميل مستند التحقق (رخصة تجارية أو هوية) للتسجيل.",
+      "kycRequiredTitle": "مستند التحقق مطلوب",
+      "uploadFailed": "تعذر تحميل مستند التحقق. يرجى المحاولة مرة أخرى.",
+      "uploadFailedTitle": "فشل التحميل",
+      "codeSentSuccess": "تم إرسال رمز التحقق إلى بريدك الإلكتروني {{email}}.",
+      "checkInboxTitle": "تحقق من بريدك الوارد",
+      "sendFailed": "تعذر إرسال رمز التحقق",
+      "sendFailedTitle": "فشل الإرسال",
+      "otpTitle": "أدخل رمز التحقق",
+      "otpSubtitle": "لقد أرسلنا رمزاً مكوناً من 6 أرقام إلى",
+      "changeEmail": "تغيير البريد الإلكتروني",
+      "enterCodeError": "أدخل الرمز الذي أرسلناه إليك",
+      "verifyButton": "التحقق من الرمز",
+      "verifying": "جارٍ التحقق…",
+      "didntReceive": "لم يصلك الرمز؟",
+      "resendIn": "إعادة الإرسال بعد {{seconds}} ثانية",
+      "resendButton": "إعادة إرسال الرمز",
+      "codeResent": "أعدنا إرسال الرمز إلى {{email}}.",
+      "codeResentTitle": "تمت إعادة إرسال الرمز",
+      "verificationFailed": "فشل التحقق",
+      "registeredTitle": "تم تسجيلك بنجاح",
+      "registeredPending": "في انتظار مراجعة مستندات التحقق والموافقة.",
+      "goToLogin": "الانتقال إلى تسجيل الدخول",
+      "validation": {
+        "phoneFormat": "يجب أن يكون رقم الهاتف بصيغة E.164، مثل +96500000000",
+        "tooShort": "قصير جداً",
+        "invalidEmail": "البريد الإلكتروني غير صالح",
+        "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+        "passwordsDontMatch": "كلمتا المرور غير متطابقتين"
+      }
     },
     "forgotPassword": {
       "title": "نسيت كلمة المرور",
@@ -1679,9 +1952,27 @@
       "codeSentToast": {
         "title": "تحقق من بريدك الوارد"
       },
+      "codeVerificationTitle": "أدخل رمز التحقق",
+      "codeSentTo": "لقد أرسلنا رمزاً إلى",
+      "changeEmail": "تغيير البريد الإلكتروني",
+      "enterCodeError": "أدخل الرمز الذي أرسلناه إليك",
+      "verifyButton": "التحقق من الرمز",
+      "verifying": "جارٍ التحقق…",
+      "didntReceive": "لم يصلك الرمز؟",
+      "resendIn": "إعادة الإرسال بعد {{seconds}} ثانية",
+      "resendButton": "إعادة إرسال الرمز",
+      "codeResent": "أعدنا إرسال الرمز إلى {{email}}.",
+      "codeResentTitle": "تمت إعادة إرسال الرمز",
+      "invalidCode": "الرمز غير صالح أو منتهي الصلاحية",
+      "verificationFailed": "فشل التحقق",
+      "sendFailed": "تعذر إرسال رمز إعادة التعيين",
+      "sendFailedTitle": "فشل الإرسال",
+      "resetFailed": "تعذر إعادة تعيين كلمة المرور",
+      "resetFailedTitle": "فشل إعادة التعيين",
       "reset": {
         "title": "إعادة تعيين كلمة المرور",
         "subtitle": "أدخل الرمز الذي أرسلناه إلى {{email}} مع كلمة المرور الجديدة.",
+        "formSubtitle": "اختر كلمة مرور جديدة لحسابك.",
         "changeEmail": "تغيير البريد الإلكتروني",
         "codeLabel": "رمز التحقق",
         "newPasswordLabel": "كلمة المرور الجديدة",
@@ -1693,6 +1984,65 @@
           "body": "تمت إعادة تعيين كلمة المرور الخاصة بك. يمكنك الآن تسجيل الدخول."
         }
       }
+    }
+  },
+  "faqs": {
+    "topbarTitle": "الأسئلة الشائعة",
+    "list": {
+      "title": "الأسئلة الشائعة",
+      "description": "إدارة أسئلة التطبيق المعروضة في شاشة الملف الشخصي.",
+      "searchPlaceholder": "بحث في الأسئلة…",
+      "filterStatus": "الحالة",
+      "addFaq": "إضافة سؤال",
+      "loadFailed": "تعذر تحميل الأسئلة",
+      "emptyTitle": "لا توجد أسئلة",
+      "emptyDescription": "حاول تعديل البحث أو عوامل التصفية.",
+      "columns": {
+        "question": "السؤال",
+        "answer": "الإجابة",
+        "order": "الترتيب",
+        "status": "الحالة"
+      },
+      "stats": {
+        "total": "إجمالي الأسئلة",
+        "active": "نشط"
+      },
+      "toasts": {
+        "created": "تم إنشاء السؤال.",
+        "edited": "تم تحديث السؤال.",
+        "deleted": "تم حذف السؤال.",
+        "deletedSelected": "تم حذف {{count}} أسئلة.",
+        "hidden": "تم إخفاء السؤال.",
+        "unhidden": "أصبح السؤال نشطًا الآن."
+      },
+      "confirm": {
+        "deleteTitle": "حذف السؤال؟",
+        "deleteDescription": "سيتم حذف \"{{question}}\" نهائيًا.",
+        "deleteSelectedTitle": "حذف {{count}} أسئلة؟",
+        "deleteSelectedDescription": "سيتم حذف الأسئلة المحددة نهائيًا.",
+        "hideTitle": "إخفاء السؤال؟",
+        "hideDescription": "لن يظهر هذا السؤال للمستخدمين بعد الآن.",
+        "unhideTitle": "إظهار السؤال؟",
+        "unhideDescription": "سيصبح هذا السؤال مرئيًا للمستخدمين مرة أخرى."
+      }
+    },
+    "dialog": {
+      "addTitle": "إضافة سؤال جديد",
+      "editTitle": "تعديل السؤال",
+      "addDescription": "إنشاء سؤال جديد للتطبيق.",
+      "editDescription": "تحديث هذا السؤال.",
+      "questionEn": "السؤال (إنجليزي)",
+      "questionEnPlaceholder": "How do I track my order?",
+      "questionAr": "السؤال (عربي)",
+      "questionArPlaceholder": "كيف أتتبع طلبي؟",
+      "answerEn": "الإجابة (إنجليزي)",
+      "answerEnPlaceholder": "You can track your order from the Orders screen.",
+      "answerAr": "الإجابة (عربي)",
+      "answerArPlaceholder": "يمكنك تتبع طلبك من شاشة الطلبات.",
+      "sortOrder": "ترتيب العرض",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "add": "إضافة"
     }
   },
   "notFound": {

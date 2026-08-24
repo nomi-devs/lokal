@@ -20,19 +20,20 @@ import type { ColumnDef } from "@/components/ui/DataTable";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { toast } from "@/components/ui/Toast";
 import * as adminApi from "@/lib/adminApi";
-import type { AdminProduct, AdminVendorRow } from "@/lib/adminApi";
+import type { AdminVendorRow } from "@/lib/adminApi";
+import type { Product } from "@/lib/productsApi";
 import { cn } from "@/lib/utils";
 
 const PRODUCT_STATUS_STYLES: Record<string, string> = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
   inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  out_of_stock: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+  rejected: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
 };
 
 const PAGE_SIZE = 5;
 
 function VendorProductsTab({ vendorId }: { vendorId: string }) {
-  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -60,9 +61,9 @@ function VendorProductsTab({ vendorId }: { vendorId: string }) {
     };
   }, [vendorId, page]);
 
-  const columns: ColumnDef<AdminProduct>[] = [
+  const columns: ColumnDef<Product>[] = [
     {
-      key: "nameEn",
+      key: "name",
       header: "Product",
       render: (_v, row) => (
         <div className="flex items-center gap-2">
@@ -73,15 +74,15 @@ function VendorProductsTab({ vendorId }: { vendorId: string }) {
               <Package className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
           )}
-          <span className="font-medium">{row.nameEn}</span>
+          <span className="font-medium">{row.name.en}</span>
         </div>
       ),
     },
-    { key: "department", header: "Department", render: (v) => <span className="capitalize">{v as string}</span> },
+    { key: "gender", header: "Gender", render: (v) => <span className="capitalize">{v as string}</span> },
     {
       key: "price",
       header: "Price",
-      render: (_v, row) => `${row.price.base} ${row.price.currency}`,
+      render: (_v, row) => (row.compareAtPrice ? `${row.price} (was ${row.compareAtPrice})` : `${row.price}`),
     },
     { key: "stock", header: "Stock" },
     {
@@ -89,14 +90,14 @@ function VendorProductsTab({ vendorId }: { vendorId: string }) {
       header: "Status",
       render: (v) => (
         <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", PRODUCT_STATUS_STYLES[v as string])}>
-          {(v as string).replace("_", " ")}
+          {v as string}
         </span>
       ),
     },
   ];
 
   return (
-    <DataTable<AdminProduct>
+    <DataTable<Product>
       data={products}
       columns={columns}
       rowKey="id"

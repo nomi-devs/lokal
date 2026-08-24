@@ -27,6 +27,9 @@ export class RegisterVendorResponseDto {
   @ApiProperty()
   message: string;
 
+  @ApiProperty({ required: false })
+  messageAr?: string;
+
   @ApiProperty({ type: VendorRegistrationSummaryDto })
   vendor: VendorRegistrationSummaryDto;
 }

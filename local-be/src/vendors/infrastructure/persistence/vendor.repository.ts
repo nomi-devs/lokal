@@ -37,4 +37,10 @@ export abstract class VendorRepository {
   abstract countByStatus(status: VendorStatus): Promise<number>;
   abstract countCreatedSince(since: Date): Promise<number>;
   abstract countAll(): Promise<number>;
+
+  abstract findAllIdsByStatus(status: VendorStatus): Promise<string[]>;
+  // Every vendor's owning userId — used for admin broadcast messaging
+  // (POST /admin/notifications/vendor with no vendorId), unlike
+  // findAllIdsByStatus('active') which is scoped to product visibility.
+  abstract findAllUserIds(): Promise<string[]>;
 }

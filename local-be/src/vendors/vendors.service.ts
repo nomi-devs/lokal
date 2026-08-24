@@ -16,6 +16,7 @@ import { VerifyVendorRegistrationDto } from './dto/verify-vendor-registration.dt
 import { ResendVendorOtpDto } from './dto/resend-vendor-otp.dto';
 import { UpdateVendorProfileDto } from './dto/update-vendor-profile.dto';
 import { SendOtpResponseDto } from '../auth/dto/auth-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 @Injectable()
 export class VendorsService {
@@ -72,9 +73,11 @@ export class VendorsService {
     const otp = await this.otpService.generate(email);
     await this.emailService.sendOtp(email, otp);
 
+    const msg = MESSAGES.AUTH.OTP_SENT(email);
     return {
       success: true,
-      message: `OTP sent to ${email}`,
+      message: msg.en,
+      messageAr: msg.ar,
       expiresIn: this.otpService.expirySeconds,
     };
   }
@@ -129,6 +132,68 @@ export class VendorsService {
     }
   }
 
+  // Admin-created vendors skip the public register/verify-registration OTP
+  // flow — the admin is trusted to have already confirmed the owner's
+  // identity, so this creates the user + Vendor record in one call.
+  async createByAdmin(dto: {
+    phone: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    storeName: string;
+    storeDescription?: string;
+    city?: string;
+    address?: string;
+    kycDocumentUrl?: string;
+    status?: 'pending_approval' | 'active';
+  }): Promise<Vendor> {
+    const existingStore = await this.vendorRepository.findByStoreName(
+      dto.storeName,
+    );
+    if (existingStore) {
+      throw new AppException(
+        ERROR_CODES.STORE_NAME_TAKEN,
+        'Store name already exists',
+        409,
+      );
+    }
+
+    const user = await this.usersService.createWithPassword({
+      phone: dto.phone,
+      email: dto.email,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      password: dto.password,
+      role: 'vendor',
+    });
+
+    try {
+      const status = dto.status ?? 'active';
+      const vendor = await this.vendorRepository.create({
+        userId: user.id,
+        storeName: dto.storeName,
+        storeDescription: dto.storeDescription,
+        city: dto.city,
+        address: dto.address,
+        phone: dto.phone,
+        kycDocumentUrl: dto.kycDocumentUrl,
+        status,
+        ...(status === 'active' ? { approvedAt: new Date() } : {}),
+        commissionStructure: { defaultPercentage: 15 },
+        rating: 0,
+        totalReviews: 0,
+      });
+      await this.usersService.setVendorId(user.id, vendor.id);
+      return vendor;
+    } catch (error) {
+      // Roll back the just-created user so a failed vendor insert doesn't
+      // strand an orphaned account (no multi-doc transaction on standalone Mongo).
+      await this.usersService.hardDelete(user.id);
+      throw error;
+    }
+  }
+
   findByUserId(userId: string): Promise<NullableType<Vendor>> {
     return this.vendorRepository.findByUserId(userId);
   }
@@ -162,47 +227,48 @@ export class VendorsService {
     return this.vendorRepository.findManyWithPagination(filters);
   }
 
-  async approve(
+  // One method for every admin-driven status transition (previously three:
+  // approve/reject/suspend) — status picks the transition, see
+  // UpdateVendorStatusDto for which fields apply to which status.
+  async updateStatus(
     id: string,
     adminId: string,
-    approvalNotes?: string,
+    dto: {
+      status: 'active' | 'inactive' | 'suspended';
+      approvalNotes?: string;
+      rejectionReason?: string;
+      rejectionCategory?: string;
+      suspendReason?: string;
+      duration?: number;
+    },
   ): Promise<Vendor> {
     const vendor = await this.getOrThrow(id);
-    const updated = await this.vendorRepository.update(id, {
-      status: 'active',
-      approvedAt: new Date(),
-      approvedBy: adminId,
-      approvalNotes,
-    });
-    return updated ?? vendor;
-  }
 
-  async reject(
-    id: string,
-    rejectionReason: string,
-    rejectionCategory: string,
-  ): Promise<Vendor> {
-    const vendor = await this.getOrThrow(id);
-    const updated = await this.vendorRepository.update(id, {
-      status: 'inactive',
-      rejectionReason,
-      rejectionCategory,
-    });
-    await this.usersService.setStatus(vendor.userId, 'inactive');
-    return updated ?? vendor;
-  }
+    if (dto.status === 'active') {
+      const updated = await this.vendorRepository.update(id, {
+        status: 'active',
+        approvedAt: new Date(),
+        approvedBy: adminId,
+        approvalNotes: dto.approvalNotes,
+      });
+      return updated ?? vendor;
+    }
 
-  async suspend(
-    id: string,
-    reason: string,
-    duration?: number,
-  ): Promise<Vendor> {
-    const vendor = await this.getOrThrow(id);
+    if (dto.status === 'inactive') {
+      const updated = await this.vendorRepository.update(id, {
+        status: 'inactive',
+        rejectionReason: dto.rejectionReason,
+        rejectionCategory: dto.rejectionCategory,
+      });
+      await this.usersService.setStatus(vendor.userId, 'inactive');
+      return updated ?? vendor;
+    }
+
     const updated = await this.vendorRepository.update(id, {
       status: 'suspended',
-      suspendReason: reason,
-      suspendedUntil: duration
-        ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
+      suspendReason: dto.suspendReason,
+      suspendedUntil: dto.duration
+        ? new Date(Date.now() + dto.duration * 24 * 60 * 60 * 1000)
         : undefined,
     });
     await this.usersService.setStatus(vendor.userId, 'suspended');
@@ -219,6 +285,18 @@ export class VendorsService {
 
   countAll(): Promise<number> {
     return this.vendorRepository.countAll();
+  }
+
+  // Used by ProductsService.listPublic — public product listing is scoped to
+  // products whose vendor (store) is an approved/active store.
+  findActiveVendorIds(): Promise<string[]> {
+    return this.vendorRepository.findAllIdsByStatus('active');
+  }
+
+  // Every vendor's owning userId — see AdminNotificationsController's
+  // broadcast-to-all-vendors path.
+  findAllVendorUserIds(): Promise<string[]> {
+    return this.vendorRepository.findAllUserIds();
   }
 
   private async getOrThrow(id: string): Promise<Vendor> {

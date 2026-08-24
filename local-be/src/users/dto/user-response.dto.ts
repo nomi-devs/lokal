@@ -8,6 +8,9 @@ export class UpdateProfileResponseDto {
   @ApiProperty({ example: 'Profile updated successfully' })
   message: string;
 
+  @ApiProperty({ required: false })
+  messageAr?: string;
+
   @ApiProperty({ type: User })
   user: User;
 }

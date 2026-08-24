@@ -79,6 +79,36 @@ export default function ForgotPasswordPage() {
   const [isResetting, setIsResetting] = useState(false);
   const [resendIn, setResendIn] = useState(0);
 
+  const forgotPasswordFields: FieldConfig[] = [
+    {
+      name: "email",
+      label: t("auth.forgotPassword.emailLabel"),
+      type: "email",
+      placeholder: "you@example.com",
+      autocomplete: "email",
+      col: 12,
+    },
+  ];
+
+  const resetPasswordFields: FieldConfig[] = [
+    {
+      name: "newPassword",
+      label: t("auth.forgotPassword.reset.newPasswordLabel"),
+      type: "password",
+      placeholder: "••••••••",
+      autocomplete: "new-password",
+      col: 12,
+    },
+    {
+      name: "confirmPassword",
+      label: t("auth.forgotPassword.reset.confirmPasswordLabel"),
+      type: "password",
+      placeholder: "••••••••",
+      autocomplete: "new-password",
+      col: 12,
+    },
+  ];
+
   useEffect(() => {
     if (resendIn <= 0) {return;}
 
@@ -97,7 +127,7 @@ export default function ForgotPasswordPage() {
       setStep("otp");
       toast.success(resp.message, { title: t("auth.forgotPassword.codeSentToast.title") });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Couldn't send the reset code"), { title: "Send failed" });
+      toast.error(getApiErrorMessage(error, t("auth.forgotPassword.sendFailed")), { title: t("auth.forgotPassword.sendFailedTitle") });
     } finally {
       setIsSending(false);
     }
@@ -105,7 +135,7 @@ export default function ForgotPasswordPage() {
 
   async function onVerify(code: string) {
     if (!/^\d{4,6}$/.test(code)) {
-      setOtpError("Enter the code we emailed you");
+      setOtpError(t("auth.forgotPassword.enterCodeError"));
 
       return;
     }
@@ -116,7 +146,7 @@ export default function ForgotPasswordPage() {
       await verifyResetOtp(email, code);
       setStep("password");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Invalid or expired code"), { title: "Verification failed" });
+      toast.error(getApiErrorMessage(error, t("auth.forgotPassword.invalidCode")), { title: t("auth.forgotPassword.verificationFailed") });
     } finally {
       setIsVerifying(false);
     }
@@ -129,9 +159,9 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword(email);
       setResendIn(OTP_RESEND_SECONDS);
-      toast.success(`We've re-sent the code to ${email}.`, { title: "Code resent" });
+      toast.success(t("auth.forgotPassword.codeResent", { email }), { title: t("auth.forgotPassword.codeResentTitle") });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Couldn't resend the code"), { title: "Send failed" });
+      toast.error(getApiErrorMessage(error, t("auth.forgotPassword.sendFailed")), { title: t("auth.forgotPassword.sendFailedTitle") });
     } finally {
       setIsVerifying(false);
     }
@@ -146,7 +176,7 @@ export default function ForgotPasswordPage() {
       });
       navigate("/login");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Couldn't reset your password"), { title: "Reset failed" });
+      toast.error(getApiErrorMessage(error, t("auth.forgotPassword.resetFailed")), { title: t("auth.forgotPassword.resetFailedTitle") });
     } finally {
       setIsResetting(false);
     }
@@ -161,11 +191,11 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <ShieldCheck className="h-7 w-7 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold mb-2 text-primary">Enter Verification Code</h1>
+            <h1 className="text-2xl font-bold mb-2 text-primary">{t("auth.forgotPassword.codeVerificationTitle")}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              We've sent a code to <span className="font-medium text-primary">{email}</span> ·{" "}
+              {t("auth.forgotPassword.codeSentTo")} <span className="font-medium text-primary">{email}</span> ·{" "}
               <button type="button" className="text-primary hover:underline" onClick={() => setStep("email")}>
-                Change email
+                {t("auth.forgotPassword.changeEmail")}
               </button>
             </p>
 
@@ -181,13 +211,13 @@ export default function ForgotPasswordPage() {
             {otpError && <p className="text-sm text-red-500 mt-2">{otpError}</p>}
 
             <Button type="button" className="w-full mt-6" onClick={() => onVerify(otp)} disabled={isVerifying}>
-              {isVerifying ? "Verifying…" : "Verify Code"}
+              {isVerifying ? t("auth.forgotPassword.verifying") : t("auth.forgotPassword.verifyButton")}
             </Button>
 
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Didn't receive the code?{" "}
+              {t("auth.forgotPassword.didntReceive")}{" "}
               {resendIn > 0 ? (
-                <span className="text-gray-400">Resend code in {resendIn}s</span>
+                <span className="text-gray-400">{t("auth.forgotPassword.resendIn", { seconds: resendIn })}</span>
               ) : (
                 <button
                   type="button"
@@ -195,7 +225,7 @@ export default function ForgotPasswordPage() {
                   onClick={resendOtp}
                   disabled={isVerifying}
                 >
-                  Resend code
+                  {t("auth.forgotPassword.resendButton")}
                 </button>
               )}
             </p>
@@ -216,7 +246,7 @@ export default function ForgotPasswordPage() {
                 <ShieldCheck className="h-6 w-6 text-primary" />
               </div>
               <h1 className="text-2xl font-bold text-primary">{t("auth.forgotPassword.reset.title")}</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Choose a new password for your account.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("auth.forgotPassword.reset.formSubtitle")}</p>
             </div>
 
             <DynamicForm

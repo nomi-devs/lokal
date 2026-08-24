@@ -1,11 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { FolderTree, Image as ImageIcon, Layers, ListOrdered, Users2 } from "lucide-react";
+import { FolderTree, Image as ImageIcon, Layers, ListOrdered, Loader2, Users2 } from "lucide-react";
 
-import type { Category } from "@/data/categories";
+import type { AdminCategory } from "@/lib/adminApi";
+import { uploadCategoryIcon } from "@/lib/adminApi";
+import { toast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +27,7 @@ const categorySchema = z.object({
   nameAr: z.string().min(1, "Name (Arabic) is required"),
   descriptionEn: z.string().optional(),
   descriptionAr: z.string().optional(),
-  image: z.string().optional(),
+  imageUrl: z.string().optional(),
   parentId: z.string(),
   department: z.enum(["men", "women", "kids", "unisex"]),
   sortOrder: z.number().int().min(0),
@@ -38,7 +40,7 @@ const emptyValues: CategoryFormValues = {
   nameAr: "",
   descriptionEn: "",
   descriptionAr: "",
-  image: "",
+  imageUrl: "",
   parentId: "",
   department: "unisex",
   sortOrder: 0,
@@ -53,54 +55,55 @@ const textareaCls = cn(
   "min-h-20 resize-y"
 );
 
-function ImageDropField({
+function ImageUploadField({
   label,
-  icon: Icon,
   value,
   onChange,
   placeholder,
 }: {
   label: string;
-  icon: typeof ImageIcon;
   value: string;
   onChange: (url: string) => void;
   placeholder: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
 
-    if (!file) {
-      return;
+    setUploading(true);
+    try {
+      const url = await uploadCategoryIcon(file);
+      onChange(url);
+    } catch {
+      toast.error("Couldn't upload the image. Please try again.", { title: "Upload failed" });
+    } finally {
+      setUploading(false);
     }
-
-    // Template placeholder — swap for your upload endpoint and store the returned URL instead.
-    onChange(URL.createObjectURL(file));
   }
 
   return (
     <div>
       <Label className={labelRowCls}>
-        <Icon className="w-3.5 h-3.5 text-primary" />
+        <ImageIcon className="w-3.5 h-3.5 text-primary" />
         {label}
       </Label>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleChange}
-      />
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
+        disabled={uploading}
         className={cn(
-          "w-full h-28 rounded-lg border border-dashed flex items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:bg-muted/40 overflow-hidden",
+          "w-full h-28 rounded-lg border border-dashed flex items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:bg-muted/40 overflow-hidden disabled:opacity-50",
           value && "border-solid p-0"
         )}
       >
-        {value ? (
+        {uploading ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : value ? (
           <img src={value} alt="" className="w-full h-full object-cover" />
         ) : (
           <>
@@ -117,10 +120,10 @@ export interface CategoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Pass a category to edit it; omit/null to add a new one. Same dialog handles both. */
-  category?: Category | null;
+  category?: AdminCategory | null;
   /** Top-level categories eligible as a parent. */
-  parentOptions: { id: number; name: string }[];
-  onSubmit: (values: CategoryFormValues, editingId: number | null) => void;
+  parentOptions: { id: string; name: string }[];
+  onSubmit: (values: CategoryFormValues, editingId: string | null) => void;
 }
 
 export default function CategoryFormDialog({
@@ -132,6 +135,7 @@ export default function CategoryFormDialog({
 }: CategoryFormDialogProps) {
   const { t } = useTranslation();
   const isEdit = !!category;
+
 
   const {
     register,
@@ -158,8 +162,8 @@ export default function CategoryFormDialog({
             nameAr: category.nameAr ?? "",
             descriptionEn: category.descriptionEn ?? "",
             descriptionAr: category.descriptionAr ?? "",
-            image: category.image ?? "",
-            parentId: category.parentId != null ? String(category.parentId) : "",
+            imageUrl: category.imageUrl ?? "",
+            parentId: category.parentId ?? "",
             department: category.department,
             sortOrder: category.sortOrder,
           }
@@ -167,23 +171,13 @@ export default function CategoryFormDialog({
     );
   }, [open, category, reset]);
 
-  const imagePreview = watch("image") ?? "";
-  const objectUrlsRef = useRef<string[]>([]);
-
-  function trackObjectUrl(url: string) {
-    objectUrlsRef.current.push(url);
-  }
-
-  useEffect(() => {
-    return () => {
-      objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, []);
+  const imagePreview = watch("imageUrl") ?? "";
 
   function submit(values: CategoryFormValues) {
     onSubmit(values, category?.id ?? null);
     onOpenChange(false);
   }
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -260,15 +254,11 @@ export default function CategoryFormDialog({
             </div>
 
             {/* Category Image */}
-            <ImageDropField
+            <ImageUploadField
               label={t("categories.dialog.categoryIcon")}
-              icon={ImageIcon}
               value={imagePreview}
               placeholder={t("categories.dialog.chooseIcon")}
-              onChange={(url) => {
-                trackObjectUrl(url);
-                setValue("image", url, { shouldValidate: true });
-              }}
+              onChange={(url) => setValue("imageUrl", url, { shouldValidate: true })}
             />
 
             {/* Parent + Department + Order */}

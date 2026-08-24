@@ -1,23 +1,11 @@
-import { useEffect, useRef } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import {
-  Package,
-  Image as ImageIcon,
-  Store,
-  FolderTree,
-  Coins,
-  Boxes,
-  Tag,
-  Users2,
-  Wand2,
-} from "lucide-react";
+import { Package, FolderTree, Coins, Boxes, Tag, Users2 } from "lucide-react";
 
-import type { Product } from "@/data/products";
-import { initialVendors } from "@/data/vendors";
-import { categories } from "@/data/categories";
+import ProductImagesField from "@/components/product/ProductImagesField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,50 +19,39 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-
-const variantSchema = z.object({
-  size: z.string().optional(),
-  color: z.string().optional(),
-  stock: z.number().int().min(0, "Stock must be 0 or more"),
-});
+import { listCategories, type CategoryOption, type Product, type ProductPayload } from "@/lib/productsApi";
 
 const productSchema = z.object({
-  nameEn: z.string().min(1, "Name (English) is required"),
-  nameAr: z.string().min(1, "Name (Arabic) is required"),
-  descriptionEn: z.string().optional(),
+  nameEn: z.string().min(1),
+  nameAr: z.string().optional(),
+  descriptionEn: z.string().min(1),
   descriptionAr: z.string().optional(),
-  image: z.string().optional(),
-  vendorId: z.string().min(1, "Vendor is required"),
+  images: z.array(z.string()).min(1, "At least one image is required"),
   categoryId: z.string().min(1, "Category is required"),
-  department: z.enum(["men", "women", "kids", "unisex"]),
-  price: z.object({
-    base: z.number().min(0, "Price must be 0 or more"),
-    currency: z.enum(["KWD", "SAR"]),
-    compareAt: z.number().optional(),
-  }),
+  gender: z.enum(["male", "female", "kids", "unisex"]),
+  price: z.number().min(0.01, "Price must be greater than 0"),
+  compareAtPrice: z.number().optional(),
   sizes: z.string().optional(),
   colors: z.string().optional(),
-  stock: z.number().int().min(0, "Stock must be 0 or more"),
-  variants: z.array(variantSchema).optional(),
-  status: z.enum(["active", "inactive", "out_of_stock"]),
+  stock: z.number().int().min(0),
+  status: z.enum(["active", "inactive"]),
 });
 
-export type ProductFormValues = z.infer<typeof productSchema>;
+type FormValues = z.infer<typeof productSchema>;
 
-const emptyValues: ProductFormValues = {
+const emptyValues: FormValues = {
   nameEn: "",
   nameAr: "",
   descriptionEn: "",
   descriptionAr: "",
-  image: "",
-  vendorId: "",
+  images: [],
   categoryId: "",
-  department: "unisex",
-  price: { base: 0, currency: "KWD", compareAt: undefined },
+  gender: "unisex",
+  price: 0,
+  compareAtPrice: undefined,
   sizes: "",
   colors: "",
   stock: 0,
-  variants: [],
   status: "active",
 };
 
@@ -92,102 +69,47 @@ const textareaCls = cn(
   "min-h-20 resize-y"
 );
 
-function ImageDropField({
-  label,
-  icon: Icon,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  icon: typeof ImageIcon;
-  value: string;
-  onChange: (url: string) => void;
-  placeholder: string;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    // Template placeholder — swap for your upload endpoint and store the returned URL instead.
-    onChange(URL.createObjectURL(file));
-  }
-
-  return (
-    <div>
-      <Label className={labelRowCls}>
-        <Icon className="w-3.5 h-3.5 text-primary" />
-        {label}
-      </Label>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleChange}
-      />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        className={cn(
-          "w-full h-28 rounded-lg border border-dashed flex items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:bg-muted/40 overflow-hidden",
-          value && "border-solid p-0"
-        )}
-      >
-        {value ? (
-          <img src={value} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <>
-            <ImageIcon className="w-4 h-4" />
-            {placeholder}
-          </>
-        )}
-      </button>
-    </div>
-  );
+function splitList(value?: string): string[] {
+  return value
+    ? value
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
 }
 
-export interface ProductFormDialogProps {
+interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Pass a product to edit it; omit/null to add a new one. Same dialog handles both. */
-  product?: Product | null;
-  onSubmit: (values: ProductFormValues, editingId: number | null) => void;
+  /** Admin only edits existing products — there's no add flow here (vendors create products). */
+  product: Product | null;
+  onSubmit: (payload: ProductPayload) => void;
 }
 
-export default function ProductFormDialog({
-  open,
-  onOpenChange,
-  product,
-  onSubmit,
-}: ProductFormDialogProps) {
+export default function ProductFormDialog({ open, onOpenChange, product, onSubmit }: Props) {
   const { t } = useTranslation();
-  const isEdit = !!product;
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+
+  useEffect(() => {
+    listCategories()
+      .then(setCategories)
+      .catch(() => {
+        // Category picker just stays empty — the form itself is still usable.
+      });
+  }, []);
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
-    control,
+    watch,
     reset,
     formState: { errors },
-  } = useForm<ProductFormValues>({
+  } = useForm<FormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: emptyValues,
   });
 
-  const { fields: variantFields, replace: replaceVariants } = useFieldArray({
-    control,
-    name: "variants",
-  });
-
-  // Re-seed the form whenever a different product is opened for edit (or the dialog reopens in add mode).
   useEffect(() => {
     if (!open) {
       return;
@@ -196,84 +118,47 @@ export default function ProductFormDialog({
     reset(
       product
         ? {
-            nameEn: product.nameEn,
-            nameAr: product.nameAr,
-            descriptionEn: product.descriptionEn ?? "",
-            descriptionAr: product.descriptionAr ?? "",
-            image: product.images[0] ?? "",
-            vendorId: String(product.vendorId),
-            categoryId: String(product.categoryId),
-            department: product.department,
-            price: {
-              base: product.price.base,
-              currency: product.price.currency,
-              compareAt: product.price.compareAt,
-            },
+            nameEn: product.name.en,
+            nameAr: product.name.ar ?? "",
+            descriptionEn: product.description.en,
+            descriptionAr: product.description.ar ?? "",
+            images: product.images,
+            categoryId: product.categoryId,
+            gender: product.gender,
+            price: product.price,
+            compareAtPrice: product.compareAtPrice,
             sizes: product.sizes.join(", "),
             colors: product.colors.join(", "),
             stock: product.stock,
-            variants: product.variants ?? [],
-            status: product.status,
+            // Form only offers active/inactive — a rejected product edited
+            // here defaults to inactive rather than silently un-rejecting.
+            status: product.status === "rejected" ? "inactive" : product.status,
           }
         : emptyValues
     );
   }, [open, product, reset]);
 
-  const sizesValue = watch("sizes") ?? "";
-  const colorsValue = watch("colors") ?? "";
+  const images = watch("images");
 
-  // Builds one row per size×color pair, keeping existing stock numbers for combos that survive.
-  function generateVariants() {
-    const sizeList = sizesValue
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    const colorList = colorsValue
-      .split(",")
-      .map((c) => c.trim())
-      .filter(Boolean);
-
-    const pairs: { size?: string; color?: string }[] =
-      sizeList.length && colorList.length
-        ? sizeList.flatMap((size) => colorList.map((color) => ({ size, color })))
-        : sizeList.length
-          ? sizeList.map((size) => ({ size }))
-          : colorList.map((color) => ({ color }));
-
-    const existing = new Map(
-      variantFields.map((v) => [`${v.size ?? ""}::${v.color ?? ""}`, v.stock])
-    );
-
-    replaceVariants(
-      pairs.map((p) => ({
-        size: p.size,
-        color: p.color,
-        stock: existing.get(`${p.size ?? ""}::${p.color ?? ""}`) ?? 0,
-      }))
-    );
+  if (!product) {
+    return null;
   }
 
-  const imagePreview = watch("image") ?? "";
-  const objectUrlsRef = useRef<string[]>([]);
-
-  function trackObjectUrl(url: string) {
-    objectUrlsRef.current.push(url);
-  }
-
-  useEffect(() => {
-    return () => {
-      objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, []);
-
-  function submit(values: ProductFormValues) {
-    const stock = values.variants?.length
-      ? values.variants.reduce((sum, v) => sum + v.stock, 0)
-      : values.stock;
-
-    onSubmit({ ...values, stock }, product?.id ?? null);
-    onOpenChange(false);
+  function submit(values: FormValues) {
+    onSubmit({
+      name: { en: values.nameEn, ar: values.nameAr || undefined },
+      description: { en: values.descriptionEn, ar: values.descriptionAr || undefined },
+      images: values.images,
+      categoryId: values.categoryId,
+      gender: values.gender,
+      price: values.price,
+      compareAtPrice: values.compareAtPrice,
+      sizes: splitList(values.sizes),
+      colors: splitList(values.colors),
+      stock: values.stock,
+      inStock: values.stock > 0,
+      status: values.status,
+    });
   }
 
   return (
@@ -284,52 +169,33 @@ export default function ProductFormDialog({
             <Package className="w-5 h-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <DialogTitle>
-              {isEdit ? t("products.dialog.editTitle") : t("products.dialog.addTitle")}
-            </DialogTitle>
-            <DialogDescription>
-              {isEdit
-                ? t("products.dialog.editDescription", { name: product!.nameEn })
-                : t("products.dialog.addDescription")}
-            </DialogDescription>
+            <DialogTitle>{t("products.dialog.editTitle")}</DialogTitle>
+            <DialogDescription>{t("products.dialog.editDescription", { name: product.name.en })}</DialogDescription>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-5">
-            {/* Name EN / AR */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>
                   {t("products.dialog.nameEnglish")} <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  className={inputCls}
-                  placeholder={t("products.dialog.nameEnglishPlaceholder")}
-                  {...register("nameEn")}
-                />
-                {errors.nameEn && (
-                  <p className="text-xs text-destructive mt-1">{errors.nameEn.message}</p>
-                )}
+                <Input className={inputCls} placeholder={t("products.dialog.nameEnglishPlaceholder")} {...register("nameEn")} />
+                {errors.nameEn && <p className="text-xs text-destructive mt-1">{errors.nameEn.message}</p>}
               </div>
 
               <div>
-                <Label className={labelRowCls}>
-                  {t("products.dialog.nameArabic")} <span className="text-destructive">*</span>
-                </Label>
+                <Label className={labelRowCls}>{t("products.dialog.nameArabic")}</Label>
                 <Input
                   className={inputCls}
                   placeholder={t("products.dialog.nameArabicPlaceholder")}
                   dir="rtl"
                   {...register("nameAr")}
                 />
-                {errors.nameAr && (
-                  <p className="text-xs text-destructive mt-1">{errors.nameAr.message}</p>
-                )}
               </div>
             </div>
 
-            {/* Description EN */}
             <div>
               <Label className={labelRowCls}>{t("products.dialog.descriptionEnglish")}</Label>
               <textarea
@@ -337,9 +203,9 @@ export default function ProductFormDialog({
                 placeholder={t("products.dialog.descriptionEnglishPlaceholder")}
                 {...register("descriptionEn")}
               />
+              {errors.descriptionEn && <p className="text-xs text-destructive mt-1">{errors.descriptionEn.message}</p>}
             </div>
 
-            {/* Description AR */}
             <div>
               <Label className={labelRowCls}>{t("products.dialog.descriptionArabic")}</Label>
               <textarea
@@ -350,38 +216,16 @@ export default function ProductFormDialog({
               />
             </div>
 
-            {/* Product Image */}
-            <ImageDropField
-              label={t("products.dialog.productImage")}
-              icon={ImageIcon}
-              value={imagePreview}
-              placeholder={t("products.dialog.chooseImage")}
-              onChange={(url) => {
-                trackObjectUrl(url);
-                setValue("image", url, { shouldValidate: true });
-              }}
+            <ProductImagesField
+              label={t("products.dialog.images")}
+              addLabel={t("products.dialog.addImage")}
+              uploadingLabel={t("products.dialog.uploading")}
+              images={images}
+              onChange={(next) => setValue("images", next, { shouldValidate: true })}
             />
+            {errors.images && <p className="text-xs text-destructive -mt-3">{errors.images.message}</p>}
 
-            {/* Vendor + Category + Department */}
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label className={labelRowCls}>
-                  <Store className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.vendor")} <span className="text-destructive">*</span>
-                </Label>
-                <select className={selectCls} {...register("vendorId")}>
-                  <option value="">{t("products.dialog.selectVendor")}</option>
-                  {initialVendors.map((v) => (
-                    <option key={v.id} value={String(v.id)}>
-                      {v.nameEn}
-                    </option>
-                  ))}
-                </select>
-                {errors.vendorId && (
-                  <p className="text-xs text-destructive mt-1">{errors.vendorId.message}</p>
-                )}
-              </div>
-
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>
                   <FolderTree className="w-3.5 h-3.5 text-primary" />
@@ -390,32 +234,29 @@ export default function ProductFormDialog({
                 <select className={selectCls} {...register("categoryId")}>
                   <option value="">{t("products.dialog.selectCategory")}</option>
                   {categories.map((c) => (
-                    <option key={c.id} value={String(c.id)}>
+                    <option key={c.id} value={c.id}>
                       {c.nameEn}
                     </option>
                   ))}
                 </select>
-                {errors.categoryId && (
-                  <p className="text-xs text-destructive mt-1">{errors.categoryId.message}</p>
-                )}
+                {errors.categoryId && <p className="text-xs text-destructive mt-1">{errors.categoryId.message}</p>}
               </div>
 
               <div>
                 <Label className={labelRowCls}>
                   <Users2 className="w-3.5 h-3.5 text-primary" />
-                  {t("products.dialog.department")}
+                  {t("products.dialog.gender")}
                 </Label>
-                <select className={selectCls} {...register("department")}>
-                  <option value="unisex">{t("common.departments.unisex")}</option>
-                  <option value="men">{t("common.departments.men")}</option>
-                  <option value="women">{t("common.departments.women")}</option>
-                  <option value="kids">{t("common.departments.kids")}</option>
+                <select className={selectCls} {...register("gender")}>
+                  <option value="unisex">{t("common.genders.unisex")}</option>
+                  <option value="male">{t("common.genders.male")}</option>
+                  <option value="female">{t("common.genders.female")}</option>
+                  <option value="kids">{t("common.genders.kids")}</option>
                 </select>
               </div>
             </div>
 
-            {/* Price + Compare-at + Currency */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>
                   <Coins className="w-3.5 h-3.5 text-primary" />
@@ -426,11 +267,9 @@ export default function ProductFormDialog({
                   type="number"
                   min={0}
                   step="0.01"
-                  {...register("price.base", { valueAsNumber: true })}
+                  {...register("price", { valueAsNumber: true })}
                 />
-                {errors.price?.base && (
-                  <p className="text-xs text-destructive mt-1">{errors.price.base.message}</p>
-                )}
+                {errors.price && <p className="text-xs text-destructive mt-1">{errors.price.message}</p>}
               </div>
 
               <div>
@@ -444,103 +283,35 @@ export default function ProductFormDialog({
                   min={0}
                   step="0.01"
                   placeholder={t("products.dialog.compareAtPricePlaceholder")}
-                  {...register("price.compareAt", {
-                    setValueAs: (v) => (v === "" ? undefined : Number(v)),
-                  })}
+                  {...register("compareAtPrice", { setValueAs: (v) => (v === "" ? undefined : Number(v)) })}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("products.dialog.compareAtPriceHint")}
-                </p>
-              </div>
-
-              <div>
-                <Label className={labelRowCls}>{t("products.dialog.currency")}</Label>
-                <select className={selectCls} {...register("price.currency")}>
-                  <option value="KWD">{t("products.dialog.currencyKWD")}</option>
-                  <option value="SAR">{t("products.dialog.currencySAR")}</option>
-                </select>
+                {errors.compareAtPrice ? (
+                  <p className="text-xs text-destructive mt-1">{errors.compareAtPrice.message}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">{t("products.dialog.compareAtPriceHint")}</p>
+                )}
               </div>
             </div>
 
-            {/* Sizes + Colors */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>{t("products.dialog.sizes")}</Label>
-                <Input
-                  className={inputCls}
-                  placeholder={t("products.dialog.sizesPlaceholder")}
-                  {...register("sizes")}
-                />
+                <Input className={inputCls} placeholder={t("products.dialog.sizesPlaceholder")} {...register("sizes")} />
               </div>
 
               <div>
                 <Label className={labelRowCls}>{t("products.dialog.colors")}</Label>
-                <Input
-                  className={inputCls}
-                  placeholder={t("products.dialog.colorsPlaceholder")}
-                  {...register("colors")}
-                />
+                <Input className={inputCls} placeholder={t("products.dialog.colorsPlaceholder")} {...register("colors")} />
               </div>
             </div>
 
-            {/* Per-variant stock */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <Label className="flex items-center gap-1.5">{t("products.dialog.variants")}</Label>
-                <button
-                  type="button"
-                  onClick={generateVariants}
-                  disabled={!sizesValue.trim() && !colorsValue.trim()}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:opacity-50 disabled:hover:no-underline"
-                >
-                  <Wand2 className="w-3.5 h-3.5" />
-                  {t("products.dialog.generateVariants")}
-                </button>
-              </div>
-              {variantFields.length > 0 ? (
-                <div className="border rounded-lg divide-y max-h-52 overflow-y-auto">
-                  {variantFields.map((field, i) => (
-                    <div key={field.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-                      <span className="flex-1 truncate">
-                        {[field.size, field.color].filter(Boolean).join(" / ") || "—"}
-                      </span>
-                      <Input
-                        className="h-8 w-24"
-                        type="number"
-                        min={0}
-                        {...register(`variants.${i}.stock`, { valueAsNumber: true })}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">{t("products.dialog.variantsHint")}</p>
-              )}
-            </div>
-
-            {/* Stock + Status */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 items-end">
               <div>
                 <Label className={labelRowCls}>
                   <Boxes className="w-3.5 h-3.5 text-primary" />
                   {t("products.dialog.stock")}
                 </Label>
-                <Input
-                  className={inputCls}
-                  type="number"
-                  min={0}
-                  disabled={variantFields.length > 0}
-                  {...register("stock", { valueAsNumber: true })}
-                />
-                {variantFields.length > 0 ? (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("products.dialog.stockDerivedHint")}
-                  </p>
-                ) : (
-                  errors.stock && (
-                    <p className="text-xs text-destructive mt-1">{errors.stock.message}</p>
-                  )
-                )}
+                <Input className={inputCls} type="number" min={0} {...register("stock", { valueAsNumber: true })} />
               </div>
 
               <div>
@@ -548,7 +319,6 @@ export default function ProductFormDialog({
                 <select className={selectCls} {...register("status")}>
                   <option value="active">{t("products.list.status.active")}</option>
                   <option value="inactive">{t("products.list.status.inactive")}</option>
-                  <option value="out_of_stock">{t("products.list.status.outOfStock")}</option>
                 </select>
               </div>
             </div>
@@ -558,9 +328,7 @@ export default function ProductFormDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("products.dialog.close")}
             </Button>
-            <Button type="submit">
-              {isEdit ? t("products.dialog.save") : t("products.dialog.add")}
-            </Button>
+            <Button type="submit">{t("products.dialog.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -4,15 +4,9 @@ import { EntityDocumentHelper } from '../../../../../utils/document-entity-helpe
 
 export type ProductSchemaDocument = HydratedDocument<ProductSchemaClass>;
 
-class ProductPriceSchema {
-  @Prop({ required: true }) base: number;
-  @Prop({ required: true }) currency: string;
-  @Prop() compareAt?: number;
-}
-
-class ProductRatingsSchema {
-  @Prop({ default: 0 }) average: number;
-  @Prop({ default: 0 }) count: number;
+class LocalizedTextSchema {
+  @Prop({ required: true }) en: string;
+  @Prop() ar?: string;
 }
 
 @Schema({ timestamps: true })
@@ -25,29 +19,33 @@ export class ProductSchemaClass extends EntityDocumentHelper {
   })
   vendorId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId })
-  categoryId?: Types.ObjectId;
+  // String UUID, not ObjectId — matches CategorySchemaClass's _id (see
+  // categories/infrastructure/persistence/document/entities/category.schema.ts).
+  @Prop({
+    type: String,
+    ref: 'CategorySchemaClass',
+    required: true,
+    index: true,
+  })
+  categoryId: string;
 
-  @Prop({ enum: ['men', 'women', 'kids', 'unisex'], required: true })
-  department: string;
+  @Prop({ enum: ['male', 'female', 'kids', 'unisex'], required: true })
+  gender: string;
 
-  @Prop({ required: true })
-  nameEn: string;
+  @Prop({ type: LocalizedTextSchema, required: true })
+  name: LocalizedTextSchema;
 
-  @Prop({ required: true })
-  nameAr: string;
-
-  @Prop()
-  descriptionEn?: string;
-
-  @Prop()
-  descriptionAr?: string;
+  @Prop({ type: LocalizedTextSchema, required: true })
+  description: LocalizedTextSchema;
 
   @Prop({ type: [String], default: [] })
   images: string[];
 
-  @Prop({ type: ProductPriceSchema, required: true })
-  price: ProductPriceSchema;
+  @Prop({ required: true })
+  price: number;
+
+  @Prop()
+  compareAtPrice?: number;
 
   @Prop({ type: [String], default: [] })
   sizes: string[];
@@ -58,15 +56,30 @@ export class ProductSchemaClass extends EntityDocumentHelper {
   @Prop({ default: 0 })
   stock: number;
 
+  @Prop({ default: true })
+  inStock: boolean;
+
   @Prop({
-    enum: ['active', 'inactive', 'out_of_stock'],
+    enum: ['active', 'inactive', 'rejected'],
     default: 'active',
     index: true,
   })
   status: string;
 
-  @Prop({ type: ProductRatingsSchema, default: { average: 0, count: 0 } })
-  ratings: ProductRatingsSchema;
+  @Prop()
+  rejectionReason?: string;
+
+  @Prop({ default: 0 })
+  rating: number;
+
+  @Prop({ default: 0 })
+  ratingCount: number;
+
+  @Prop({ default: 0 })
+  salesCount: number;
+
+  @Prop({ default: 0 })
+  viewCount: number;
 
   @Prop()
   deletedAt?: Date;
