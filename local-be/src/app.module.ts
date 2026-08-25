@@ -25,6 +25,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { RefundsModule } from './refunds/refunds.module';
 import { SettingsModule } from './settings/settings.module';
+import { CommissionModule } from './commission/commission.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -87,6 +88,7 @@ import { AllConfigType } from './config/config.type';
     PromoCodesModule,
     RefundsModule,
     SettingsModule,
+    CommissionModule,
   ],
   controllers: [AppController],
   providers: [

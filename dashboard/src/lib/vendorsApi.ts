@@ -83,7 +83,6 @@ export interface VendorProfile {
   approvedAt?: string;
   rating: number;
   totalReviews: number;
-  commissionStructure: { defaultPercentage: number };
   createdAt: string;
   updatedAt: string;
 }

@@ -44,4 +44,5 @@ export const DASHBOARD_API_TAGS = [
   'Admin - Promo Codes',
   'Admin - Refunds',
   'Admin - Settings',
+  'Commission',
 ];

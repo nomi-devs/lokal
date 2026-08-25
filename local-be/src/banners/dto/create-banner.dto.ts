@@ -21,7 +21,7 @@ export class CreateBannerDto {
   titleAr?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   linkUrl?: string;
 
   @IsOptional()

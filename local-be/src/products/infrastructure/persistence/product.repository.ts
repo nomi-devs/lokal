@@ -17,6 +17,7 @@ export interface ListPublicProductsFilters {
   vendorIds: string[];
   categoryId?: string;
   gender?: string;
+  color?: string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;

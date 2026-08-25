@@ -35,6 +35,13 @@ export class PublicListProductsQueryDto {
   @IsIn(['male', 'female', 'kids', 'unisex'])
   gender?: string;
 
+  // Matches against Product.colors[] — free-form (vendor-entered), no fixed
+  // palette to validate against, so this is a plain exact-match string like
+  // categoryId rather than an IsIn() enum like gender.
+  @IsOptional()
+  @IsString()
+  color?: string;
+
   @IsOptional()
   @Type(() => Number)
   @IsNumber()

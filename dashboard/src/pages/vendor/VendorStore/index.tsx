@@ -35,6 +35,7 @@ import type { RootState } from "@/store";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { changePassword } from "@/lib/usersApi";
 import { getMyVendor, updateVendorProfile, uploadVendorLogo, type VendorProfile } from "@/lib/vendorsApi";
+import { getCommission } from "@/lib/commissionApi";
 
 const storeSchema = z.object({
   description: z.string().optional(),
@@ -123,6 +124,7 @@ export default function VendorStore() {
   const { t } = useTranslation();
   const authUser = useSelector((state: RootState) => state.auth.user);
   const [vendor, setVendor] = useState<VendorProfile | null>(null);
+  const [commissionPercentage, setCommissionPercentage] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [logoUrl, setLogoUrl] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -168,6 +170,15 @@ export default function VendorStore() {
       })
       .finally(() => {
         if (!cancelled) {setLoading(false);}
+      });
+
+    // Platform-wide rate, not per-vendor — see local-be's CommissionController.
+    getCommission()
+      .then((c) => {
+        if (!cancelled) {setCommissionPercentage(c.percentage);}
+      })
+      .catch(() => {
+        // Non-critical for this page — the field below just stays blank.
       });
 
     return () => {
@@ -461,7 +472,7 @@ export default function VendorStore() {
                 <InfoField
                   icon={Percent}
                   label={t("vendor.profile.fields.commission")}
-                  value={vendor && `${vendor.commissionStructure.defaultPercentage}%`}
+                  value={commissionPercentage !== null ? `${commissionPercentage}%` : undefined}
                 />
                 <InfoField
                   icon={Calendar}

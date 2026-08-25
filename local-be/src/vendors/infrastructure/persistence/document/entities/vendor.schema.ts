@@ -71,12 +71,6 @@ export class VendorSchemaClass extends EntityDocumentHelper {
   @Prop()
   suspendedUntil?: Date;
 
-  @Prop({
-    type: { defaultPercentage: { type: Number, default: 15 } },
-    default: { defaultPercentage: 15 },
-  })
-  commissionStructure: { defaultPercentage: number };
-
   @Prop({ default: 0 })
   rating: number;
 

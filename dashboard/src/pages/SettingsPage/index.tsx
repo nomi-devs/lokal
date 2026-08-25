@@ -18,6 +18,7 @@ import {
   type AdminSetting,
   type SettingCategory,
 } from "@/lib/settingsApi";
+import { getCommission, updateCommission, type PlatformCommission } from "@/lib/commissionApi";
 
 // ── Shared primitives ──────────────────────────────────────────────────────────
 
@@ -128,6 +129,10 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [platformSettings, setPlatformSettings] = useState<AdminSetting[]>([]);
+  const [commission, setCommission] = useState<PlatformCommission | null>(null);
+  const [commissionInput, setCommissionInput] = useState("");
+  const [commissionLoading, setCommissionLoading] = useState(true);
+  const [savingCommission, setSavingCommission] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -140,9 +145,47 @@ export default function SettingsPage() {
     }
   }, []);
 
+  const fetchCommission = useCallback(async () => {
+    setCommissionLoading(true);
+    try {
+      const data = await getCommission();
+      setCommission(data);
+      setCommissionInput(String(data.percentage));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load commission"));
+    } finally {
+      setCommissionLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchSettings();
-  }, [fetchSettings]);
+    fetchCommission();
+  }, [fetchSettings, fetchCommission]);
+
+  async function saveCommission() {
+    const value = Number(commissionInput);
+
+    if (Number.isNaN(value) || value < 0 || value > 100) {
+      toast.error("Enter a percentage between 0 and 100");
+
+      return;
+    }
+
+    setSavingCommission(true);
+    try {
+      const updated = await updateCommission(value);
+      setCommission(updated);
+      setCommissionInput(String(updated.percentage));
+      toast.success(t("settings.commissionCard.savedToast.body"), {
+        title: t("settings.commissionCard.savedToast.title"),
+      });
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to update commission"));
+    } finally {
+      setSavingCommission(false);
+    }
+  }
 
   const {
     register,
@@ -186,6 +229,45 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex flex-col gap-6">
+        {/* Commission — driven by GET/PATCH /commission, the one value on this page that's
+            actually wired into checkout math (unlike the record-keeping grid below) */}
+        <div className="bg-card rounded-xl border p-6">
+          <SectionHeader
+            title={t("settings.commissionCard.title")}
+            description={t("settings.commissionCard.description")}
+          />
+          {commissionLoading ? (
+            <p className="text-sm text-muted-foreground">{t("common.loading", "Loading…")}</p>
+          ) : (
+            <>
+              <div className="flex items-end gap-3">
+                <Field label={t("settings.commissionCard.label")} className="max-w-[200px]">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    className={inputCls}
+                    value={commissionInput}
+                    onChange={(e) => setCommissionInput(e.target.value)}
+                  />
+                </Field>
+                <Button onClick={saveCommission} disabled={savingCommission}>
+                  <Save className="w-4 h-4" />
+                  {t("settings.commissionCard.save")}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                {commission?.updatedAt
+                  ? t("settings.commissionCard.lastUpdated", {
+                      date: new Date(commission.updatedAt).toLocaleString(),
+                    })
+                  : t("settings.commissionCard.notSetYet")}
+              </p>
+            </>
+          )}
+        </div>
+
         {/* Platform configuration — driven by GET/PATCH /admin/settings, grouped by category */}
         <div className="bg-card rounded-xl border p-6">
           <SectionHeader

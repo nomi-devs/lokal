@@ -7,6 +7,12 @@ export class BannerResponseDto {
 
   @ApiProperty({ type: Banner })
   banner: Banner;
+
+  @ApiProperty({ required: false })
+  message?: string;
+
+  @ApiProperty({ required: false })
+  messageAr?: string;
 }
 
 class PaginationDto {

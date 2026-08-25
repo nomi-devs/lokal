@@ -1784,6 +1784,18 @@
       "security": "Security",
       "appearance": "Appearance"
     },
+    "commissionCard": {
+      "title": "Commission",
+      "description": "The one platform-wide rate applied to every vendor's order at checkout — unlike Platform Configuration below, saving here changes real checkout math immediately.",
+      "label": "Commission percentage",
+      "save": "Save",
+      "lastUpdated": "Last updated {{date}}",
+      "notSetYet": "Using the default rate — no admin has set this yet.",
+      "savedToast": {
+        "title": "Commission Updated",
+        "body": "The new rate now applies to every checkout."
+      }
+    },
     "platformConfig": {
       "title": "Platform Configuration",
       "description": "Live settings from the ADMIN_SETTINGS store — shipping fee, commission defaults, payment gateway, OTP/session expiry, and more."

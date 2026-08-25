@@ -2,11 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import type { VendorStatus } from '../../common/constants/auth.constants';
 
-class CommissionStructure {
-  @ApiProperty()
-  defaultPercentage: number;
-}
-
 export class Vendor {
   @ApiProperty({ type: String })
   id: string;
@@ -70,9 +65,6 @@ export class Vendor {
 
   @ApiProperty({ type: Date, nullable: true })
   suspendedUntil?: Date;
-
-  @ApiProperty({ type: CommissionStructure })
-  commissionStructure: CommissionStructure;
 
   @ApiProperty()
   rating: number;

@@ -111,6 +111,7 @@ export class ProductsDocumentRepository implements ProductRepository {
     };
     if (filters.categoryId) query.categoryId = filters.categoryId;
     if (filters.gender) query.gender = filters.gender;
+    if (filters.color) query.colors = filters.color;
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       query.price = {};
       if (filters.minPrice !== undefined) query.price.$gte = filters.minPrice;

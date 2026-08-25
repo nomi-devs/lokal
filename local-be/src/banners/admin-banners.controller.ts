@@ -29,6 +29,7 @@ import {
   BannerResponseDto,
   BannersListResponseDto,
 } from '../banners/dto/banner-response.dto';
+import { MESSAGES } from '../common/constants/messages.constant';
 
 @ApiTags('Admin - Banners')
 @ApiBearerAuth('JWT-auth')
@@ -71,7 +72,12 @@ export class AdminBannersController {
   @Post()
   async create(@Body() dto: CreateBannerDto): Promise<BannerResponseDto> {
     const banner = await this.bannersService.create(dto);
-    return { success: true, banner };
+    return {
+      success: true,
+      banner,
+      message: MESSAGES.BANNER.CREATED.en,
+      messageAr: MESSAGES.BANNER.CREATED.ar,
+    };
   }
 
   @ApiOkResponse({ type: BannerResponseDto })
@@ -81,7 +87,12 @@ export class AdminBannersController {
     @Body() dto: UpdateBannerDto,
   ): Promise<BannerResponseDto> {
     const banner = await this.bannersService.update(id, dto);
-    return { success: true, banner };
+    return {
+      success: true,
+      banner,
+      message: MESSAGES.BANNER.UPDATED.en,
+      messageAr: MESSAGES.BANNER.UPDATED.ar,
+    };
   }
 
   @ApiOkResponse({ type: MessageResponseDto })
@@ -90,8 +101,8 @@ export class AdminBannersController {
     await this.bannersService.delete(id);
     return {
       success: true,
-      message: 'Banner deleted',
-      messageAr: 'تم حذف البانر',
+      message: MESSAGES.BANNER.DELETED.en,
+      messageAr: MESSAGES.BANNER.DELETED.ar,
     };
   }
 }

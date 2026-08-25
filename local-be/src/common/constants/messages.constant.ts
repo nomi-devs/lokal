@@ -59,6 +59,17 @@ export const MESSAGES = {
   CATEGORY: {
     DELETED: { en: 'Category deleted', ar: 'تم حذف الفئة' },
   },
+  BANNER: {
+    CREATED: {
+      en: 'Banner created successfully',
+      ar: 'تم إنشاء البانر بنجاح',
+    },
+    UPDATED: {
+      en: 'Banner updated successfully',
+      ar: 'تم تحديث البانر بنجاح',
+    },
+    DELETED: { en: 'Banner deleted', ar: 'تم حذف البانر' },
+  },
   PRODUCT: {
     CREATED: {
       en: 'Product created successfully',

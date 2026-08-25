@@ -78,7 +78,7 @@ async function bootstrap() {
 
   const mobileDocument = filterDocumentByTags(fullDocument, MOBILE_API_TAGS);
   mobileDocument.info.title = 'Lokal Mobile API';
-  mobileDocument.info.description = 'OTP-based Customer/Driver mobile app API';
+  mobileDocument.info.description = 'OTP-based Customer mobile app API';
   SwaggerModule.setup('api-docs/mobile', app, mobileDocument, swaggerUiOptions);
 
   const dashboardDocument = filterDocumentByTags(

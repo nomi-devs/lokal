@@ -118,7 +118,6 @@ export class VendorsService {
         businessLicense: dto.businessLicense,
         kycDocumentUrl: dto.kycDocumentUrl,
         status: 'pending_approval',
-        commissionStructure: { defaultPercentage: 15 },
         rating: 0,
         totalReviews: 0,
       });
@@ -180,7 +179,6 @@ export class VendorsService {
         kycDocumentUrl: dto.kycDocumentUrl,
         status,
         ...(status === 'active' ? { approvedAt: new Date() } : {}),
-        commissionStructure: { defaultPercentage: 15 },
         rating: 0,
         totalReviews: 0,
       });

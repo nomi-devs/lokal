@@ -26,12 +26,6 @@ export class VendorMapper {
     domainEntity.rejectionCategory = raw.rejectionCategory;
     domainEntity.suspendReason = raw.suspendReason;
     domainEntity.suspendedUntil = raw.suspendedUntil;
-    // Plain-copy the embedded subdocument — assigning the Mongoose subdocument
-    // instance directly leaves circular internal refs (parent/$__) on the
-    // domain object, which blows the stack when class-transformer serializes it.
-    domainEntity.commissionStructure = {
-      defaultPercentage: raw.commissionStructure?.defaultPercentage ?? 15,
-    };
     domainEntity.rating = raw.rating;
     domainEntity.totalReviews = raw.totalReviews;
     domainEntity.deletedAt = raw.deletedAt;

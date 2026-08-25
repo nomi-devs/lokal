@@ -8,6 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { EmailModule } from '../email/email.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { CommissionModule } from '../commission/commission.module';
 import { OrdersService } from './orders.service';
 import { CheckoutController } from './checkout.controller';
 import { OrdersController } from './orders.controller';
@@ -25,6 +26,7 @@ import { PaymentCallbackController } from './payment-callback.controller';
     EmailModule,
     PaymentsModule,
     NotificationsModule,
+    CommissionModule,
   ],
   controllers: [
     CheckoutController,

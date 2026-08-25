@@ -11,6 +11,7 @@ import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
 import { PaymentsService } from '../payments/payments.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { CommissionService } from '../commission/commission.service';
 import { Order } from './domain/order';
 import { CheckoutOrderDraft } from './domain/checkout-session';
 import { OrderRepository } from './infrastructure/persistence/order.repository';
@@ -53,6 +54,7 @@ export class OrdersService {
     private readonly paymentsService: PaymentsService,
     private readonly emailService: EmailService,
     private readonly notificationsService: NotificationsService,
+    private readonly commissionService: CommissionService,
     private readonly configService: ConfigService<AllConfigType>,
   ) {}
 
@@ -410,9 +412,11 @@ export class OrdersService {
     const deliveryFee = this.configService.getOrThrow('cart.deliveryFee', {
       infer: true,
     });
+    // One platform-wide rate for every vendor on this checkout — fetched
+    // once, not per vendor (see CommissionService.getPercentage).
+    const commissionPercent = await this.commissionService.getPercentage();
 
     const draftsByVendor = new Map<string, CheckoutOrderDraft>();
-    const commissionByVendor = new Map<string, number>();
 
     for (const item of cartItems) {
       // Re-validate + re-price from the live product — never trust the
@@ -435,13 +439,6 @@ export class OrdersService {
 
       let draft = draftsByVendor.get(product.vendorId);
       if (!draft) {
-        let commissionPercent = commissionByVendor.get(product.vendorId);
-        if (commissionPercent === undefined) {
-          const vendor = await this.vendorsService.findById(product.vendorId);
-          commissionPercent =
-            vendor?.commissionStructure?.defaultPercentage ?? 0;
-          commissionByVendor.set(product.vendorId, commissionPercent);
-        }
         draft = {
           storeId: product.vendorId,
           items: [],
