@@ -1,5 +1,5 @@
 // Where each role lands after login / when it hits a route it can't access.
-// Only admin/vendor log into the dashboard — customers/drivers are OTP-only
+// Only admin/vendor log into the dashboard — customers are OTP-only
 // on the mobile app and never reach this router (see local-be's AUTH spec).
 export function roleHome(role?: "admin" | "vendor") {
   if (role === "admin") {
