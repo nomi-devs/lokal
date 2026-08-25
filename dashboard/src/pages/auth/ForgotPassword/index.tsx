@@ -31,36 +31,6 @@ const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-const forgotPasswordFields: FieldConfig[] = [
-  {
-    name: "email",
-    label: "Email",
-    type: "email",
-    placeholder: "you@example.com",
-    autocomplete: "email",
-    col: 12,
-  },
-];
-
-const resetPasswordFields: FieldConfig[] = [
-  {
-    name: "newPassword",
-    label: "New Password",
-    type: "password",
-    placeholder: "••••••••",
-    autocomplete: "new-password",
-    col: 12,
-  },
-  {
-    name: "confirmPassword",
-    label: "Confirm New Password",
-    type: "password",
-    placeholder: "••••••••",
-    autocomplete: "new-password",
-    col: 12,
-  },
-];
-
 // 3 screens, each its own step: (1) collect email, (2) verify the emailed
 // code on its own (via verifyResetOtp, which checks but doesn't consume the
 // OTP), (3) only then show the new-password fields — resetPassword's own

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Tag, Plus, Pencil, Trash2, Eye, Hash, Wallet } from "lucide-react";
 
@@ -13,17 +13,22 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/lib/apiClient";
 import {
-  promoCodes as initialPromoCodes,
-  type PromoCode,
-  type PromoCodeStatus,
+  listAdminPromoCodes,
+  createPromoCode,
+  updatePromoCode,
+  deletePromoCode,
   getPromoCodeStatus,
   estimatedDiscountPerUse,
-} from "@/data/promoCodes";
+  type AdminPromoCode,
+  type PromoCodeStatus,
+} from "@/lib/promoCodesApi";
+import { listVendors, listAdminCategories, type AdminVendorRow, type AdminCategory } from "@/lib/adminApi";
 
-type PromoCodeRow = PromoCode & { computedStatus: PromoCodeStatus; isValid: boolean };
+type PromoCodeRow = AdminPromoCode & { computedStatus: PromoCodeStatus; isValid: boolean };
 
-function toRow(promo: PromoCode): PromoCodeRow {
+function toRow(promo: AdminPromoCode): PromoCodeRow {
   const status = getPromoCodeStatus(promo);
 
   return {
@@ -34,17 +39,42 @@ function toRow(promo: PromoCode): PromoCodeRow {
 }
 
 type PendingAction =
-  | { type: "delete"; promoCode: PromoCode }
-  | { type: "deleteSelected"; promoCodes: PromoCode[] }
+  | { type: "delete"; promoCode: AdminPromoCode }
+  | { type: "deleteSelected"; promoCodes: AdminPromoCode[] }
   | null;
 
 export default function PromoCodesPage() {
   const { t } = useTranslation();
-  const [promoCodeList, setPromoCodeList] = useState<PromoCode[]>(initialPromoCodes);
+  const [loading, setLoading] = useState(true);
+  const [promoCodeList, setPromoCodeList] = useState<AdminPromoCode[]>([]);
+  const [vendorsById, setVendorsById] = useState<Map<string, AdminVendorRow>>(new Map());
+  const [categoriesById, setCategoriesById] = useState<Map<string, AdminCategory>>(new Map());
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPromoCode, setEditingPromoCode] = useState<PromoCode | null>(null);
-  const [viewingPromoCode, setViewingPromoCode] = useState<PromoCode | null>(null);
+  const [editingPromoCode, setEditingPromoCode] = useState<AdminPromoCode | null>(null);
+  const [viewingPromoCode, setViewingPromoCode] = useState<AdminPromoCode | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [promoRes, vendorsRes, categoriesRes] = await Promise.all([
+        listAdminPromoCodes(),
+        listVendors({ limit: 200 }),
+        listAdminCategories(),
+      ]);
+      setPromoCodeList(promoRes.data);
+      setVendorsById(new Map(vendorsRes.data.map((v) => [v.id, v])));
+      setCategoriesById(new Map(categoriesRes.data.map((c) => [c.id, c])));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load promo codes"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const rows = useMemo(() => promoCodeList.map(toRow), [promoCodeList]);
 
@@ -60,71 +90,61 @@ export default function PromoCodesPage() {
     setDialogOpen(true);
   }
 
-  function openEditDialog(promo: PromoCode) {
+  function openEditDialog(promo: AdminPromoCode) {
     setEditingPromoCode(promo);
     setDialogOpen(true);
   }
 
-  function handleFormSubmit(values: PromoCodeFormValues, editingId: number | null) {
-    const now = new Date().toISOString();
-
-    const shared = {
-      code: values.code,
-      discountType: values.discountType,
-      discountValue: values.discountValue,
-      validFrom: values.validFrom,
-      validUntil: values.validUntil,
-      isActive: values.isActive,
-    };
-
-    if (editingId != null) {
-      // The form only edits the fields above — usage limits, conditions, and applicability
-      // (set elsewhere, or not yet exposed in the simplified form) are left untouched.
-      setPromoCodeList((prev) =>
-        prev.map((p) =>
-          p.id === editingId ? { ...p, ...shared, updatedAt: now, updatedBy: "admin@gmail.com" } : p
-        )
-      );
-      toast.success(t("promoCodes.messages.updated"));
-
-      return;
+  async function handleFormSubmit(values: PromoCodeFormValues, editingId: string | null) {
+    try {
+      if (editingId) {
+        const updated = await updatePromoCode(editingId, {
+          discountType: values.discountType,
+          discountValue: values.discountValue,
+          validFrom: values.validFrom,
+          validUntil: values.validUntil,
+          isActive: values.isActive,
+        });
+        setPromoCodeList((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
+        toast.success(t("promoCodes.messages.updated"));
+      } else {
+        const created = await createPromoCode({
+          code: values.code,
+          discountType: values.discountType,
+          discountValue: values.discountValue,
+          validFrom: values.validFrom,
+          validUntil: values.validUntil,
+          isActive: values.isActive,
+        });
+        setPromoCodeList((prev) => [...prev, created]);
+        toast.success(t("promoCodes.messages.created"));
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
     }
-
-    const nextId = Math.max(0, ...promoCodeList.map((p) => p.id)) + 1;
-
-    setPromoCodeList((prev) => [
-      ...prev,
-      {
-        ...shared,
-        id: nextId,
-        currentUsageCount: 0,
-        applicableToVendors: [],
-        applicableToCategories: [],
-        createdAt: now,
-        createdBy: "admin@gmail.com",
-        updatedAt: now,
-      },
-    ]);
-    toast.success(t("promoCodes.messages.created"));
   }
 
-  function confirmPendingAction() {
+  async function confirmPendingAction() {
     if (!pendingAction) {
       return;
     }
 
-    if (pendingAction.type === "delete") {
-      const { promoCode } = pendingAction;
-
-      setPromoCodeList((prev) => prev.filter((p) => p.id !== promoCode.id));
-      toast.success(t("promoCodes.messages.deleted"));
-    } else {
-      const ids = new Set(pendingAction.promoCodes.map((p) => p.id));
-
-      setPromoCodeList((prev) => prev.filter((p) => !ids.has(p.id)));
-      toast.success(
-        t("promoCodes.messages.deletedSelected", { count: pendingAction.promoCodes.length })
-      );
+    try {
+      if (pendingAction.type === "delete") {
+        const { promoCode } = pendingAction;
+        await deletePromoCode(promoCode.id);
+        setPromoCodeList((prev) => prev.filter((p) => p.id !== promoCode.id));
+        toast.success(t("promoCodes.messages.deleted"));
+      } else {
+        await Promise.all(pendingAction.promoCodes.map((p) => deletePromoCode(p.id)));
+        const ids = new Set(pendingAction.promoCodes.map((p) => p.id));
+        setPromoCodeList((prev) => prev.filter((p) => !ids.has(p.id)));
+        toast.success(
+          t("promoCodes.messages.deletedSelected", { count: pendingAction.promoCodes.length })
+        );
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
     }
   }
 
@@ -216,6 +236,7 @@ export default function PromoCodesPage() {
         data={rows}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("promoCodes.search")}
         searchKeys={["code"]}
@@ -295,6 +316,8 @@ export default function PromoCodesPage() {
         open={viewingPromoCode !== null}
         onOpenChange={(open) => !open && setViewingPromoCode(null)}
         promoCode={viewingPromoCode}
+        vendorsById={vendorsById}
+        categoriesById={categoriesById}
       />
 
       <ConfirmDialog

@@ -4,8 +4,6 @@ import {
   Calendar,
   User,
   Mail,
-  MapPin,
-  Package,
   MessageSquare,
   Landmark,
   Hash,
@@ -17,7 +15,7 @@ import {
 
 import RefundStatusBadge from "./RefundStatusBadge";
 
-import type { RefundRequest } from "@/data/refunds";
+import type { AdminRefund } from "@/lib/refundsApi";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 function InfoField({
@@ -43,7 +41,7 @@ function InfoField({
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  refund: RefundRequest | null;
+  refund: AdminRefund | null;
 }
 
 export default function RefundDetailsDialog({ open, onOpenChange, refund }: Props) {
@@ -61,7 +59,7 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
             <Wallet className="w-6 h-6 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <DialogTitle className="text-lg font-bold font-mono">{refund.id}</DialogTitle>
+            <DialogTitle className="text-lg font-bold font-mono">{refund.orderNumber}</DialogTitle>
             <DialogDescription className="mt-0.5">
               {t("refunds.detailsDialog.title")}
             </DialogDescription>
@@ -74,41 +72,22 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
           <div className="rounded-xl border p-5">
             <h3 className="text-sm font-semibold mb-4">{t("refunds.detailsDialog.orderInfo")}</h3>
             <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-              <InfoField icon={Hash} label={t("refunds.orderId")} value={refund.orderId} />
+              <InfoField icon={Hash} label={t("refunds.orderId")} value={refund.orderNumber} />
               <InfoField
-                icon={Calendar}
-                label={t("refunds.detailsDialog.orderDate")}
-                value={new Date(refund.orderDate).toLocaleDateString()}
+                icon={User}
+                label={t("refunds.detailsDialog.customer")}
+                value={refund.customerName}
               />
-              <InfoField icon={User} label={t("refunds.detailsDialog.customer")} value={refund.customerName} />
-              <InfoField icon={Mail} label={t("refunds.detailsDialog.customerEmail")} value={refund.customerEmail} />
               <InfoField
-                icon={MapPin}
-                label={t("refunds.detailsDialog.address")}
-                value={refund.deliveryAddress}
+                icon={Mail}
+                label={t("refunds.detailsDialog.customerEmail")}
+                value={refund.customerEmail}
               />
               <InfoField
                 icon={Wallet}
                 label={t("refunds.detailsDialog.orderTotal")}
                 value={`${refund.orderTotal.toFixed(2)} KWD`}
               />
-            </div>
-
-            <div className="mt-5 pt-5 border-t">
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                <Package className="w-3.5 h-3.5" />
-                {t("refunds.detailsDialog.items")}
-              </span>
-              <div className="flex flex-col gap-1.5">
-                {refund.orderItems.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span>
-                      {item.productName} <span className="text-muted-foreground">× {item.quantity}</span>
-                    </span>
-                    <span className="font-medium">{item.price.toFixed(2)} KWD</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -125,7 +104,7 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
               <InfoField
                 icon={Calendar}
                 label={t("refunds.requestedDate")}
-                value={new Date(refund.requestedAt).toLocaleString()}
+                value={new Date(refund.createdAt).toLocaleString()}
               />
             </div>
             {refund.customerExplanation && (
@@ -177,7 +156,7 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
             <div className="flex flex-col gap-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t("refunds.requestedDate")}</span>
-                <span className="font-medium">{new Date(refund.requestedAt).toLocaleString()}</span>
+                <span className="font-medium">{new Date(refund.createdAt).toLocaleString()}</span>
               </div>
               {refund.approvedAt && (
                 <div className="flex items-center justify-between">
@@ -209,7 +188,7 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
             )}
           </div>
 
-          {/* Approval proof, shown only once approved/completed */}
+          {/* Approval proof, shown once approved/completed */}
           {(refund.status === "approved" || refund.status === "completed") && (
             <div className="rounded-xl border p-5">
               <h3 className="flex items-center gap-2 text-sm font-semibold mb-4">
@@ -217,11 +196,6 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
                 {t("refunds.detailsDialog.approvalDetails")}
               </h3>
               <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-                <InfoField
-                  icon={User}
-                  label={t("refunds.approveDialog.reviewedBy")}
-                  value={refund.approvedBy}
-                />
                 <InfoField
                   icon={Calendar}
                   label={t("refunds.approveDialog.approvalDate")}

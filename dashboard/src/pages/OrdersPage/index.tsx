@@ -245,10 +245,12 @@ export default function OrdersPage() {
   const customerName = useCallback(
     (o: Order) => {
       const u = usersById.get(o.customerId);
+
       return u ? `${u.firstName} ${u.lastName}`.trim() : "—";
     },
     [usersById]
   );
+
   const vendorName = useCallback(
     (o: Order) => vendorsById.get(o.storeId)?.storeName ?? "—",
     [vendorsById]

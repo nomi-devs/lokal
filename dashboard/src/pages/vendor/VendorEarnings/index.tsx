@@ -48,6 +48,7 @@ export default function VendorEarnings() {
     setLoading(true);
     try {
       const res = await listVendorOrders();
+
       const earningsRows: EarningsRow[] = res.data
         .filter((o) => o.status !== "cancelled")
         .map((o) => {

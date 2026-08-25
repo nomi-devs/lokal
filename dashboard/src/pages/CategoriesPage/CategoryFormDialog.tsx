@@ -72,7 +72,8 @@ function ImageUploadField({
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file) return;
+
+    if (!file) {return;}
 
     setUploading(true);
     try {

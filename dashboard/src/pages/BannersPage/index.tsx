@@ -1,14 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Image,
-  ImagePlus,
-  Eye,
-  Pencil,
-  Trash2,
-  MousePointerClick,
-  CalendarClock,
-} from "lucide-react";
+import { Image, ImagePlus, Eye, Pencil, Trash2, CalendarClock } from "lucide-react";
 
 import BannerFormDialog, { type BannerFormValues } from "./BannerFormDialog";
 

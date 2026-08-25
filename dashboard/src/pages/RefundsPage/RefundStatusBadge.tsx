@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Hourglass, CheckCircle2, XCircle, BadgeCheck } from "lucide-react";
 
-import type { RefundStatus } from "@/data/refunds";
+import type { RefundStatus } from "@/lib/refundsApi";
 import { cn } from "@/lib/utils";
 
 const statusStyle: Record<RefundStatus, { text: string; bg: string; icon: typeof Hourglass }> = {

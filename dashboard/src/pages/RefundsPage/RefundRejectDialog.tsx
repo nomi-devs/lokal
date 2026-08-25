@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { XCircle } from "lucide-react";
 
-import type { RefundRequest } from "@/data/refunds";
+import type { AdminRefund } from "@/lib/refundsApi";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 const rejectSchema = z.object({
   reasonCategory: z.string(),
   reason: z.string().min(1, "Rejection reason is required").max(500, "Max 500 characters"),
-  internalNotes: z.string().max(500, "Max 500 characters").optional(),
 });
 type RejectValues = z.infer<typeof rejectSchema>;
 
@@ -42,8 +41,8 @@ const REASON_CATEGORIES = ["warranty", "returnWindow", "customerDamage", "bankDe
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  refund: RefundRequest | null;
-  onReject: (refundId: string, reason: string, category: string, internalNotes: string) => void;
+  refund: AdminRefund | null;
+  onReject: (refundId: string, reason: string, category: string) => void;
 }
 
 export default function RefundRejectDialog({ open, onOpenChange, refund, onReject }: Props) {
@@ -58,12 +57,12 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
     formState: { errors },
   } = useForm<RejectValues>({
     resolver: zodResolver(rejectSchema),
-    defaultValues: { reasonCategory: "", reason: "", internalNotes: "" },
+    defaultValues: { reasonCategory: "", reason: "" },
   });
 
   useEffect(() => {
     if (open) {
-      reset({ reasonCategory: "", reason: "", internalNotes: "" });
+      reset({ reasonCategory: "", reason: "" });
     }
   }, [open, refund, reset]);
 
@@ -72,7 +71,7 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
   }
 
   function submit(values: RejectValues) {
-    onReject(refund!.id, values.reason, values.reasonCategory, values.internalNotes ?? "");
+    onReject(refund!.id, values.reason, values.reasonCategory);
     onOpenChange(false);
   }
 
@@ -86,7 +85,7 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
           <div className="min-w-0">
             <DialogTitle>{t("refunds.rejectDialog.title")}</DialogTitle>
             <DialogDescription>
-              {t("refunds.rejectDialog.description", { orderId: refund.orderId })}
+              {t("refunds.rejectDialog.description", { orderId: refund.orderNumber })}
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -120,16 +119,6 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
                 {...register("reason")}
               />
               {errors.reason && <p className="text-xs text-destructive mt-1">{errors.reason.message}</p>}
-            </div>
-
-            <div>
-              <Label className={labelRowCls}>{t("refunds.rejectDialog.internalNotes")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("refunds.rejectDialog.internalNotesPlaceholder")}
-                maxLength={500}
-                {...register("internalNotes")}
-              />
             </div>
           </DialogBody>
 

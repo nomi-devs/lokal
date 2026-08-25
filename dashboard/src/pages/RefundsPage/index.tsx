@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Hourglass, CheckCircle2, XCircle, Wallet, Eye } from "lucide-react";
+import { Hourglass, CheckCircle2, XCircle, Wallet, Eye, BadgeCheck } from "lucide-react";
 
 import RefundDetailsDialog from "./RefundDetailsDialog";
 import RefundApproveDialog from "./RefundApproveDialog";
 import RefundRejectDialog from "./RefundRejectDialog";
+import RefundCompleteDialog from "./RefundCompleteDialog";
 import RefundStatusBadge from "./RefundStatusBadge";
 
 import { DashboardLayout } from "@/components/Dashboard";
@@ -12,60 +13,75 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
-import { refunds as initialRefunds, type RefundRequest, type RefundStatus } from "@/data/refunds";
+import { getApiErrorMessage } from "@/lib/apiClient";
+import {
+  listAdminRefunds,
+  approveRefund,
+  rejectRefund,
+  completeRefund,
+  type AdminRefund,
+  type RefundStatus,
+} from "@/lib/refundsApi";
 
 export default function RefundsPage() {
   const { t } = useTranslation();
-  const [refundList, setRefundList] = useState<RefundRequest[]>(initialRefunds);
+  const [loading, setLoading] = useState(true);
+  const [refundList, setRefundList] = useState<AdminRefund[]>([]);
 
-  const [viewTarget, setViewTarget] = useState<RefundRequest | null>(null);
-  const [approveTarget, setApproveTarget] = useState<RefundRequest | null>(null);
-  const [rejectTarget, setRejectTarget] = useState<RefundRequest | null>(null);
+  const [viewTarget, setViewTarget] = useState<AdminRefund | null>(null);
+  const [approveTarget, setApproveTarget] = useState<AdminRefund | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<AdminRefund | null>(null);
+  const [completeTarget, setCompleteTarget] = useState<AdminRefund | null>(null);
 
-  function approve(refundId: string, proofOfTransferUrl: string, notes: string, reviewedBy: string) {
-    const now = new Date().toISOString();
+  const fetchRefunds = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await listAdminRefunds();
+      setRefundList(res.data);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load refunds"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    setRefundList((prev) =>
-      prev.map((r) =>
-        r.id === refundId
-          ? {
-              ...r,
-              status: "approved",
-              approvedAt: now,
-              approvedBy: reviewedBy,
-              approvalNotes: notes || undefined,
-              proofOfTransferUrl,
-              rejectedAt: undefined,
-              rejectionReason: undefined,
-              rejectionCategory: undefined,
-            }
-          : r
-      )
-    );
-    toast.success(t("refunds.messages.approved", { id: refundId }));
+  useEffect(() => {
+    fetchRefunds();
+  }, [fetchRefunds]);
+
+  async function approve(refundId: string, approvalNotes: string) {
+    try {
+      const updated = await approveRefund(refundId, approvalNotes || undefined);
+      setRefundList((prev) => prev.map((r) => (r.id === refundId ? updated : r)));
+      toast.success(t("refunds.messages.approved", { id: updated.orderNumber }));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    }
   }
 
-  function reject(refundId: string, reason: string, category: string, internalNotes: string) {
-    const now = new Date().toISOString();
+  async function reject(refundId: string, reason: string, category: string) {
+    try {
+      const updated = await rejectRefund(refundId, reason, category || undefined);
+      setRefundList((prev) => prev.map((r) => (r.id === refundId ? updated : r)));
+      toast.success(t("refunds.messages.rejected", { id: updated.orderNumber }));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    }
+  }
 
-    setRefundList((prev) =>
-      prev.map((r) =>
-        r.id === refundId
-          ? {
-              ...r,
-              status: "rejected",
-              rejectedAt: now,
-              rejectionReason: internalNotes ? `${reason}\n\n${internalNotes}` : reason,
-              rejectionCategory: category || undefined,
-              approvedAt: undefined,
-              approvedBy: undefined,
-              approvalNotes: undefined,
-              proofOfTransferUrl: undefined,
-            }
-          : r
-      )
-    );
-    toast.success(t("refunds.messages.rejected", { id: refundId }));
+  async function complete(refundId: string, proofOfTransferUrl: string) {
+    try {
+      const updated = await completeRefund(refundId, proofOfTransferUrl);
+      setRefundList((prev) => prev.map((r) => (r.id === refundId ? updated : r)));
+      toast.success(
+        t("refunds.messages.completed", {
+          id: updated.orderNumber,
+          defaultValue: "Refund for {{id}} marked as completed",
+        })
+      );
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    }
   }
 
   const pendingCount = refundList.filter((r) => r.status === "requested").length;
@@ -76,8 +92,8 @@ export default function RefundsPage() {
     .filter((r) => r.status !== "rejected")
     .reduce((sum, r) => sum + r.refundAmount, 0);
 
-  const columns: ColumnDef<RefundRequest>[] = [
-    { key: "orderId", header: t("refunds.orderId"), sortable: true },
+  const columns: ColumnDef<AdminRefund>[] = [
+    { key: "orderNumber", header: t("refunds.orderId"), sortable: true },
     { key: "customerName", header: t("refunds.customerName"), sortable: true },
     {
       key: "refundAmount",
@@ -98,14 +114,14 @@ export default function RefundsPage() {
       render: (v) => <RefundStatusBadge status={v as RefundStatus} />,
     },
     {
-      key: "requestedAt",
+      key: "createdAt",
       header: t("refunds.requestedDate"),
       sortable: true,
       render: (v) => new Date(v as string).toLocaleDateString(),
     },
   ];
 
-  const rowActions: RowAction<RefundRequest>[] = [
+  const rowActions: RowAction<AdminRefund>[] = [
     { label: t("refunds.viewDetails"), icon: Eye, onClick: (r) => setViewTarget(r) },
     {
       label: t("refunds.approve"),
@@ -120,18 +136,25 @@ export default function RefundsPage() {
       onClick: (r) => setRejectTarget(r),
       hidden: (r) => r.status !== "requested",
     },
+    {
+      label: t("refunds.completeDialog.confirm", "Mark completed"),
+      icon: BadgeCheck,
+      onClick: (r) => setCompleteTarget(r),
+      hidden: (r) => r.status !== "approved",
+    },
   ];
 
   return (
     <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("refunds.topbarTitle")}>
-      <DataTable<RefundRequest>
+      <DataTable<AdminRefund>
         title={t("refunds.title")}
         data={refundList}
         columns={columns}
         rowKey="id"
+        loading={loading}
         searchable
         searchPlaceholder={t("refunds.search")}
-        searchKeys={["orderId", "customerName"]}
+        searchKeys={["orderNumber", "customerName"]}
         filters={[
           {
             key: "status",
@@ -147,7 +170,7 @@ export default function RefundsPage() {
         rowActions={rowActions}
         rowActionsVariant="menu"
         pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 20] }}
-        defaultSort={{ key: "requestedAt", direction: "desc" }}
+        defaultSort={{ key: "createdAt", direction: "desc" }}
         striped
         stats={[
           {
@@ -198,6 +221,12 @@ export default function RefundsPage() {
         onOpenChange={(o) => !o && setRejectTarget(null)}
         refund={rejectTarget}
         onReject={reject}
+      />
+      <RefundCompleteDialog
+        open={!!completeTarget}
+        onOpenChange={(o) => !o && setCompleteTarget(null)}
+        refund={completeTarget}
+        onComplete={complete}
       />
     </DashboardLayout>
   );

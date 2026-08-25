@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { Tag, Percent, DollarSign, CalendarRange } from "lucide-react";
 
-import type { PromoCode } from "@/data/promoCodes";
+import type { AdminPromoCode } from "@/lib/promoCodesApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,8 +77,8 @@ export interface PromoCodeFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Pass a promo code to edit it; omit/null to add a new one. Same dialog handles both. */
-  promoCode?: PromoCode | null;
-  onSubmit: (values: PromoCodeFormValues, editingId: number | null) => void;
+  promoCode?: AdminPromoCode | null;
+  onSubmit: (values: PromoCodeFormValues, editingId: string | null) => void;
 }
 
 export default function PromoCodeFormDialog({

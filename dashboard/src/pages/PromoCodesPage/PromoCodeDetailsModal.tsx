@@ -18,18 +18,32 @@ import {
 import PromoStatusBadge, { DiscountTypeBadge } from "./PromoStatusBadge";
 
 import {
-  type PromoCode,
+  type AdminPromoCode,
   getPromoCodeStatus,
-  getUsagePercent,
   estimatedDiscountPerUse,
-  calculateDiscount,
-} from "@/data/promoCodes";
-import { initialVendors } from "@/data/vendors";
-import { categories } from "@/data/categories";
+} from "@/lib/promoCodesApi";
+import type { AdminVendorRow } from "@/lib/adminApi";
+import type { AdminCategory } from "@/lib/adminApi";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+
+function usagePercent(promo: AdminPromoCode): number | null {
+  if (!promo.maxUsageCount) {return null;}
+
+  return Math.round((promo.currentUsageCount / promo.maxUsageCount) * 1000) / 10;
+}
+
+function calculateDiscount(promo: AdminPromoCode, orderValue: number): number {
+  if (promo.discountType === "fixed") {
+    return Math.min(promo.discountValue, orderValue);
+  }
+
+  const uncapped = (promo.discountValue / 100) * orderValue;
+
+  return promo.maxDiscountCap ? Math.min(uncapped, promo.maxDiscountCap) : uncapped;
+}
 
 function InfoField({
   icon: Icon,
@@ -54,10 +68,18 @@ function InfoField({
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  promoCode: PromoCode | null;
+  promoCode: AdminPromoCode | null;
+  vendorsById: Map<string, AdminVendorRow>;
+  categoriesById: Map<string, AdminCategory>;
 }
 
-export default function PromoCodeDetailsModal({ open, onOpenChange, promoCode }: Props) {
+export default function PromoCodeDetailsModal({
+  open,
+  onOpenChange,
+  promoCode,
+  vendorsById,
+  categoriesById,
+}: Props) {
   const { t } = useTranslation();
   const [testOrderValue, setTestOrderValue] = useState("500");
 
@@ -66,18 +88,18 @@ export default function PromoCodeDetailsModal({ open, onOpenChange, promoCode }:
   }
 
   const status = getPromoCodeStatus(promoCode);
-  const usagePercent = getUsagePercent(promoCode);
+  const usage = usagePercent(promoCode);
   const revenueSaved = Math.round(promoCode.currentUsageCount * estimatedDiscountPerUse(promoCode));
 
   const mostUsedTarget =
-    promoCode.applicableToCategories.length > 0
-      ? promoCode.applicableToCategories
-          .map((id) => categories.find((c) => c.id === id)?.nameEn)
+    promoCode.applicableCategoryIds.length > 0
+      ? promoCode.applicableCategoryIds
+          .map((id) => categoriesById.get(id)?.nameEn)
           .filter(Boolean)
           .join(", ")
-      : promoCode.applicableToVendors.length > 0
-        ? promoCode.applicableToVendors
-            .map((id) => initialVendors.find((v) => v.id === id)?.nameEn)
+      : promoCode.applicableVendorIds.length > 0
+        ? promoCode.applicableVendorIds
+            .map((id) => vendorsById.get(id)?.storeName)
             .filter(Boolean)
             .join(", ")
         : t("promoCodes.detailsModal.allProducts");
@@ -131,7 +153,7 @@ export default function PromoCodeDetailsModal({ open, onOpenChange, promoCode }:
                 label={t("promoCodes.detailsModal.usage")}
                 value={
                   promoCode.maxUsageCount
-                    ? `${promoCode.currentUsageCount}/${promoCode.maxUsageCount} (${usagePercent}%)`
+                    ? `${promoCode.currentUsageCount}/${promoCode.maxUsageCount} (${usage}%)`
                     : t("promoCodes.dialog.currentUsageUnlimited", {
                         used: promoCode.currentUsageCount,
                       })

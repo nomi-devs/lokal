@@ -19,7 +19,7 @@ import {
   type AdminCategory,
 } from "@/lib/adminApi";
 import { getApiErrorMessage } from "@/lib/apiClient";
-import type { Department } from "@/data/products";
+import type { CategoryDepartment as Department } from "@/lib/adminApi";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
 const catStatusStyle: Record<"Active" | "Hidden", string> = {
@@ -105,7 +105,7 @@ export default function CategoriesPage() {
   }
 
   async function confirmPendingAction() {
-    if (!pendingAction) return;
+    if (!pendingAction) {return;}
 
     try {
       if (pendingAction.type === "delete") {
@@ -156,6 +156,7 @@ export default function CategoriesPage() {
       sortable: true,
       render: (v) => {
         const name = categoryName(v as string | null);
+
         return name ? (
           name
         ) : (
@@ -181,6 +182,7 @@ export default function CategoriesPage() {
       sortable: true,
       render: (v) => {
         const label = v ? "Active" : "Hidden";
+
         return (
           <span
             className={cn(

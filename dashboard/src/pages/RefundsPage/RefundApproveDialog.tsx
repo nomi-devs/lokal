@@ -3,13 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-import { CheckCircle2, User, Calendar, Link as LinkIcon } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
-import type { RefundRequest } from "@/data/refunds";
-import type { RootState } from "@/store";
+import type { AdminRefund } from "@/lib/refundsApi";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -23,7 +20,6 @@ import {
 import { cn } from "@/lib/utils";
 
 const approveSchema = z.object({
-  proofOfTransferUrl: z.string().min(1, "Proof of transfer URL is required").url("Must be a valid URL"),
   approvalNotes: z.string().max(500, "Max 500 characters").optional(),
 });
 type ApproveValues = z.infer<typeof approveSchema>;
@@ -36,23 +32,19 @@ const textareaCls = cn(
   "min-h-24 resize-y"
 );
 
-const readonlyFieldCls =
-  "h-10 flex items-center px-3 rounded-md border bg-muted/40 text-sm text-muted-foreground";
-
-function titleCase(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-}
-
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  refund: RefundRequest | null;
-  onApprove: (refundId: string, proofOfTransferUrl: string, notes: string, reviewedBy: string) => void;
+  refund: AdminRefund | null;
+  onApprove: (refundId: string, approvalNotes: string) => void;
 }
 
+// First step of the two-step approval flow (see local-be's RefundsService —
+// requested -> approved -> completed) — this only records the decision;
+// the proof-of-transfer URL is collected separately once the transfer has
+// actually happened, via RefundCompleteDialog.
 export default function RefundApproveDialog({ open, onOpenChange, refund, onApprove }: Props) {
   const { t } = useTranslation();
-  const user = useSelector((s: RootState) => s.auth.user);
 
   const {
     register,
@@ -61,12 +53,12 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
     formState: { errors },
   } = useForm<ApproveValues>({
     resolver: zodResolver(approveSchema),
-    defaultValues: { proofOfTransferUrl: "", approvalNotes: "" },
+    defaultValues: { approvalNotes: "" },
   });
 
   useEffect(() => {
     if (open) {
-      reset({ proofOfTransferUrl: "", approvalNotes: "" });
+      reset({ approvalNotes: "" });
     }
   }, [open, refund, reset]);
 
@@ -74,12 +66,8 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
     return null;
   }
 
-  const reviewedBy = user ? titleCase((user.email?.split("@")[0] ?? user.firstName) || "Admin") : "Admin";
-
-  const approvalDate = new Date().toLocaleString();
-
   function submit(values: ApproveValues) {
-    onApprove(refund!.id, values.proofOfTransferUrl, values.approvalNotes ?? "", reviewedBy);
+    onApprove(refund!.id, values.approvalNotes ?? "");
     onOpenChange(false);
   }
 
@@ -93,28 +81,13 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
           <div className="min-w-0">
             <DialogTitle>{t("refunds.approveDialog.title")}</DialogTitle>
             <DialogDescription>
-              {t("refunds.approveDialog.description", { orderId: refund.orderId })}
+              {t("refunds.approveDialog.description", { orderId: refund.orderNumber })}
             </DialogDescription>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
-            <div>
-              <Label className={labelRowCls}>
-                <LinkIcon className="w-3.5 h-3.5 text-primary" />
-                {t("refunds.approveDialog.proofUrl")} <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                className="h-10"
-                placeholder="https://…"
-                {...register("proofOfTransferUrl")}
-              />
-              {errors.proofOfTransferUrl && (
-                <p className="text-xs text-destructive mt-1">{errors.proofOfTransferUrl.message}</p>
-              )}
-            </div>
-
             <div>
               <Label className={labelRowCls}>{t("refunds.approveDialog.notes")}</Label>
               <textarea
@@ -126,23 +99,6 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
               {errors.approvalNotes && (
                 <p className="text-xs text-destructive mt-1">{errors.approvalNotes.message}</p>
               )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className={labelRowCls}>
-                  <User className="w-3.5 h-3.5 text-primary" />
-                  {t("refunds.approveDialog.reviewedBy")}
-                </Label>
-                <p className={readonlyFieldCls}>{reviewedBy}</p>
-              </div>
-              <div>
-                <Label className={labelRowCls}>
-                  <Calendar className="w-3.5 h-3.5 text-primary" />
-                  {t("refunds.approveDialog.approvalDate")}
-                </Label>
-                <p className={readonlyFieldCls}>{approvalDate}</p>
-              </div>
             </div>
           </DialogBody>
 

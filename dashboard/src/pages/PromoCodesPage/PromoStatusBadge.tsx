@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import type { PromoCodeStatus } from "@/data/promoCodes";
+import type { PromoCodeStatus } from "@/lib/promoCodesApi";
 import { cn } from "@/lib/utils";
 
 const statusStyle: Record<PromoCodeStatus, string> = {
