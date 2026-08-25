@@ -13,6 +13,20 @@ export class SendOtpResponseDto {
 
   @ApiProperty({ description: 'Seconds until the OTP expires' })
   expiresIn: number;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Dev/staging only (never present in production) — the OTP code itself, so testing does not require reading server logs or a real SMS/email.',
+  })
+  otp?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Present in every environment, including production, whenever SMS_BASE_URL is configured — the exact SMSBox dispatch URL used, with the password redacted. Note the message body embeds the OTP itself.',
+  })
+  smsUrl?: string;
 }
 
 export class TokensDto {

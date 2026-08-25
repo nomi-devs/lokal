@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
+import { AllConfigType } from '../config/config.type';
 import { UsersService } from '../users/users.service';
 import { OtpService } from '../otp/otp.service';
 import { SmsService } from '../sms/sms.service';
@@ -28,6 +30,7 @@ export class MobileAuthService {
     private readonly otpService: OtpService,
     private readonly smsService: SmsService,
     private readonly sessionService: SessionService,
+    private readonly configService: ConfigService<AllConfigType>,
   ) {}
 
   async sendOtp(dto: SendMobileOtpDto): Promise<SendOtpResponseDto> {
@@ -36,16 +39,26 @@ export class MobileAuthService {
       this.assertMobileAccessible(existing.role, existing.status);
     }
 
-    await this.otpService.assertNotRateLimited(dto.phone);
-    const otp = await this.otpService.generate(dto.phone);
-    await this.smsService.sendOtp(dto.phone, otp);
+    const { otp, expiresIn, delivery } = await this.otpService.requestOtp(
+      dto.phone,
+      (otp) => this.smsService.sendOtp(dto.phone, otp),
+    );
 
     const msg = MESSAGES.AUTH.OTP_SENT(dto.phone);
+    const isProduction =
+      this.configService.get('app.nodeEnv', { infer: true }) === 'production';
+
     return {
       success: true,
       message: msg.en,
       messageAr: msg.ar,
-      expiresIn: this.otpService.expirySeconds,
+      expiresIn,
+      // Dev/staging convenience only — see SendOtpResponseDto.otp.
+      ...(isProduction ? {} : { otp }),
+      // Always included (any environment) when SMS_BASE_URL is configured —
+      // see SmsService.sendOtp for why this is an accepted, deliberate
+      // exception to the otp field's prod gate above.
+      smsUrl: delivery.smsUrl,
     };
   }
 

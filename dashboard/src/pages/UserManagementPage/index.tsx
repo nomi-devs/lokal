@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, ShieldOff, ShieldCheck, Trash2, UserPlus } from "lucide-react";
+import { Eye, ShieldOff, ShieldCheck, Trash2, UserPlus, Users, UserX } from "lucide-react";
 
 import UserViewDialog from "./UserViewDialog";
 import UserAddDialog from "./UserAddDialog";
@@ -44,6 +44,37 @@ export default function UserManagementPage() {
   const [suspendTarget, setSuspendTarget] = useState<AdminUserRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, suspended: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Independent of the paginated/search-filtered `users` list above — these
+  // counts always reflect every customer, not just the current page/filter,
+  // so they're fetched via separate limit:1 requests keyed off pagination.total.
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const [total, active, inactive, suspended] = await Promise.all([
+        adminApi.listUsers({ role: "customer", limit: 1 }),
+        adminApi.listUsers({ role: "customer", status: "active", limit: 1 }),
+        adminApi.listUsers({ role: "customer", status: "inactive", limit: 1 }),
+        adminApi.listUsers({ role: "customer", status: "suspended", limit: 1 }),
+      ]);
+      setStats({
+        total: total.pagination.total,
+        active: active.pagination.total,
+        inactive: inactive.pagination.total,
+        suspended: suspended.pagination.total,
+      });
+    } catch {
+      // Stats are a secondary, non-blocking strip — leave prior values on failure.
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadStats();
+  }, [loadStats]);
 
   async function load() {
     setLoading(true);
@@ -88,6 +119,7 @@ export default function UserManagementPage() {
       );
       setSuspendTarget(null);
       void load();
+      void loadStats();
     } catch (error) {
       toast.error(getApiErrorMessage(error, t("users.management.toasts.actionFailed")));
     }
@@ -99,6 +131,7 @@ export default function UserManagementPage() {
       toast.success(t("users.management.toasts.deleted"));
       setDeleteTarget(null);
       void load();
+      void loadStats();
     } catch (error) {
       toast.error(getApiErrorMessage(error, t("users.management.toasts.actionFailed")));
     }
@@ -198,6 +231,36 @@ export default function UserManagementPage() {
         }}
         rowActions={rowActions}
         toolbarActions={toolbarActions}
+        stats={[
+          {
+            title: t("users.management.stats.total"),
+            value: stats.total,
+            icon: Users,
+            variant: "primary",
+            loading: statsLoading,
+          },
+          {
+            title: t("users.management.stats.active"),
+            value: stats.active,
+            icon: ShieldCheck,
+            variant: "success",
+            loading: statsLoading,
+          },
+          {
+            title: t("users.management.stats.inactive"),
+            value: stats.inactive,
+            icon: UserX,
+            variant: "default",
+            loading: statsLoading,
+          },
+          {
+            title: t("users.management.stats.suspended"),
+            value: stats.suspended,
+            icon: ShieldOff,
+            variant: "danger",
+            loading: statsLoading,
+          },
+        ]}
         pagination={{
           pageSize,
           serverSide: true,
@@ -217,6 +280,7 @@ export default function UserManagementPage() {
         onCreated={() => {
           setPage(1);
           void load();
+          void loadStats();
         }}
       />
 

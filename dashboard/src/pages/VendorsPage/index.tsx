@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Eye, ShieldOff, Store, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Eye, ShieldOff, Store, XCircle } from "lucide-react";
 
 import VendorViewDialog from "./VendorViewDialog";
 import VendorAddDialog from "./VendorAddDialog";
@@ -130,6 +130,16 @@ export default function VendorsPage() {
     { label: t("vendors.management.actions.addVendor"), icon: Store, onClick: () => setAddOpen(true) },
   ];
 
+  // Derived straight from the already-loaded `vendors` list rather than
+  // separate requests — listVendors() fetches up to 100 rows in one call
+  // (see adminApi.ts), the same set this page already paginates client-side.
+  const statCounts = {
+    total: vendors.length,
+    pendingApproval: vendors.filter((v) => v.status === "pending_approval").length,
+    active: vendors.filter((v) => v.status === "active").length,
+    suspended: vendors.filter((v) => v.status === "suspended").length,
+  };
+
   return (
     <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("vendors.topbarTitle")}>
       <DataTable<AdminVendorRow>
@@ -152,6 +162,36 @@ export default function VendorsPage() {
         ]}
         rowActions={rowActions}
         toolbarActions={toolbarActions}
+        stats={[
+          {
+            title: t("vendors.management.stats.total"),
+            value: statCounts.total,
+            icon: Store,
+            variant: "primary",
+            loading,
+          },
+          {
+            title: t("vendors.management.stats.pendingApproval"),
+            value: statCounts.pendingApproval,
+            icon: Clock,
+            variant: "warning",
+            loading,
+          },
+          {
+            title: t("vendors.management.stats.active"),
+            value: statCounts.active,
+            icon: CheckCircle2,
+            variant: "success",
+            loading,
+          },
+          {
+            title: t("vendors.management.stats.suspended"),
+            value: statCounts.suspended,
+            icon: ShieldOff,
+            variant: "danger",
+            loading,
+          },
+        ]}
         pagination={{ pageSize: 10 }}
         loading={loading}
         striped

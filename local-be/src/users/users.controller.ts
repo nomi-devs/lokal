@@ -16,12 +16,16 @@ import { ERROR_CODES } from '../common/exceptions/error-codes';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { DeleteAccountDto } from './dto/delete-account.dto';
 import { UpdateProfileResponseDto } from './dto/user-response.dto';
 import { MESSAGES } from '../common/constants/messages.constant';
 
+// Mobile self-service — profile edit, push-token registration, account
+// deletion. See AccountSecurityController for change-password, split out
+// because it's a dashboard-only route (only vendor/admin accounts ever
+// have a password) that would otherwise be stuck on this class's
+// mobile-only Swagger tag.
 @ApiTags('Users')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
@@ -41,24 +45,6 @@ export class UsersController {
       message: MESSAGES.USER.PROFILE_UPDATED.en,
       messageAr: MESSAGES.USER.PROFILE_UPDATED.ar,
       user,
-    };
-  }
-
-  @ApiOkResponse({ type: MessageResponseDto })
-  @Put('change-password')
-  async changePassword(
-    @CurrentUser() currentUser: AuthenticatedUser,
-    @Body() dto: ChangePasswordDto,
-  ): Promise<MessageResponseDto> {
-    await this.usersService.changePassword(
-      currentUser.userId,
-      dto.currentPassword,
-      dto.newPassword,
-    );
-    return {
-      success: true,
-      message: MESSAGES.USER.PASSWORD_CHANGED.en,
-      messageAr: MESSAGES.USER.PASSWORD_CHANGED.ar,
     };
   }
 

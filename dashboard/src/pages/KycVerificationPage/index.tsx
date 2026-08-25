@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, FileText, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, FileText, FileWarning, Users, XCircle } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
@@ -23,6 +23,11 @@ export default function KycVerificationPage() {
   const [loading, setLoading] = useState(true);
   const [approveTarget, setApproveTarget] = useState<AdminVendorRow | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminVendorRow | null>(null);
+  // This page only ever loads the pending_approval subset, so total vendor
+  // count (any status) needs its own lightweight request — same limit:1
+  // precedent as UserManagementPage's stats strip.
+  const [totalVendors, setTotalVendors] = useState(0);
+  const [totalLoading, setTotalLoading] = useState(true);
 
   async function load() {
     setLoading(true);
@@ -36,8 +41,21 @@ export default function KycVerificationPage() {
     }
   }
 
+  async function loadTotalVendors() {
+    setTotalLoading(true);
+    try {
+      const { pagination } = await adminApi.listVendors({ limit: 1 });
+      setTotalVendors(pagination.total);
+    } catch {
+      // Secondary, non-blocking figure — leave the prior value on failure.
+    } finally {
+      setTotalLoading(false);
+    }
+  }
+
   useEffect(() => {
     void load();
+    void loadTotalVendors();
   }, []);
 
   async function handleApprove(id: string, notes: string) {
@@ -96,6 +114,8 @@ export default function KycVerificationPage() {
     { label: t("kyc.management.actions.reject"), icon: XCircle, variant: "destructive", onClick: (row) => setRejectTarget(row) },
   ];
 
+  const missingDocuments = vendors.filter((v) => !v.kycDocumentUrl).length;
+
   return (
     <DashboardLayout sidebarItems={sidebarItems} topbarTitle={t("kyc.management.topbarTitle")}>
       <DataTable<AdminVendorRow>
@@ -105,6 +125,29 @@ export default function KycVerificationPage() {
         searchable
         searchKeys={["storeName", "ownerName", "ownerPhone"]}
         rowActions={rowActions}
+        stats={[
+          {
+            title: t("kyc.stats.pending"),
+            value: vendors.length,
+            icon: Clock,
+            variant: "warning",
+            loading,
+          },
+          {
+            title: t("kyc.stats.missingDocuments"),
+            value: missingDocuments,
+            icon: FileWarning,
+            variant: "danger",
+            loading,
+          },
+          {
+            title: t("kyc.stats.totalVendors"),
+            value: totalVendors,
+            icon: Users,
+            variant: "primary",
+            loading: totalLoading,
+          },
+        ]}
         pagination={{ pageSize: 10 }}
         loading={loading}
         striped

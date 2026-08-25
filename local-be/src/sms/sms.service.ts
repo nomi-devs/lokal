@@ -8,12 +8,18 @@ export class SmsService {
 
   constructor(private readonly configService: ConfigService<AllConfigType>) {}
 
-  async sendOtp(phone: string, otp: string): Promise<void> {
+  // Returns the SMSBox URL that was (attempted to be) dispatched, password
+  // redacted, so callers can echo it back for QA visibility (see
+  // MobileAuthService.sendOtp) — returned in every environment, including
+  // production, by deliberate product decision (unlike the raw `otp` field,
+  // which stays dev/staging only). The message body embeds the OTP itself,
+  // so treat this URL with the same care as the code.
+  async sendOtp(phone: string, otp: string): Promise<{ smsUrl?: string }> {
     const message = `Your Lokal verification code is ${otp}`;
+    const isProduction =
+      this.configService.get('app.nodeEnv', { infer: true }) === 'production';
 
-    if (
-      this.configService.get('app.nodeEnv', { infer: true }) !== 'production'
-    ) {
+    if (!isProduction) {
       // Dev/staging fallback so the auth flow is testable end-to-end even
       // without SMS_BASE_URL configured.
       this.logger.log(`[DEV ONLY] OTP for ${phone}: ${otp}`);
@@ -21,11 +27,17 @@ export class SmsService {
 
     const baseUrl = this.configService.get('sms.baseUrl', { infer: true });
     if (!baseUrl) {
-      return;
+      return {};
     }
 
+    const params = this.buildParams(phone, message);
     try {
-      await this.dispatch(baseUrl, phone, message);
+      const response = await fetch(`${baseUrl}${params.toString()}`, {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        throw new Error(`SMSBox responded with status ${response.status}`);
+      }
     } catch (error) {
       // Best-effort: a downstream gateway failure must never break the OTP
       // flow — the OTP is already stored and (outside production) logged above.
@@ -33,6 +45,14 @@ export class SmsService {
         `Failed to send SMS to ${phone}: ${(error as Error).message}`,
       );
     }
+
+    // Password redacted even here: this URL rides in an API response that
+    // could end up in a screenshot, log, or a public ngrok tunnel — the
+    // real credential never needs to leave this service to be useful for
+    // dev visibility (recipient/sender/message body are what a developer
+    // actually needs to confirm).
+    params.set('password', '***');
+    return { smsUrl: `${baseUrl}${params.toString()}` };
   }
 
   // Confirmed SMSBox Http_SendSMS contract, e.g.:
@@ -40,12 +60,8 @@ export class SmsService {
   // URLSearchParams handles the encoding: spaces in sendertext/messagebody
   // become "+", and the leading "+" on recipientnumbers becomes "%2B" —
   // don't strip it.
-  private async dispatch(
-    baseUrl: string,
-    phone: string,
-    message: string,
-  ): Promise<void> {
-    const params = new URLSearchParams({
+  private buildParams(phone: string, message: string): URLSearchParams {
+    return new URLSearchParams({
       username: this.configService.get('sms.username', { infer: true }) ?? '',
       password: this.configService.get('sms.password', { infer: true }) ?? '',
       customerid:
@@ -57,11 +73,5 @@ export class SmsService {
       isblink: 'false',
       isflash: 'false',
     });
-
-    const url = `${baseUrl}${params.toString()}`;
-    const response = await fetch(url, { method: 'GET' });
-    if (!response.ok) {
-      throw new Error(`SMSBox responded with status ${response.status}`);
-    }
   }
 }

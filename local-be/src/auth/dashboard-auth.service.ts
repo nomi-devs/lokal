@@ -123,9 +123,9 @@ export class DashboardAuthService {
     // Deliberately don't reveal whether the email exists or belongs to a
     // vendor/admin — always return the same success response either way.
     if (user && (user.role === 'vendor' || user.role === 'admin')) {
-      await this.otpService.assertNotRateLimited(dto.email);
-      const otp = await this.otpService.generate(dto.email);
-      await this.emailService.sendOtp(dto.email, otp);
+      await this.otpService.requestOtp(dto.email, (otp) =>
+        this.emailService.sendOtp(dto.email, otp),
+      );
     }
 
     const msg = MESSAGES.AUTH.FORGOT_PASSWORD(dto.email);

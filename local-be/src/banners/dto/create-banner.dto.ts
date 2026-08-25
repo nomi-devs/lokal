@@ -10,7 +10,7 @@ import {
 
 export class CreateBannerDto {
   @IsUrl()
-  imageUrl: string;
+  imageUrl!: string;
 
   @IsOptional()
   @IsString()

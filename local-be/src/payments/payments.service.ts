@@ -18,6 +18,18 @@ export interface InitiatedPayment {
   paymentUrl: string;
 }
 
+export interface SavedCard {
+  token: string;
+  maskedCardNumber: string;
+  cardBrand: string;
+}
+
+export interface PaymentSession {
+  sessionId: string;
+  countryCode: string;
+  savedCards: SavedCard[];
+}
+
 export interface PaymentStatusResult {
   invoiceId: string;
   invoiceStatus: string;
@@ -61,12 +73,17 @@ export class PaymentsService {
     }));
   }
 
-  // Charges a specific payment method and returns a hosted PaymentURL for
-  // the client to open (card entry / 3DS happens on MyFatoorah's page, not
-  // ours) — MyFatoorah redirects the browser to callBackUrl on success or
-  // errorUrl on failure/cancellation once the customer finishes there.
+  // Charges either a live gateway method (paymentMethodId, from
+  // listPaymentMethods above) or a tokenized-embedded session (sessionId,
+  // from initiateSession below) — mutually exclusive, exactly one must be
+  // set (enforced by the caller, see OrdersService.checkout). Returns a
+  // hosted PaymentURL for the client to open (card entry / 3DS happens on
+  // MyFatoorah's page, not ours) — MyFatoorah redirects the browser to
+  // callBackUrl on success or errorUrl on failure/cancellation once the
+  // customer finishes there.
   async executePayment(params: {
-    paymentMethodId: number;
+    paymentMethodId?: number;
+    sessionId?: string;
     amount: number;
     customerName: string;
     customerEmail?: string;
@@ -77,6 +94,7 @@ export class PaymentsService {
   }): Promise<InitiatedPayment> {
     const data = await this.request('/v2/ExecutePayment', {
       PaymentMethodId: params.paymentMethodId,
+      SessionId: params.sessionId,
       CustomerName: params.customerName,
       CustomerEmail: params.customerEmail,
       CustomerMobile: params.customerMobile,
@@ -114,6 +132,61 @@ export class PaymentsService {
       paidAmount: data.InvoiceValue as number,
       customerReference: data.CustomerReference as string | undefined,
     };
+  }
+
+  // Starts a MyFatoorah "tokenized embedded" session for this customer.
+  // customerIdentifier must be stable per customer (we use our own userId)
+  // — MyFatoorah keys CustomerTokens off it, which is also what makes
+  // cancelSavedCard's ownership check below possible. The mobile app uses
+  // the returned sessionId with MyFatoorah's client SDK to either enter a
+  // brand-new card (raw card data goes straight from the SDK to
+  // MyFatoorah, never through this backend — see docs/tokenized-embedded)
+  // or pick one of savedCards and submit just its CVV. Once the SDK marks
+  // the session ready, the client passes this same sessionId to
+  // POST /orders instead of a paymentMethodId (see executePayment above).
+  async initiateSession(
+    customerIdentifier: string,
+    saveToken: boolean,
+  ): Promise<PaymentSession> {
+    const data = await this.request('/v2/InitiateSession', {
+      CustomerIdentifier: customerIdentifier,
+      SaveToken: saveToken,
+    });
+    const tokens = (data.CustomerTokens ?? []) as Record<string, any>[];
+    return {
+      sessionId: data.SessionId as string,
+      countryCode: data.CountryCode as string,
+      savedCards: tokens.map((t) => ({
+        token: t.Token as string,
+        maskedCardNumber: t.CardNumber as string,
+        cardBrand: t.CardBrand as string,
+      })),
+    };
+  }
+
+  // Re-derives this customer's live saved cards before canceling, rather
+  // than trusting the token in isolation — MyFatoorah scopes CustomerTokens
+  // by CustomerIdentifier (see initiateSession), so this is what actually
+  // proves the token being canceled belongs to the calling customer. There
+  // is no local card record to check against instead: MyFatoorah stays the
+  // only source of truth for saved cards, same as everywhere else in this
+  // service.
+  async cancelSavedCard(
+    customerIdentifier: string,
+    token: string,
+  ): Promise<void> {
+    const { savedCards } = await this.initiateSession(
+      customerIdentifier,
+      false,
+    );
+    if (!savedCards.some((card) => card.token === token)) {
+      throw new AppException(
+        ERROR_CODES.SAVED_CARD_NOT_FOUND,
+        'Saved card not found',
+        404,
+      );
+    }
+    await this.request('/v2/CancelToken', { Token: token });
   }
 
   private currency(): string {

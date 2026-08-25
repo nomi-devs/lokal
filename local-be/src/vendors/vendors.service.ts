@@ -69,9 +69,9 @@ export class VendorsService {
   }
 
   private async sendOtp(email: string): Promise<SendOtpResponseDto> {
-    await this.otpService.assertNotRateLimited(email);
-    const otp = await this.otpService.generate(email);
-    await this.emailService.sendOtp(email, otp);
+    await this.otpService.requestOtp(email, (otp) =>
+      this.emailService.sendOtp(email, otp),
+    );
 
     const msg = MESSAGES.AUTH.OTP_SENT(email);
     return {

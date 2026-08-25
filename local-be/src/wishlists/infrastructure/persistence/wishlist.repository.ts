@@ -18,6 +18,14 @@ export abstract class WishlistRepository {
     productId: string,
   ): Promise<NullableType<Wishlist>>;
 
+  // Bulk membership check for a page of products (see ProductsService's
+  // isWishlisted annotation on GET /products) — one query instead of one
+  // findOneByUserAndProduct per row.
+  abstract findWishlistedProductIds(
+    userId: string,
+    productIds: string[],
+  ): Promise<string[]>;
+
   abstract remove(id: string): Promise<void>;
 
   abstract countByUserId(userId: string): Promise<number>;

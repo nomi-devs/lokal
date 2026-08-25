@@ -105,6 +105,12 @@ export const MESSAGES = {
     ADDED: { en: 'Added to wishlist', ar: 'تمت الإضافة إلى المفضلة' },
     REMOVED: { en: 'Removed from wishlist', ar: 'تمت الإزالة من المفضلة' },
   },
+  PAYMENT: {
+    CARD_REMOVED: {
+      en: 'Saved card removed',
+      ar: 'تمت إزالة البطاقة المحفوظة',
+    },
+  },
   REVIEW: {
     SUBMITTED: {
       en: 'Review submitted — it will appear once approved',

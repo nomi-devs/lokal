@@ -4,6 +4,7 @@ import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
 import { CategoriesService } from '../categories/categories.service';
 import { VendorsService } from '../vendors/vendors.service';
+import { WishlistRepository } from '../wishlists/infrastructure/persistence/wishlist.repository';
 import { Product } from './domain/product';
 import {
   ListProductsFilters,
@@ -20,6 +21,7 @@ export class ProductsService {
     private readonly productRepository: ProductRepository,
     private readonly categoriesService: CategoriesService,
     private readonly vendorsService: VendorsService,
+    private readonly wishlistRepository: WishlistRepository,
   ) {}
 
   async createByVendor(
@@ -128,7 +130,9 @@ export class ProductsService {
     await this.productRepository.remove(id);
   }
 
-  async findPublicOne(id: string): Promise<Product> {
+  // currentUserId is optional — see OptionalJwtAuthGuard on
+  // ProductsController.findOne. Only populates isWishlisted when present.
+  async findPublicOne(id: string, currentUserId?: string): Promise<Product> {
     const product = await this.productRepository.findById(id);
     if (!product || product.status !== 'active') {
       throw new AppException(
@@ -138,13 +142,25 @@ export class ProductsService {
       );
     }
     void this.productRepository.incrementViewCount(id);
+
+    if (currentUserId) {
+      const wishlisted = await this.wishlistRepository.findOneByUserAndProduct(
+        currentUserId,
+        id,
+      );
+      product.isWishlisted = !!wishlisted;
+    }
+
     return product;
   }
 
+  // currentUserId is optional — see OptionalJwtAuthGuard on
+  // ProductsController.list. Only populates isWishlisted when present.
   async listPublic(
     filters: Omit<ListPublicProductsFilters, 'vendorIds'> & {
       vendorId?: string;
     },
+    currentUserId?: string,
   ): Promise<{ data: Product[]; total: number }> {
     const { vendorId, ...rest } = filters;
 
@@ -161,10 +177,24 @@ export class ProductsService {
     }
     if (vendorIds.length === 0) return { data: [], total: 0 };
 
-    return this.productRepository.findPublicWithPagination({
+    const result = await this.productRepository.findPublicWithPagination({
       ...rest,
       vendorIds,
     });
+
+    if (currentUserId && result.data.length > 0) {
+      const wishlistedIds = new Set(
+        await this.wishlistRepository.findWishlistedProductIds(
+          currentUserId,
+          result.data.map((p) => p.id),
+        ),
+      );
+      result.data.forEach((p) => {
+        p.isWishlisted = wishlistedIds.has(p.id);
+      });
+    }
+
+    return result;
   }
 
   findById(id: string): Promise<NullableType<Product>> {

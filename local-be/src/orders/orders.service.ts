@@ -66,6 +66,22 @@ export class OrdersService {
   // beyond this pending session, and the cart is never touched — see
   // finalizeCheckout for the other half of this flow.
   async checkout(userId: string, dto: CheckoutDto): Promise<CheckoutResult> {
+    // Exactly one of paymentMethodId / sessionId — see CheckoutDto for why
+    // this XOR can't be expressed with class-validator alone.
+    if ((dto.paymentMethodId === undefined) === (dto.sessionId === undefined)) {
+      throw new AppException(
+        ERROR_CODES.VALIDATION_ERROR,
+        'Provide exactly one of paymentMethodId or sessionId',
+        422,
+        [
+          {
+            field: 'paymentMethodId',
+            message: 'Provide exactly one of paymentMethodId or sessionId',
+          },
+        ],
+      );
+    }
+
     const cart = await this.cartService.getForUser(userId);
     if (cart.items.length === 0) {
       throw new AppException(ERROR_CODES.CART_EMPTY, 'Cart is empty', 422);
@@ -90,6 +106,7 @@ export class OrdersService {
     const { invoiceId, paymentUrl } = await this.paymentsService.executePayment(
       {
         paymentMethodId: dto.paymentMethodId,
+        sessionId: dto.sessionId,
         amount: totalAmount,
         customerName: `${user.firstName} ${user.lastName}`.trim(),
         customerEmail: user.email,
@@ -110,7 +127,10 @@ export class OrdersService {
         phone: address.phone,
         addressLine: address.addressLine,
       },
-      paymentMethodType: String(dto.paymentMethodId),
+      paymentMethodType:
+        dto.paymentMethodId !== undefined
+          ? String(dto.paymentMethodId)
+          : 'saved-card',
       orders: drafts,
       totalAmount,
       cartItemIds: cart.items.map((item) => item.id),

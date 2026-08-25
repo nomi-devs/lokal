@@ -21,7 +21,24 @@ export class OtpService {
     );
   }
 
-  async assertNotRateLimited(phone: string): Promise<void> {
+  // Single entry point for "send someone an OTP" — every flow that needs one
+  // (mobile login, dashboard forgot-password, vendor registration) calls
+  // this instead of re-implementing rate-limit-check + generate + deliver
+  // itself. `deliver` is the channel-specific dispatch (SmsService.sendOtp
+  // for phone, EmailService.sendOtp for email); its return value is handed
+  // back so a caller that needs it (e.g. mobile's dev-echo smsUrl) can read
+  // it without the OTP module knowing anything about SMS/email.
+  async requestOtp<T>(
+    identifier: string,
+    deliver: (otp: string) => Promise<T>,
+  ): Promise<{ otp: string; expiresIn: number; delivery: T }> {
+    await this.assertNotRateLimited(identifier);
+    const otp = await this.generate(identifier);
+    const delivery = await deliver(otp);
+    return { otp, expiresIn: this.expirySeconds, delivery };
+  }
+
+  private async assertNotRateLimited(phone: string): Promise<void> {
     const maxPerHour = this.configService.getOrThrow(
       'auth.otpMaxRequestsPerHour',
       { infer: true },
@@ -37,7 +54,7 @@ export class OtpService {
     }
   }
 
-  async generate(phone: string): Promise<string> {
+  private async generate(phone: string): Promise<string> {
     const otp = this.randomOtp();
     const rounds = this.configService.getOrThrow('auth.bcryptRounds', {
       infer: true,

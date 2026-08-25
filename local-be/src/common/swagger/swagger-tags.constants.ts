@@ -24,6 +24,7 @@ export const MOBILE_API_TAGS = [
 
 export const DASHBOARD_API_TAGS = [
   'Auth - Dashboard',
+  'Account',
   'Vendors',
   'Files',
   'Categories',

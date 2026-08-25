@@ -71,4 +71,17 @@ export class Product {
 
   @ApiProperty()
   updatedAt: Date;
+
+  // Not persisted — computed per-request, only on the public GET /products
+  // and GET /products/:id endpoints, and only when the caller sent a valid
+  // token (see OptionalJwtAuthGuard + ProductsService.listPublic/
+  // findPublicOne). Absent entirely for an anonymous caller or any other
+  // endpoint (vendor/admin product listings), same convention as
+  // compareAtPrice/rejectionReason above.
+  @ApiProperty({
+    required: false,
+    description:
+      'Only present on GET /products / GET /products/:id when the caller is authenticated — whether this product is in their wishlist.',
+  })
+  isWishlisted?: boolean;
 }

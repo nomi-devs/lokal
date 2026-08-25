@@ -366,6 +366,12 @@
         "inactive": "غير نشط",
         "suspended": "معلّق"
       },
+      "stats": {
+        "total": "إجمالي المستخدمين",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "suspended": "معلّق"
+      },
       "confirm": {
         "suspendTitle": "تعليق المستخدم؟",
         "suspendDesc": "لن يتمكن هذا المستخدم من تسجيل الدخول حتى إعادة تفعيله.",
@@ -1205,6 +1211,12 @@
         "suspended": "معلّق",
         "inactive": "غير نشط"
       },
+      "stats": {
+        "total": "إجمالي الموردين",
+        "pendingApproval": "قيد المراجعة",
+        "active": "نشط",
+        "suspended": "معلّق"
+      },
       "empty": {
         "title": "لم يتم العثور على موردين",
         "description": "حاول تعديل البحث أو عوامل التصفية."
@@ -1330,7 +1342,8 @@
     "stats": {
       "pending": "بانتظار الموافقة",
       "approvedToday": "تمت الموافقة اليوم",
-      "totalVendors": "إجمالي الموردين"
+      "totalVendors": "إجمالي الموردين",
+      "missingDocuments": "مستندات ناقصة"
     },
     "documentTypes": {
       "id": "الهوية الوطنية",

@@ -56,6 +56,22 @@ export class WishlistsDocumentRepository implements WishlistRepository {
     return found ? WishlistMapper.toDomain(found) : null;
   }
 
+  async findWishlistedProductIds(
+    userId: string,
+    productIds: string[],
+  ): Promise<string[]> {
+    const validIds = productIds.filter((id) => Types.ObjectId.isValid(id));
+    if (validIds.length === 0) return [];
+
+    const found = await this.wishlistModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        productId: { $in: validIds.map((id) => new Types.ObjectId(id)) },
+      })
+      .select('productId');
+    return found.map((w) => String(w.productId));
+  }
+
   async remove(id: string): Promise<void> {
     await this.wishlistModel.deleteOne({ _id: id });
   }

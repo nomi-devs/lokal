@@ -366,6 +366,12 @@
         "inactive": "Inactive",
         "suspended": "Suspended"
       },
+      "stats": {
+        "total": "Total Users",
+        "active": "Active",
+        "inactive": "Inactive",
+        "suspended": "Suspended"
+      },
       "confirm": {
         "suspendTitle": "Suspend user?",
         "suspendDesc": "This user will be unable to log in until reactivated.",
@@ -1205,6 +1211,12 @@
         "suspended": "Suspended",
         "inactive": "Inactive"
       },
+      "stats": {
+        "total": "Total Vendors",
+        "pendingApproval": "Pending Approval",
+        "active": "Active",
+        "suspended": "Suspended"
+      },
       "empty": {
         "title": "No vendors found",
         "description": "Try adjusting your search or filter."
@@ -1330,7 +1342,8 @@
     "stats": {
       "pending": "Pending Approvals",
       "approvedToday": "Approved Today",
-      "totalVendors": "Total Vendors"
+      "totalVendors": "Total Vendors",
+      "missingDocuments": "Missing Documents"
     },
     "documentTypes": {
       "id": "National ID",
