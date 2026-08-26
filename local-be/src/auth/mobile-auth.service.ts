@@ -93,10 +93,13 @@ export class MobileAuthService {
   // suspended account can't get in either way.
   private assertMobileAccessible(role: string, status: string): void {
     if (role !== 'customer') {
+      const msg = MESSAGES.AUTH.MOBILE_ACCOUNT_FORBIDDEN;
       throw new AppException(
         ERROR_CODES.FORBIDDEN,
-        'Use the dashboard to log in to this account',
+        msg.en,
         403,
+        undefined,
+        msg.ar,
       );
     }
     if (status === 'suspended') {

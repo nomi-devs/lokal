@@ -97,7 +97,10 @@ apiClient.interceptors.response.use(
 
 // Pulls the { code, message } out of our backend's error envelope, falling
 // back to a generic message for network errors / anything unexpected.
-export function getApiErrorMessage(error: unknown, fallback = "Something went wrong. Please try again."): string {
+export function getApiErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong. Please try again."
+): string {
   if (axios.isAxiosError<ApiErrorBody>(error)) {
     return error.response?.data?.error?.message ?? fallback;
   }

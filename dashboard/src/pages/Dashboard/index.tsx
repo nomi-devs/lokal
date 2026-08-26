@@ -87,10 +87,7 @@ export default function Dashboard() {
             {t("dashboard.newRegistrations.title", "New Registrations")}
           </h2>
           <p className="text-sm text-muted-foreground mb-5">
-            {t(
-              "dashboard.newRegistrations.description",
-              "New users, by registration window"
-            )}
+            {t("dashboard.newRegistrations.description", "New users, by registration window")}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <StatsCard

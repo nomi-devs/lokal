@@ -26,7 +26,13 @@ export class AppExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const { status, code, message, details } = this.resolve(exception);
+    const {
+      status,
+      code,
+      message,
+      details,
+      messageAr: exceptionMessageAr,
+    } = this.resolve(exception);
 
     if (status >= 500) {
       this.logger.error(
@@ -35,7 +41,7 @@ export class AppExceptionFilter implements ExceptionFilter {
       );
     }
 
-    const messageAr = statusToBilingual(status).ar;
+    const messageAr = exceptionMessageAr ?? statusToBilingual(status).ar;
 
     response.status(status).json({
       success: false,
@@ -52,6 +58,7 @@ export class AppExceptionFilter implements ExceptionFilter {
     code: string;
     message: string;
     details?: AppExceptionDetail[];
+    messageAr?: string;
   } {
     if (exception instanceof AppException) {
       return {
@@ -59,6 +66,7 @@ export class AppExceptionFilter implements ExceptionFilter {
         code: exception.code,
         message: exception.message,
         details: exception.details,
+        messageAr: exception.messageAr,
       };
     }
 

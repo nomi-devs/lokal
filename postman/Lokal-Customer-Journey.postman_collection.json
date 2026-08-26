@@ -1,0 +1,2737 @@
+{
+  "info": {
+    "_postman_id": "a1e6c9d2-4f3b-4b1a-9c7e-lokal-journey-01",
+    "name": "Lokal — Customer Mobile Journey",
+    "description": "End-to-end Postman collection covering the customer-facing mobile journey of the Lokal marketplace app, built from Local-App.pdf (design source of truth) and local-be's real endpoints (no global route prefix — every path is exact).\n\nFolders are ordered to match the app's actual screen flow: Auth (OTP) → Home browse → Products → Wishlist → Cart → Addresses → Checkout & Payment → My Orders → Reviews → Refunds → Profile & Account → Notifications → FAQ / Support → Logout.\n\n**Auth model**: Customer auth is OTP-only (phone + code), no password — see `POST /mobile/auth/send-otp` and `/verify-otp`. This collection uses collection-level Bearer auth wired to `{{accessToken}}`; `Verify OTP` auto-populates it via a test script, and every subsequent authenticated request inherits it automatically. Public/unauthenticated requests explicitly override auth to \"No Auth\".\n\n**Known backend gaps** (see local-be CLAUDE.md): there is no dedicated home/trending endpoint — the Home screen is composed client-side from Banners + Categories + Vendors + `GET /products?sort=popular`; there is no public \"Contact Us\"/support-info read (Settings support fields are admin-only via `/admin/settings`); `PUT /users/change-password` will always 401 for OTP-only customer accounts since they never have a password hash (kept here for completeness/documentation).\n\n**Running end-to-end**: Use Postman's Collection Runner top-to-bottom after setting `baseUrl` (default `http://localhost:3001`) and a real `phone`. Most list/create requests auto-capture IDs (`categoryId`, `vendorId`, `productId`, `addressId`, `cartItemId`, `orderId`, etc.) into collection variables for the next request to reuse — check each request's Tests tab. `Send OTP` only returns the `otp` field directly in non-production environments; otherwise retrieve it from the configured SMS provider or DB and set the `otp` variable manually before running `Verify OTP`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string",
+      "description": "local-be has no global prefix. Nest dev server default is port 3000 (see local-be CLAUDE.md 'Commands'), but many local setups run PORT=3001 (matching the dashboard's VITE_API_BASE_URL default) — adjust to match your running instance."
+    },
+    {
+      "key": "phone",
+      "value": "+96599912345",
+      "type": "string",
+      "description": "E.164 format, must match /^\\+[1-9]\\d{6,14}$/. Must NOT match local-be .env ADMIN_PHONE (or any seeded vendor phone) — MobileAuthService.assertMobileAccessible() rejects send-otp with 403 FORBIDDEN for any existing non-customer account (vendor/admin must use the dashboard password login instead). Any unused number auto-creates a new customer account on first verify-otp."
+    },
+    {
+      "key": "otp",
+      "value": "1234",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vendorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productSize",
+      "value": "M",
+      "type": "string"
+    },
+    {
+      "key": "productColor",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "addressId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cartItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "paymentMethodId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cardToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "checkoutSessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "paymentUrl",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "myFatoorahPaymentId",
+      "value": "",
+      "type": "string",
+      "description": "MyFatoorah's own paymentId query param, only known once the hosted payment page redirects back — set manually if testing the callback route directly."
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deliveredOrderId",
+      "value": "",
+      "type": "string",
+      "description": "A real order with status=delivered — required for Submit Review / Request Refund, which are both gated on delivery server-side. Set manually (no self-serve way to reach \"delivered\" from the customer API alone)."
+    },
+    {
+      "key": "reviewId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refundId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fcmTokenId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Onboarding & Auth",
+      "description": "Screens: Language Select (frontend-only, no backend call) → Welcome back / Login (phone) → Verify Code (OTP). OTP-only auth for the 'customer' role — POST /mobile/auth/verify-otp creates the account on first use and logs in on every use after (see MobileAuthResponseDto.isNewUser).",
+      "item": [
+        {
+          "name": "Send OTP (Login screen — Get OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mobile/auth/send-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "auth",
+                "send-otp"
+              ]
+            },
+            "description": "Rate-limited 5/hour per IP. Response's `otp` field is only present in dev/staging (SendOtpResponseDto) — captured automatically below when present.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{phone}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.otp) {",
+                  "        pm.collectionVariables.set(\"otp\", json.otp);",
+                  "        console.log(\"Captured dev OTP:\", json.otp);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP (Verify Code screen)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mobile/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "auth",
+                "verify-otp"
+              ]
+            },
+            "description": "Rate-limited 10/15min per IP. Creates the account on first verify (isNewUser=true), logs in thereafter. Captures accessToken/refreshToken/userId for every subsequent request in this collection.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\",\n  \"deviceInfo\": {\n    \"device\": \"android\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.tokens) {",
+                  "        pm.collectionVariables.set(\"accessToken\", json.tokens.accessToken);",
+                  "        pm.collectionVariables.set(\"refreshToken\", json.tokens.refreshToken);",
+                  "    }",
+                  "    if (json.user && json.user.id) {",
+                  "        pm.collectionVariables.set(\"userId\", json.user.id);",
+                  "    }",
+                  "    pm.test(\"Received access token\", function () {",
+                  "        pm.expect(json.tokens.accessToken).to.be.a(\"string\").and.not.empty;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User (Profile header / session check)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mobile/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns the full User domain object — used to populate the Profile screen header (name, email, avatar) and any session-restore check on app launch."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mobile/auth/refresh-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Called silently by the client when the access token expires.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.accessToken) pm.collectionVariables.set(\"accessToken\", json.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Home / Browse",
+      "description": "Screen: Home. No dedicated /home endpoint exists — the client composes this screen from three public calls: Special Offers banners, Categories/Brands, and Shop by Stores. 'Best Seller Product' on Home and the Trending tab both use GET /products?sort=popular.",
+      "item": [
+        {
+          "name": "List Banners (Special Offers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/banners",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "banners"
+              ]
+            },
+            "description": "Active promotional banners for the Home carousel and the \"Special Offers\" (View All) screen.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Categories (Categories and Brands)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Backs the Home \"Categories and Brands\" rail and the \"Shop by Categories\" screen (tabs are Category.department: men/women/kids/unisex).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length) {",
+                  "        pm.collectionVariables.set(\"categoryId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Stores (Shop by Stores)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vendors"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Public, active-only vendor listing for the Home \"Shop by Stores\" rail. Supports `search`.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length) {",
+                  "        pm.collectionVariables.set(\"vendorId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Products — Trending, Filter, Search & Details",
+      "description": "Screens: Trending Product, Filter modal, Shop by Categories result list, Store Details product grid, Search, Product Details, Product reviews shown on the PDP.",
+      "item": [
+        {
+          "name": "List Products — Trending (sort=popular)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?sort=popular&page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "popular",
+                  "disabled": false
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Trending tab / Home 'Best Seller Product'. Bearer token optional (OptionalJwtAuthGuard) — include it to get `isWishlisted` per item; omit for a pure guest browse."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length) {",
+                  "        pm.collectionVariables.set(\"productId\", json.data[0].id);",
+                  "        if (json.data[0].colors && json.data[0].colors.length) {",
+                  "            pm.collectionVariables.set(\"productColor\", json.data[0].colors[0]);",
+                  "        }",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Products — Filter (Filter modal Apply)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?categoryId={{categoryId}}&gender=male&color={{productColor}}&minPrice=0&maxPrice=1000&sort=price_asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "categoryId",
+                  "value": "{{categoryId}}",
+                  "disabled": false
+                },
+                {
+                  "key": "gender",
+                  "value": "male",
+                  "disabled": false
+                },
+                {
+                  "key": "color",
+                  "value": "{{productColor}}",
+                  "disabled": false
+                },
+                {
+                  "key": "minPrice",
+                  "value": "0",
+                  "disabled": false
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "1000",
+                  "disabled": false
+                },
+                {
+                  "key": "sort",
+                  "value": "price_asc",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Maps to the Filter bottom sheet: Categories, Colors, Gender checkboxes + Sort by."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Products — By Category (Shop by Categories result)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?categoryId={{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "categoryId",
+                  "value": "{{categoryId}}",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Tapping a category card (e.g. \"Fashion\") on the Shop by Categories screen."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Products — By Store (Store Details grid)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?vendorId={{vendorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "vendorId",
+                  "value": "{{vendorId}}",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Product grid on the Store Details screen (below the \"Follow Store\" button)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?search=coat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "coat",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Search screen — search bar submit (recent searches like \"Cashmere Scarves\" are client-stored, no dedicated backend endpoint)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Store Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/vendors/{{vendorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "vendors",
+                "{{vendorId}}"
+              ]
+            },
+            "description": "Store Details screen header (logo, \"Verified Artisan\" badge, description, Follow Store).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Product Details (PDP)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "Product Details screen — images, price, size/color pickers, description. Bearer optional for isWishlisted (heart icon state)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Product Reviews (PDP reviews summary)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}/reviews?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Approved-only reviews + rating breakdown for the product page.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Wishlist",
+      "description": "Screens: heart icon on any product card (PDP, Trending, Best Seller) + the dedicated 'My Wishlist' screen. Customer-only.",
+      "item": [
+        {
+          "name": "Add to Wishlist (heart tap)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/wishlist/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wishlist",
+                "{{productId}}"
+              ]
+            },
+            "description": "Toggle-add — tapping the heart icon on a product card or the PDP."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/wishlist?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wishlist"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "The \"My Wishlist\" grid screen."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove from Wishlist (heart tap again)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/wishlist/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wishlist",
+                "{{productId}}"
+              ]
+            },
+            "description": "Toggle-remove."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Cart",
+      "description": "Screens: 'Add to Cart' on PDP → Cart screen (line items, qty steppers, delivery address/payment summary, Order Info). Customer-only.",
+      "item": [
+        {
+          "name": "Add Item to Cart (PDP — Add to Cart)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/cart/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "cart",
+                "items"
+              ]
+            },
+            "description": "Merges into an existing line with the same productId+size+color instead of duplicating (server-side).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"size\": \"{{productSize}}\",\n  \"color\": \"{{productColor}}\",\n  \"qty\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.cart && json.cart.items && json.cart.items.length) {",
+                  "        const item = json.cart.items.find(i => i.productId === pm.collectionVariables.get(\"productId\")) || json.cart.items[json.cart.items.length - 1];",
+                  "        pm.collectionVariables.set(\"cartItemId\", item.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Cart (Cart screen)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/cart",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "cart"
+              ]
+            },
+            "description": "Shows line items, computed subtotal/deliveryFee/total (never persisted, recomputed on every read)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Cart Item Qty (stepper +/-)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/cart/items/{{cartItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "cart",
+                "items",
+                "{{cartItemId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"qty\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Cart Item (trash icon)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/cart/items/{{cartItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "cart",
+                "items",
+                "{{cartItemId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/cart",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "cart"
+              ]
+            },
+            "description": "Not a single visible button in the PDF flow, but available — e.g. after a failed/abandoned checkout reset."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Addresses",
+      "description": "Screens: Cart 'Delivery Address' row → Address / Add Address form → Profile → Saved Addresses (list, edit, delete). Customer-only.",
+      "item": [
+        {
+          "name": "Add Address (Save Address)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/addresses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "addresses"
+              ]
+            },
+            "description": "Matches the Address / Add Address form fields exactly (Name, Country, City, Phone Number, Address, \"Save as primary address\" toggle).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"home\",\n  \"name\": \"Mrh Raju\",\n  \"country\": \"Bangladesh\",\n  \"city\": \"Sylhet\",\n  \"phone\": \"+8801453987533\",\n  \"addressLine\": \"Chhatak, Sunamgonj 12/8AB\",\n  \"isPrimary\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.address && json.address.id) {",
+                  "        pm.collectionVariables.set(\"addressId\", json.address.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Saved Addresses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/addresses?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "addresses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Profile → Saved Addresses screen, and the address picker on the Cart screen."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Address (edit pencil icon)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/addresses/{{addressId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "addresses",
+                "{{addressId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressLine\": \"Chhatak, Sunamgonj 12/8AB, Flat 3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Set Address as Primary (Cart checkmark)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/addresses/{{addressId}}/primary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "addresses",
+                "{{addressId}}",
+                "primary"
+              ]
+            },
+            "description": "Selecting the checkmark next to an address on the Cart screen."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Address (trash icon)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/addresses/{{addressId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "addresses",
+                "{{addressId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Checkout & Payment",
+      "description": "Screens: Cart 'Payment Method' row → Payment (saved cards) / Add New Card → Checkout button → hosted MyFatoorah payment page (external, opened via paymentUrl) → Order Confirmed. An Order is only ever created server-side AFTER MyFatoorah confirms payment — POST /orders itself does not create one yet.",
+      "item": [
+        {
+          "name": "Get Payment Methods (Payment screen list)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/payment-methods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "payment-methods"
+              ]
+            },
+            "description": "Prices every available method against the current cart total. 422 CART_EMPTY if the cart is empty — add an item first (see folder 5)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length) {",
+                  "        pm.collectionVariables.set(\"paymentMethodId\", json.data[0].paymentMethodId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Payment Session (Add New Card)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/payment-methods/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "payment-methods",
+                "sessions"
+              ]
+            },
+            "description": "Tokenized MyFatoorah embedded session — backs the \"Add New Card\" screen and returns any previously saved cards."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.session) {",
+                  "        pm.collectionVariables.set(\"sessionId\", json.session.sessionId);",
+                  "        if (json.session.savedCards && json.session.savedCards.length) {",
+                  "            pm.collectionVariables.set(\"cardToken\", json.session.savedCards[0].token);",
+                  "        }",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout (Checkout button)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Exactly one of paymentMethodId (from Get Payment Methods) or sessionId (from Create Payment Session, for a tokenized/saved card) is required. Re-validates and re-prices every cart item server-side, then calls MyFatoorah ExecutePayment. Open the returned paymentUrl in a webview to complete payment.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"{{addressId}}\",\n  \"paymentMethodId\": \"{{paymentMethodId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.checkout) {",
+                  "        pm.collectionVariables.set(\"checkoutSessionId\", json.checkout.checkoutSessionId);",
+                  "        pm.collectionVariables.set(\"paymentUrl\", json.checkout.paymentUrl);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout — Using Saved Card (alternative)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Alternative to the paymentMethodId variant above — use when paying with a tokenized/saved card session instead of picking a method fresh.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"{{addressId}}\",\n  \"sessionId\": \"{{sessionId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Saved Card",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/payment-methods/cards/{{cardToken}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "payment-methods",
+                "cards",
+                "{{cardToken}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[Reference] Payment Callback — Success (Order Confirmed)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/myfatoorah/callback?paymentId={{myFatoorahPaymentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "myfatoorah",
+                "callback"
+              ],
+              "query": [
+                {
+                  "key": "paymentId",
+                  "value": "{{myFatoorahPaymentId}}",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Hit by the browser/webview redirect after a successful MyFatoorah payment, NOT called directly by the app — included for backend testing only. Re-verifies with MyFatoorah's GetPaymentStatus before creating any Order (never trusts the redirect alone). Requires a real `myFatoorahPaymentId` from an in-progress checkout session to return anything meaningful.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.orderNumbers && json.orderNumbers.length) {",
+                  "        console.log(\"Created orders:\", json.orderNumbers);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "[Reference] Payment Callback — Error/Cancelled",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/myfatoorah/error?paymentId={{myFatoorahPaymentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "myfatoorah",
+                "error"
+              ],
+              "query": [
+                {
+                  "key": "paymentId",
+                  "value": "{{myFatoorahPaymentId}}",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Identical handler to the success callback — included for completeness. If payment is not actually confirmed, the CheckoutSession is marked failed and no Order is created; the cart is left untouched for retry.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. My Orders",
+      "description": "Screens: My Order (Active / Previous / Canceled tabs) → Order card (Invoice / Track Order) → Order Tracking timeline. Customer-only, read-only status (only the vendor advances in_transit/delivered).",
+      "item": [
+        {
+          "name": "List Orders — Active tab",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/orders?tab=active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "tab",
+                  "value": "active",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Not delivered/cancelled — matches statuses shown as \"In Transit\" / \"Picked\" on the Active tab."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length) {",
+                  "        pm.collectionVariables.set(\"orderId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Orders — Previous tab",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/orders?tab=previous",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "tab",
+                  "value": "previous",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Delivered orders."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Orders — Canceled tab",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/orders?tab=canceled",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "tab",
+                  "value": "canceled",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Order Detail / Tracking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "description": "Order Tracking screen — statusHistory drives the timeline (Order Confirmed / Preparing / Pick Up / Delivered), driver contact card."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Order Invoice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/orders/{{orderId}}/invoice",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "orders",
+                "{{orderId}}",
+                "invoice"
+              ]
+            },
+            "description": "\"Invoice\" link on an order card."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/orders/{{orderId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "orders",
+                "{{orderId}}",
+                "cancel"
+              ]
+            },
+            "description": "Allowed only while status is 'placed' or 'confirmed' (service-enforced).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Changed my mind\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "9. Reviews",
+      "description": "Post-delivery flow — not a distinct screen in the PDF excerpt, but the real backend action behind a product's rating (PDP shows aggregate). Requires a genuinely delivered order.",
+      "item": [
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "reviews"
+              ]
+            },
+            "description": "orderId + productId together must prove a real delivered purchase (service-enforced) — set {{deliveredOrderId}} to an order with status=delivered before running. Starts as pending until admin-moderated.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{deliveredOrderId}}\",\n  \"productId\": \"{{productId}}\",\n  \"rating\": 5,\n  \"title\": {\n    \"en\": \"Great quality\",\n    \"ar\": \"\"\n  },\n  \"comment\": {\n    \"en\": \"Loved the fit and fabric, would buy again.\",\n    \"ar\": \"\"\n  },\n  \"images\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.review && json.review.id) {",
+                  "        pm.collectionVariables.set(\"reviewId\", json.review.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List My Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/reviews?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete My Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Refunds",
+      "description": "Customer-initiated refund request against a delivered order — not shown as its own screen in the PDF excerpt but a real backend flow reachable from an order (e.g. a \"Request Refund\" action on My Orders).",
+      "item": [
+        {
+          "name": "Request Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/refunds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "refunds"
+              ]
+            },
+            "description": "Only a delivered order is eligible (service-enforced); one request per order (unique index on orderId). refundAmount is capped at the order total server-side.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{deliveredOrderId}}\",\n  \"refundAmount\": 10,\n  \"refundReason\": \"Item arrived damaged\",\n  \"customerExplanation\": \"The packaging was torn and the item had a visible tear on arrival.\",\n  \"bankAccount\": {\n    \"accountHolder\": \"Mrh Raju\",\n    \"accountNumber\": \"1234567890\",\n    \"bankName\": \"Example Bank\",\n    \"bankCode\": \"EXBK\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.refund && json.refund.id) {",
+                  "        pm.collectionVariables.set(\"refundId\", json.refund.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List My Refunds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/refunds?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "refunds"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Refund Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/refunds/{{refundId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "refunds",
+                "{{refundId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11. Profile & Account",
+      "description": "Screens: Profile (name/email header, Edit) and its settings rows. Note is the current user's profile — see 'Get Current User' in folder 1 for the read side.",
+      "item": [
+        {
+          "name": "Update Profile (Edit)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/update-profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "update-profile"
+              ]
+            },
+            "description": "Profile screen Edit action.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jon\",\n  \"lastName\": \"Alishon\",\n  \"email\": \"alishon35@gmail.com\",\n  \"language\": \"en\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Toggle Notifications (Profile — Notification switch)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/update-profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "update-profile"
+              ]
+            },
+            "description": "Note: the Profile screen's 'Notification' toggle in the PDF maps conceptually to notificationsEnabled, but that specific field is set via PATCH /me/settings/notifications per the notifications module, not this endpoint — see next request."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register FCM Token (push notification opt-in)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/register-fcm-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "register-fcm-token"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fcmToken\": \"sample-fcm-device-token\",\n  \"device\": \"android\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    console.log(\"FCM token registered — check GET /mobile/auth/me for the tokenId to remove it later.\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove FCM Token",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/fcm-token/{{fcmTokenId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "fcm-token",
+                "{{fcmTokenId}}"
+              ]
+            },
+            "description": "Set {{fcmTokenId}} from the fcmTokens array on the User object (GET /mobile/auth/me) first."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password [expected to 401 for customers]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "change-password"
+              ]
+            },
+            "description": "Included for completeness only. OTP-only customer accounts never have a passwordHash, so this always 401s (UNAUTHORIZED, 'Current password is incorrect') for the customer role — it's effectively a dashboard (vendor/admin) route despite sharing the /users path prefix.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"oldpassword123\",\n  \"newPassword\": \"newpassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Customer account has no password — expect 401\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/delete-account",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "delete-account"
+              ]
+            },
+            "description": "password is only checked if the account has a passwordHash — never true for OTP-only customers, so effectively optional here. Destructive — do not run against a real account casually.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"No longer needed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "12. Notifications",
+      "description": "Shared collection across customer/vendor/admin (no @Roles restriction, just JwtAuthGuard) — order_update pushes land here for customers (checkout confirmation, vendor status change, cancellation).",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/notifications?page=1&limit=20&status=all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                },
+                {
+                  "key": "status",
+                  "value": "all",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    if (json.data && json.data.length) {",
+                  "        pm.collectionVariables.set(\"notificationId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Unread Count (bell badge)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/notifications/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "notifications",
+                "unread-count"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/notifications/{{notificationId}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "notifications",
+                "{{notificationId}}",
+                "read"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark All Notifications Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "notifications",
+                "read-all"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "13. FAQ & Support",
+      "description": "Screens: Profile → FAQ, Profile → Contact Us. FAQ is a real public endpoint; Contact Us has NO backend endpoint today — local-be's settings module (support email/phone/whatsapp/website/office address) is admin-only (/admin/settings), not exposed to the mobile app. Flagged as a backend gap in local-be's own CLAUDE.md.",
+      "item": [
+        {
+          "name": "List FAQs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/faqs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "faqs"
+              ]
+            },
+            "description": "Active-only FAQs for the customer app (distinct from /admin/faqs used by the dashboard).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "14. Logout",
+      "description": "Screen: Profile → Logout.",
+      "item": [
+        {
+          "name": "Logout (current session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mobile/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mobile",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Omit refreshToken in the body to revoke all sessions for this user instead of just the current one.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 2xx\", function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

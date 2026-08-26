@@ -46,7 +46,9 @@ export function OtpInput({ length = 6, value, onChange, onComplete, disabled }: 
   function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
 
-    if (!pasted) {return;}
+    if (!pasted) {
+      return;
+    }
 
     e.preventDefault();
     onChange(pasted);

@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
 
-import { registerVendor, resendVendorOtp, uploadKycDocument, verifyVendorRegistration } from "@/lib/vendorsApi";
+import {
+  registerVendor,
+  resendVendorOtp,
+  uploadKycDocument,
+  verifyVendorRegistration,
+} from "@/lib/vendorsApi";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import TopBanner from "@/components/layout/TopBanner";
 import DynamicForm from "@/components/form/DynamicForm";
@@ -24,7 +29,9 @@ const OTP_RESEND_SECONDS = 30;
 // POST /vendors/resend-otp. (3) the account is shown as pending KYC review.
 const registerSchema = z
   .object({
-    phone: z.string().regex(/^\+[1-9]\d{6,14}$/, "Phone must be in E.164 format, e.g. +96500000000"),
+    phone: z
+      .string()
+      .regex(/^\+[1-9]\d{6,14}$/, "Phone must be in E.164 format, e.g. +96500000000"),
     firstName: z.string().min(2, "Too short"),
     lastName: z.string().min(2, "Too short"),
     email: z.email("Invalid email"),
@@ -47,14 +54,18 @@ export default function RegisterPage() {
 
   // Set once the full form is submitted and the OTP has been sent — holds
   // everything needed to actually create the account once the code is verified.
-  const [pending, setPending] = useState<{ values: RegisterValues; kycDocumentUrl: string } | null>(null);
+  const [pending, setPending] = useState<{ values: RegisterValues; kycDocumentUrl: string } | null>(
+    null
+  );
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [resendIn, setResendIn] = useState(0);
 
   useEffect(() => {
-    if (resendIn <= 0) {return;}
+    if (resendIn <= 0) {
+      return;
+    }
 
     const id = setInterval(() => setResendIn((s) => Math.max(s - 1, 0)), 1000);
 
@@ -62,11 +73,35 @@ export default function RegisterPage() {
   }, [resendIn]);
 
   const registerFields: FieldConfig[] = [
-    { name: "storeName", label: t("auth.register.storeNameLabel"), type: "text", placeholder: t("auth.register.storeNamePlaceholder"), col: 12 },
-    { name: "firstName", label: t("auth.register.firstNameLabel"), type: "text", placeholder: t("auth.register.firstNamePlaceholder"), col: 6 },
-    { name: "lastName", label: t("auth.register.lastNameLabel"), type: "text", placeholder: t("auth.register.lastNamePlaceholder"), col: 6 },
+    {
+      name: "storeName",
+      label: t("auth.register.storeNameLabel"),
+      type: "text",
+      placeholder: t("auth.register.storeNamePlaceholder"),
+      col: 12,
+    },
+    {
+      name: "firstName",
+      label: t("auth.register.firstNameLabel"),
+      type: "text",
+      placeholder: t("auth.register.firstNamePlaceholder"),
+      col: 6,
+    },
+    {
+      name: "lastName",
+      label: t("auth.register.lastNameLabel"),
+      type: "text",
+      placeholder: t("auth.register.lastNamePlaceholder"),
+      col: 6,
+    },
     { name: "phone", label: t("auth.register.phoneLabel"), type: "phone", col: 6 },
-    { name: "email", label: t("auth.register.emailLabel"), type: "email", placeholder: "you@example.com", col: 6 },
+    {
+      name: "email",
+      label: t("auth.register.emailLabel"),
+      type: "email",
+      placeholder: "you@example.com",
+      col: 6,
+    },
     {
       name: "password",
       label: t("auth.register.passwordLabel"),
@@ -107,7 +142,9 @@ export default function RegisterPage() {
         // getApiErrorMessage's error envelope parsing doesn't apply — most
         // often a blocked CORS preflight on the bucket, which surfaces to
         // axios as a bare network error with no response body.
-        toast.error(t("auth.register.uploadFailed"), { title: t("auth.register.uploadFailedTitle") });
+        toast.error(t("auth.register.uploadFailed"), {
+          title: t("auth.register.uploadFailedTitle"),
+        });
 
         return;
       }
@@ -125,9 +162,13 @@ export default function RegisterPage() {
       setPending({ values, kycDocumentUrl });
       setOtp("");
       setResendIn(OTP_RESEND_SECONDS);
-      toast.success(t("auth.register.codeSentSuccess", { email: values.email }), { title: t("auth.register.checkInboxTitle") });
+      toast.success(t("auth.register.codeSentSuccess", { email: values.email }), {
+        title: t("auth.register.checkInboxTitle"),
+      });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, t("auth.register.sendFailed")), { title: t("auth.register.sendFailedTitle") });
+      toast.error(getApiErrorMessage(error, t("auth.register.sendFailed")), {
+        title: t("auth.register.sendFailedTitle"),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -136,7 +177,9 @@ export default function RegisterPage() {
   // Step 2 → 3: resubmit the same payload with `otp` filled in to verify and
   // actually create the account.
   async function onVerify(code: string) {
-    if (!pending) {return;}
+    if (!pending) {
+      return;
+    }
 
     if (!/^\d{4,6}$/.test(code)) {
       setOtpError(t("auth.register.enterCodeError"));
@@ -162,22 +205,30 @@ export default function RegisterPage() {
 
       setRegistered({ storeName: resp.vendor.storeName, message: resp.vendor.message });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, t("auth.register.verificationFailed")), { title: t("auth.register.verificationFailed") });
+      toast.error(getApiErrorMessage(error, t("auth.register.verificationFailed")), {
+        title: t("auth.register.verificationFailed"),
+      });
     } finally {
       setVerifying(false);
     }
   }
 
   async function resendOtp() {
-    if (!pending || resendIn > 0) {return;}
+    if (!pending || resendIn > 0) {
+      return;
+    }
 
     setVerifying(true);
     try {
       await resendVendorOtp(pending.values.email);
       setResendIn(OTP_RESEND_SECONDS);
-      toast.success(t("auth.register.codeResent", { email: pending.values.email }), { title: t("auth.register.codeResentTitle") });
+      toast.success(t("auth.register.codeResent", { email: pending.values.email }), {
+        title: t("auth.register.codeResentTitle"),
+      });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, t("auth.register.sendFailed")), { title: t("auth.register.sendFailedTitle") });
+      toast.error(getApiErrorMessage(error, t("auth.register.sendFailed")), {
+        title: t("auth.register.sendFailedTitle"),
+      });
     } finally {
       setVerifying(false);
     }
@@ -190,9 +241,12 @@ export default function RegisterPage() {
         <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 px-4 py-8">
           <div className="w-full max-w-xl p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg text-center">
             <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-green-500" />
-            <h1 className="text-2xl font-bold mb-2 text-primary dark:text-white">{t("auth.register.registeredTitle")}</h1>
+            <h1 className="text-2xl font-bold mb-2 text-primary dark:text-white">
+              {t("auth.register.registeredTitle")}
+            </h1>
             <p className="text-gray-600 dark:text-gray-300 mb-1">
-              <span className="font-medium">{registered.storeName}</span> {t("auth.register.registeredPending")}
+              <span className="font-medium">{registered.storeName}</span>{" "}
+              {t("auth.register.registeredPending")}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{registered.message}</p>
             <Link
@@ -216,11 +270,17 @@ export default function RegisterPage() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <ShieldCheck className="h-7 w-7 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold mb-2 text-primary dark:text-white">{t("auth.register.otpTitle")}</h1>
+            <h1 className="text-2xl font-bold mb-2 text-primary dark:text-white">
+              {t("auth.register.otpTitle")}
+            </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              {t("auth.register.otpSubtitle")} <span className="font-medium text-primary">{pending.values.email}</span>{" "}
-              ·{" "}
-              <button type="button" className="text-primary hover:underline" onClick={() => setPending(null)}>
+              {t("auth.register.otpSubtitle")}{" "}
+              <span className="font-medium text-primary">{pending.values.email}</span> ·{" "}
+              <button
+                type="button"
+                className="text-primary hover:underline"
+                onClick={() => setPending(null)}
+              >
                 {t("auth.register.changeEmail")}
               </button>
             </p>
@@ -236,14 +296,21 @@ export default function RegisterPage() {
             />
             {otpError && <p className="text-sm text-red-500 mt-2">{otpError}</p>}
 
-            <Button type="button" className="w-full mt-6" onClick={() => onVerify(otp)} disabled={verifying}>
+            <Button
+              type="button"
+              className="w-full mt-6"
+              onClick={() => onVerify(otp)}
+              disabled={verifying}
+            >
               {verifying ? t("auth.register.verifying") : t("auth.register.verifyButton")}
             </Button>
 
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
               {t("auth.register.didntReceive")}{" "}
               {resendIn > 0 ? (
-                <span className="text-gray-400">{t("auth.register.resendIn", { seconds: resendIn })}</span>
+                <span className="text-gray-400">
+                  {t("auth.register.resendIn", { seconds: resendIn })}
+                </span>
               ) : (
                 <button
                   type="button"
@@ -266,7 +333,9 @@ export default function RegisterPage() {
       <TopBanner />
       <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 px-4 py-8">
         <div className="w-full max-w-xl p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold mb-1 text-primary dark:text-white">{t("auth.register.pageTitle")}</h1>
+          <h1 className="text-2xl font-bold mb-1 text-primary dark:text-white">
+            {t("auth.register.pageTitle")}
+          </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {t("auth.register.pageSubtitle")}
           </p>

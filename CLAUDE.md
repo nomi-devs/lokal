@@ -112,7 +112,7 @@ Store in [src/store/index.ts](dashboard/src/store/index.ts):
 ### Layout
 One active layout system in [src/components/Dashboard/](dashboard/src/components/Dashboard/):
 - `DashboardLayout` — entry point, wraps `DashboardProvider`; usage: `<DashboardLayout sidebarItems={sidebarItems} topbarTitle="Page Title">`
-- `DesktopSidebar` — 3-state, cycled via the hamburger button: open (`w-64`) → partial/icons-only (`w-16`) → collapsed (hidden)
+- `DesktopSidebar` — 3-state, cycled via the hamburger button: open (`w-58`) → partial/icons-only (`w-16`) → collapsed (hidden)
 - `MobileSidebar` — Sheet-based drawer, same logo/logout structure as desktop
 - `Topbar` — hamburger toggle + page title + theme toggle
 - `context.tsx` — `sidebarState`, `isDesktop`, `toggleSidebar`

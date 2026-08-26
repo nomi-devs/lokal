@@ -85,7 +85,7 @@ export default function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute end-0 top-full mt-2 w-64 rounded-xl border bg-popover text-popover-foreground shadow-lg overflow-hidden z-20"
+          className="absolute end-0 top-full mt-2 w-58 rounded-xl border bg-popover text-popover-foreground shadow-lg overflow-hidden z-20"
         >
           <div className="px-4 py-3">
             <p className="text-sm font-semibold">{displayName}</p>

@@ -30,7 +30,9 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 function usagePercent(promo: AdminPromoCode): number | null {
-  if (!promo.maxUsageCount) {return null;}
+  if (!promo.maxUsageCount) {
+    return null;
+  }
 
   return Math.round((promo.currentUsageCount / promo.maxUsageCount) * 1000) / 10;
 }
@@ -118,7 +120,7 @@ export default function PromoCodeDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-2xl max-h-[85vh] flex flex-col gap-0">
+      <DialogContent className="p-0 max-w-2xl min-h-[420px] max-h-[85vh] flex flex-col gap-0">
         <div className="flex items-center gap-4 px-6 py-5 border-b shrink-0">
           <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Tag className="w-6 h-6 text-primary" />

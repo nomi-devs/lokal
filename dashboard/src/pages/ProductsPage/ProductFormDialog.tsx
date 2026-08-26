@@ -3,9 +3,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { Package, FolderTree, Coins, Boxes, Tag, Users2 } from "lucide-react";
+import { Package, FolderTree, Coins, Boxes, Tag, Users2, Ruler, Palette, Power } from "lucide-react";
 
 import ProductImagesField from "@/components/product/ProductImagesField";
+import ProductMultiSelectField from "@/components/product/ProductMultiSelectField";
+import {
+  PRODUCT_SIZE_SUGGESTIONS,
+  PRODUCT_COLOR_SUGGESTIONS,
+  PRODUCT_COLOR_SWATCHES,
+} from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +25,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { listCategories, type CategoryOption, type Product, type ProductPayload } from "@/lib/productsApi";
+import {
+  listCategories,
+  type CategoryOption,
+  type Product,
+  type ProductPayload,
+} from "@/lib/productsApi";
 
 const productSchema = z.object({
   nameEn: z.string().min(1),
@@ -31,8 +42,8 @@ const productSchema = z.object({
   gender: z.enum(["male", "female", "kids", "unisex"]),
   price: z.number().min(0.01, "Price must be greater than 0"),
   compareAtPrice: z.number().optional(),
-  sizes: z.string().optional(),
-  colors: z.string().optional(),
+  sizes: z.array(z.string()),
+  colors: z.array(z.string()),
   stock: z.number().int().min(0),
   status: z.enum(["active", "inactive"]),
 });
@@ -49,8 +60,8 @@ const emptyValues: FormValues = {
   gender: "unisex",
   price: 0,
   compareAtPrice: undefined,
-  sizes: "",
-  colors: "",
+  sizes: [],
+  colors: [],
   stock: 0,
   status: "active",
 };
@@ -68,15 +79,6 @@ const textareaCls = cn(
   "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
   "min-h-20 resize-y"
 );
-
-function splitList(value?: string): string[] {
-  return value
-    ? value
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
-}
 
 interface Props {
   open: boolean;
@@ -127,8 +129,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
             gender: product.gender,
             price: product.price,
             compareAtPrice: product.compareAtPrice,
-            sizes: product.sizes.join(", "),
-            colors: product.colors.join(", "),
+            sizes: product.sizes,
+            colors: product.colors,
             stock: product.stock,
             // Form only offers active/inactive — a rejected product edited
             // here defaults to inactive rather than silently un-rejecting.
@@ -139,6 +141,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
   }, [open, product, reset]);
 
   const images = watch("images");
+  const sizes = watch("sizes");
+  const colors = watch("colors");
+  const status = watch("status");
 
   if (!product) {
     return null;
@@ -153,8 +158,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
       gender: values.gender,
       price: values.price,
       compareAtPrice: values.compareAtPrice,
-      sizes: splitList(values.sizes),
-      colors: splitList(values.colors),
+      sizes: values.sizes,
+      colors: values.colors,
       stock: values.stock,
       inStock: values.stock > 0,
       status: values.status,
@@ -163,14 +168,16 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0">
+      <DialogContent className="p-0 w-[95vw] max-w-5xl min-h-[520px] max-h-[92vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Package className="w-5 h-5 text-primary" />
           </div>
           <div className="min-w-0">
             <DialogTitle>{t("products.dialog.editTitle")}</DialogTitle>
-            <DialogDescription>{t("products.dialog.editDescription", { name: product.name.en })}</DialogDescription>
+            <DialogDescription>
+              {t("products.dialog.editDescription", { name: product.name.en })}
+            </DialogDescription>
           </div>
         </DialogHeader>
 
@@ -181,8 +188,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
                 <Label className={labelRowCls}>
                   {t("products.dialog.nameEnglish")} <span className="text-destructive">*</span>
                 </Label>
-                <Input className={inputCls} placeholder={t("products.dialog.nameEnglishPlaceholder")} {...register("nameEn")} />
-                {errors.nameEn && <p className="text-xs text-destructive mt-1">{errors.nameEn.message}</p>}
+                <Input
+                  className={inputCls}
+                  placeholder={t("products.dialog.nameEnglishPlaceholder")}
+                  {...register("nameEn")}
+                />
+                {errors.nameEn && (
+                  <p className="text-xs text-destructive mt-1">{errors.nameEn.message}</p>
+                )}
               </div>
 
               <div>
@@ -196,34 +209,71 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
               </div>
             </div>
 
-            <div>
-              <Label className={labelRowCls}>{t("products.dialog.descriptionEnglish")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("products.dialog.descriptionEnglishPlaceholder")}
-                {...register("descriptionEn")}
-              />
-              {errors.descriptionEn && <p className="text-xs text-destructive mt-1">{errors.descriptionEn.message}</p>}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className={labelRowCls}>{t("products.dialog.descriptionEnglish")}</Label>
+                <textarea
+                  className={textareaCls}
+                  placeholder={t("products.dialog.descriptionEnglishPlaceholder")}
+                  {...register("descriptionEn")}
+                />
+                {errors.descriptionEn && (
+                  <p className="text-xs text-destructive mt-1">{errors.descriptionEn.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label className={labelRowCls}>{t("products.dialog.descriptionArabic")}</Label>
+                <textarea
+                  className={textareaCls}
+                  placeholder={t("products.dialog.descriptionArabicPlaceholder")}
+                  dir="rtl"
+                  {...register("descriptionAr")}
+                />
+              </div>
             </div>
 
-            <div>
-              <Label className={labelRowCls}>{t("products.dialog.descriptionArabic")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("products.dialog.descriptionArabicPlaceholder")}
-                dir="rtl"
-                {...register("descriptionAr")}
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <ProductImagesField
+                  label={t("products.dialog.images")}
+                  addLabel={t("products.dialog.addImage")}
+                  uploadingLabel={t("products.dialog.uploading")}
+                  images={images}
+                  onChange={(next) => setValue("images", next, { shouldValidate: true })}
+                />
+                {errors.images && (
+                  <p className="text-xs text-destructive mt-1">{errors.images.message}</p>
+                )}
+              </div>
 
-            <ProductImagesField
-              label={t("products.dialog.images")}
-              addLabel={t("products.dialog.addImage")}
-              uploadingLabel={t("products.dialog.uploading")}
-              images={images}
-              onChange={(next) => setValue("images", next, { shouldValidate: true })}
-            />
-            {errors.images && <p className="text-xs text-destructive -mt-3">{errors.images.message}</p>}
+              <div>
+                <Label className={labelRowCls}>
+                  <Power className="w-3.5 h-3.5 text-primary" />
+                  {t("products.dialog.status")}
+                </Label>
+                <div className="flex items-center gap-3">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={status === "active"}
+                      onChange={(e) =>
+                        setValue("status", e.target.checked ? "active" : "inactive", {
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                    <div className="w-11 h-6 bg-muted peer-checked:bg-primary rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                  </label>
+                  <span className="text-sm font-medium">
+                    {status === "active"
+                      ? t("products.list.status.active")
+                      : t("products.list.status.inactive")}
+                  </span>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -239,7 +289,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
                     </option>
                   ))}
                 </select>
-                {errors.categoryId && <p className="text-xs text-destructive mt-1">{errors.categoryId.message}</p>}
+                {errors.categoryId && (
+                  <p className="text-xs text-destructive mt-1">{errors.categoryId.message}</p>
+                )}
               </div>
 
               <div>
@@ -256,7 +308,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className={labelRowCls}>
                   <Coins className="w-3.5 h-3.5 text-primary" />
@@ -269,7 +321,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
                   step="0.01"
                   {...register("price", { valueAsNumber: true })}
                 />
-                {errors.price && <p className="text-xs text-destructive mt-1">{errors.price.message}</p>}
+                {errors.price && (
+                  <p className="text-xs text-destructive mt-1">{errors.price.message}</p>
+                )}
               </div>
 
               <div>
@@ -283,45 +337,57 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
                   min={0}
                   step="0.01"
                   placeholder={t("products.dialog.compareAtPricePlaceholder")}
-                  {...register("compareAtPrice", { setValueAs: (v) => (v === "" ? undefined : Number(v)) })}
+                  {...register("compareAtPrice", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  })}
                 />
                 {errors.compareAtPrice ? (
                   <p className="text-xs text-destructive mt-1">{errors.compareAtPrice.message}</p>
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1">{t("products.dialog.compareAtPriceHint")}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("products.dialog.compareAtPriceHint")}
+                  </p>
                 )}
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className={labelRowCls}>{t("products.dialog.sizes")}</Label>
-                <Input className={inputCls} placeholder={t("products.dialog.sizesPlaceholder")} {...register("sizes")} />
-              </div>
-
-              <div>
-                <Label className={labelRowCls}>{t("products.dialog.colors")}</Label>
-                <Input className={inputCls} placeholder={t("products.dialog.colorsPlaceholder")} {...register("colors")} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 items-end">
               <div>
                 <Label className={labelRowCls}>
                   <Boxes className="w-3.5 h-3.5 text-primary" />
                   {t("products.dialog.stock")}
                 </Label>
-                <Input className={inputCls} type="number" min={0} {...register("stock", { valueAsNumber: true })} />
-              </div>
-
-              <div>
-                <Label className={labelRowCls}>{t("products.dialog.status")}</Label>
-                <select className={selectCls} {...register("status")}>
-                  <option value="active">{t("products.list.status.active")}</option>
-                  <option value="inactive">{t("products.list.status.inactive")}</option>
-                </select>
+                <Input
+                  className={inputCls}
+                  type="number"
+                  min={0}
+                  {...register("stock", { valueAsNumber: true })}
+                />
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <ProductMultiSelectField
+                icon={Ruler}
+                label={t("products.dialog.sizes")}
+                placeholder={t("products.dialog.sizesPlaceholder")}
+                searchPlaceholder={t("products.dialog.sizesSearchPlaceholder")}
+                values={sizes}
+                onChange={(next) => setValue("sizes", next, { shouldValidate: true })}
+                options={PRODUCT_SIZE_SUGGESTIONS}
+              />
+
+              <ProductMultiSelectField
+                icon={Palette}
+                label={t("products.dialog.colors")}
+                placeholder={t("products.dialog.colorsPlaceholder")}
+                searchPlaceholder={t("products.dialog.colorsSearchPlaceholder")}
+                values={colors}
+                onChange={(next) => setValue("colors", next, { shouldValidate: true })}
+                options={PRODUCT_COLOR_SUGGESTIONS}
+                showColorSwatch
+                swatchMap={PRODUCT_COLOR_SWATCHES}
+              />
+            </div>
+
           </DialogBody>
 
           <DialogFooter>

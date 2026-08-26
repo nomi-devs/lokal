@@ -67,14 +67,16 @@ export default function ProductRejectDialog({ open, onOpenChange, product, onRej
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
             <XCircle className="w-5 h-5 text-destructive" />
           </div>
           <div className="min-w-0">
             <DialogTitle>{t("products.reject.title")}</DialogTitle>
-            <DialogDescription>{t("products.reject.description", { name: product.name.en })}</DialogDescription>
+            <DialogDescription>
+              {t("products.reject.description", { name: product.name.en })}
+            </DialogDescription>
           </div>
         </DialogHeader>
 
@@ -88,7 +90,9 @@ export default function ProductRejectDialog({ open, onOpenChange, product, onRej
                 {...register("rejectionReason")}
               />
               {errors.rejectionReason && (
-                <p className="text-xs text-destructive mt-1">{t("products.reject.errors.reasonRequired")}</p>
+                <p className="text-xs text-destructive mt-1">
+                  {t("products.reject.errors.reasonRequired")}
+                </p>
               )}
             </div>
           </DialogBody>

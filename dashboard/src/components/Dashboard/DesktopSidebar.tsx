@@ -22,7 +22,7 @@ export default function DesktopSidebar({ items }: { items: SidebarItemType[] }) 
     <aside
       className={cn(
         "flex flex-col h-screen bg-sidebar text-sidebar-foreground border-sidebar-border border-r shrink-0 overflow-hidden transition-all duration-300",
-        isPartial ? "w-16" : "w-64"
+        isPartial ? "w-16" : "w-58"
       )}
     >
       {/* Logo */}

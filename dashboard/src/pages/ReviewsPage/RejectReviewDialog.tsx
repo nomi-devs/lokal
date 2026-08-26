@@ -54,7 +54,7 @@ export default function RejectReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0">
+      <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
             <XCircle className="w-5 h-5 text-destructive" />

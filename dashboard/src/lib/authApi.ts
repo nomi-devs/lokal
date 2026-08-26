@@ -28,7 +28,10 @@ export interface LoginResponse {
 // identifier accepts either the account's phone or email (see
 // local-be/src/auth/dto/login.dto.ts) — the dashboard login form collects email.
 export async function login(identifier: string, password: string): Promise<LoginResponse> {
-  const { data } = await apiClient.post<LoginResponse>("/dashboard/auth/login", { identifier, password });
+  const { data } = await apiClient.post<LoginResponse>("/dashboard/auth/login", {
+    identifier,
+    password,
+  });
 
   return data;
 }
@@ -47,7 +50,9 @@ export interface SendOtpResponse {
 // email exists — the backend deliberately doesn't reveal that. Only sends a
 // code when a vendor/admin account with this email actually exists.
 export async function forgotPassword(email: string): Promise<SendOtpResponse> {
-  const { data } = await apiClient.post<SendOtpResponse>("/dashboard/auth/forgot-password", { email });
+  const { data } = await apiClient.post<SendOtpResponse>("/dashboard/auth/forgot-password", {
+    email,
+  });
 
   return data;
 }
@@ -58,6 +63,10 @@ export async function verifyResetOtp(email: string, otp: string): Promise<void> 
   await apiClient.post("/dashboard/auth/verify-reset-otp", { email, otp });
 }
 
-export async function resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
+export async function resetPassword(
+  email: string,
+  otp: string,
+  newPassword: string
+): Promise<void> {
   await apiClient.post("/dashboard/auth/reset-password", { email, otp, newPassword });
 }

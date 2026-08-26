@@ -36,7 +36,13 @@ const textareaCls = cn(
 const selectCls =
   "h-10 w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring";
 
-const REASON_CATEGORIES = ["warranty", "returnWindow", "customerDamage", "bankDetails", "other"] as const;
+const REASON_CATEGORIES = [
+  "warranty",
+  "returnWindow",
+  "customerDamage",
+  "bankDetails",
+  "other",
+] as const;
 
 interface Props {
   open: boolean;
@@ -77,7 +83,7 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[320px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
             <XCircle className="w-5 h-5 text-destructive" />
@@ -118,7 +124,9 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
                 maxLength={500}
                 {...register("reason")}
               />
-              {errors.reason && <p className="text-xs text-destructive mt-1">{errors.reason.message}</p>}
+              {errors.reason && (
+                <p className="text-xs text-destructive mt-1">{errors.reason.message}</p>
+              )}
             </div>
           </DialogBody>
 

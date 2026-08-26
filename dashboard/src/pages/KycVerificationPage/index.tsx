@@ -79,9 +79,21 @@ export default function KycVerificationPage() {
   }
 
   const columns: ColumnDef<AdminVendorRow>[] = [
-    { key: "storeName", header: t("kyc.management.columns.store"), render: (v) => <span className="font-medium">{v as string}</span> },
-    { key: "ownerName", header: t("kyc.management.columns.owner"), render: (v) => (v as string) || "—" },
-    { key: "ownerPhone", header: t("kyc.management.columns.phone"), render: (v) => (v as string) || "—" },
+    {
+      key: "storeName",
+      header: t("kyc.management.columns.store"),
+      render: (v) => <span className="font-medium">{v as string}</span>,
+    },
+    {
+      key: "ownerName",
+      header: t("kyc.management.columns.owner"),
+      render: (v) => (v as string) || "—",
+    },
+    {
+      key: "ownerPhone",
+      header: t("kyc.management.columns.phone"),
+      render: (v) => (v as string) || "—",
+    },
     { key: "city", header: t("kyc.management.columns.city"), render: (v) => (v as string) || "—" },
     {
       key: "kycDocumentUrl",
@@ -110,8 +122,17 @@ export default function KycVerificationPage() {
   ];
 
   const rowActions: RowAction<AdminVendorRow>[] = [
-    { label: t("kyc.management.actions.approve"), icon: CheckCircle2, onClick: (row) => setApproveTarget(row) },
-    { label: t("kyc.management.actions.reject"), icon: XCircle, variant: "destructive", onClick: (row) => setRejectTarget(row) },
+    {
+      label: t("kyc.management.actions.approve"),
+      icon: CheckCircle2,
+      onClick: (row) => setApproveTarget(row),
+    },
+    {
+      label: t("kyc.management.actions.reject"),
+      icon: XCircle,
+      variant: "destructive",
+      onClick: (row) => setRejectTarget(row),
+    },
   ];
 
   const missingDocuments = vendors.filter((v) => !v.kycDocumentUrl).length;

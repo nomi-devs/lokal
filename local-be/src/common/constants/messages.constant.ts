@@ -19,6 +19,10 @@ export const MESSAGES = {
       en: `If an account exists for ${email}, we've sent a reset code.`,
       ar: `إذا كان الحساب موجوداً لـ ${email}، فقد أرسلنا رمز إعادة التعيين.`,
     }),
+    MOBILE_ACCOUNT_FORBIDDEN: {
+      en: 'This phone number belongs to a vendor or admin account. Please sign in from the dashboard instead.',
+      ar: 'رقم الهاتف هذا مسجل لحساب تاجر أو مسؤول. يرجى تسجيل الدخول عبر لوحة التحكم بدلاً من ذلك.',
+    },
   },
   USER: {
     PROFILE_UPDATED: {

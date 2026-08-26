@@ -103,7 +103,9 @@ export default function FaqPage() {
         const { faq } = pendingAction;
         const updated = await updateAdminFaq(faq.id, { isActive: !faq.isActive });
         setFaqList((prev) => prev.map((f) => (f.id === faq.id ? updated : f)));
-        toast.success(!faq.isActive ? t("faqs.list.toasts.unhidden") : t("faqs.list.toasts.hidden"));
+        toast.success(
+          !faq.isActive ? t("faqs.list.toasts.unhidden") : t("faqs.list.toasts.hidden")
+        );
       }
     } catch (err) {
       toast.error(getApiErrorMessage(err));
@@ -118,7 +120,9 @@ export default function FaqPage() {
       render: (_, row) => (
         <div className="min-w-0">
           <p className="font-medium text-sm truncate">{row.questionEn}</p>
-          <p className="text-xs text-muted-foreground truncate" dir="rtl">{row.questionAr}</p>
+          <p className="text-xs text-muted-foreground truncate" dir="rtl">
+            {row.questionAr}
+          </p>
         </div>
       ),
     },
@@ -143,7 +147,12 @@ export default function FaqPage() {
         const label = v ? "Active" : "Hidden";
 
         return (
-          <span className={cn("inline-flex text-xs font-semibold px-2 py-0.5 rounded-full", statusStyle[label])}>
+          <span
+            className={cn(
+              "inline-flex text-xs font-semibold px-2 py-0.5 rounded-full",
+              statusStyle[label]
+            )}
+          >
             {t(`common.status.${label.toLowerCase()}`, label)}
           </span>
         );
@@ -222,7 +231,12 @@ export default function FaqPage() {
         defaultSort={{ key: "sortOrder", direction: "asc" }}
         striped
         stats={[
-          { title: t("faqs.list.stats.total"), value: faqList.length, icon: HelpCircle, variant: "primary" },
+          {
+            title: t("faqs.list.stats.total"),
+            value: faqList.length,
+            icon: HelpCircle,
+            variant: "primary",
+          },
           { title: t("faqs.list.stats.active"), value: activeCount, icon: Eye, variant: "success" },
         ]}
         emptyState={{

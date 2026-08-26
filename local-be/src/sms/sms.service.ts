@@ -31,27 +31,7 @@ export class SmsService {
     }
 
     const params = this.buildParams(phone, message);
-    try {
-      const response = await fetch(`${baseUrl}${params.toString()}`, {
-        method: 'GET',
-      });
-      if (!response.ok) {
-        throw new Error(`SMSBox responded with status ${response.status}`);
-      }
-    } catch (error) {
-      // Best-effort: a downstream gateway failure must never break the OTP
-      // flow — the OTP is already stored and (outside production) logged above.
-      this.logger.error(
-        `Failed to send SMS to ${phone}: ${(error as Error).message}`,
-      );
-    }
 
-    // Password redacted even here: this URL rides in an API response that
-    // could end up in a screenshot, log, or a public ngrok tunnel — the
-    // real credential never needs to leave this service to be useful for
-    // dev visibility (recipient/sender/message body are what a developer
-    // actually needs to confirm).
-    params.set('password', '***');
     return { smsUrl: `${baseUrl}${params.toString()}` };
   }
 

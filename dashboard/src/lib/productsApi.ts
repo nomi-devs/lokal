@@ -70,10 +70,11 @@ export interface CategoryOption {
 }
 
 export async function listCategories(): Promise<CategoryOption[]> {
-  const { data } = await apiClient.get<{ success: true; data: CategoryOption[]; pagination: Pagination }>(
-    "/categories",
-    { params: { page: 1, limit: 200 } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: CategoryOption[];
+    pagination: Pagination;
+  }>("/categories", { params: { page: 1, limit: 200 } });
 
   return data.data;
 }
@@ -98,19 +99,30 @@ export async function listMyProducts(params: ListVendorProductsParams = {}) {
 }
 
 export async function createMyProduct(payload: ProductPayload): Promise<Product> {
-  const { data } = await apiClient.post<{ success: true; product: Product }>("/vendor/products", payload);
+  const { data } = await apiClient.post<{ success: true; product: Product }>(
+    "/vendor/products",
+    payload
+  );
 
   return data.product;
 }
 
-export async function updateMyProduct(id: string, payload: Partial<ProductPayload>): Promise<Product> {
-  const { data } = await apiClient.patch<{ success: true; product: Product }>(`/vendor/products/${id}`, payload);
+export async function updateMyProduct(
+  id: string,
+  payload: Partial<ProductPayload>
+): Promise<Product> {
+  const { data } = await apiClient.patch<{ success: true; product: Product }>(
+    `/vendor/products/${id}`,
+    payload
+  );
 
   return data.product;
 }
 
 export async function deleteMyProduct(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(`/vendor/products/${id}`);
+  const { data } = await apiClient.delete<{ success: true; message: string }>(
+    `/vendor/products/${id}`
+  );
 
   return data;
 }
@@ -136,7 +148,9 @@ export async function listAdminProducts(params: ListAdminProductsParams = {}) {
 }
 
 export async function getAdminProduct(id: string): Promise<Product> {
-  const { data } = await apiClient.get<{ success: true; product: Product }>(`/admin/products/${id}`);
+  const { data } = await apiClient.get<{ success: true; product: Product }>(
+    `/admin/products/${id}`
+  );
 
   return data.product;
 }
@@ -151,13 +165,18 @@ export async function updateAdminProduct(
     rejectionReason?: string;
   }
 ): Promise<Product> {
-  const { data } = await apiClient.patch<{ success: true; product: Product }>(`/admin/products/${id}`, payload);
+  const { data } = await apiClient.patch<{ success: true; product: Product }>(
+    `/admin/products/${id}`,
+    payload
+  );
 
   return data.product;
 }
 
 export async function deleteAdminProduct(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(`/admin/products/${id}`);
+  const { data } = await apiClient.delete<{ success: true; message: string }>(
+    `/admin/products/${id}`
+  );
 
   return data;
 }

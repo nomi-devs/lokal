@@ -46,7 +46,10 @@ export async function resendVendorOtp(email: string): Promise<SendOtpResponse> {
 export async function verifyVendorRegistration(
   payload: RegisterVendorPayload & { otp: string }
 ): Promise<VendorRegisteredResponse> {
-  const { data } = await apiClient.post<VendorRegisteredResponse>("/vendors/verify-registration", payload);
+  const { data } = await apiClient.post<VendorRegisteredResponse>(
+    "/vendors/verify-registration",
+    payload
+  );
 
   return data;
 }
@@ -101,7 +104,9 @@ export interface UpdateVendorProfilePayload {
   logoUrl?: string;
 }
 
-export async function updateVendorProfile(payload: UpdateVendorProfilePayload): Promise<VendorProfile> {
+export async function updateVendorProfile(
+  payload: UpdateVendorProfilePayload
+): Promise<VendorProfile> {
   const { data } = await apiClient.put<{ success: true; vendor: VendorProfile }>(
     "/vendors/update-profile",
     payload

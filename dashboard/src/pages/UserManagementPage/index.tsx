@@ -105,7 +105,6 @@ export default function UserManagementPage() {
     const id = setTimeout(() => void load(), search ? SEARCH_DEBOUNCE_MS : 0);
 
     return () => clearTimeout(id);
-     
   }, [page, pageSize, status, search]);
 
   async function handleSuspendConfirm(user: AdminUserRow) {
@@ -150,7 +149,11 @@ export default function UserManagementPage() {
         </div>
       ),
     },
-    { key: "email", header: t("users.management.columns.email"), render: (v) => (v as string) || "—" },
+    {
+      key: "email",
+      header: t("users.management.columns.email"),
+      render: (v) => (v as string) || "—",
+    },
     {
       key: "role",
       header: t("users.management.columns.role"),
@@ -166,7 +169,9 @@ export default function UserManagementPage() {
       key: "status",
       header: t("users.management.columns.status"),
       render: (v) => (
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}>
+        <span
+          className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}
+        >
           {t(`common.status.${v as string}`, v as string)}
         </span>
       ),
@@ -194,11 +199,20 @@ export default function UserManagementPage() {
       hidden: (row) => row.status !== "suspended",
       onClick: (row) => setSuspendTarget(row),
     },
-    { label: t("users.management.actions.deletePermanent"), icon: Trash2, variant: "destructive", onClick: (row) => setDeleteTarget(row) },
+    {
+      label: t("users.management.actions.deletePermanent"),
+      icon: Trash2,
+      variant: "destructive",
+      onClick: (row) => setDeleteTarget(row),
+    },
   ];
 
   const toolbarActions: ToolbarAction<AdminUserRow>[] = [
-    { label: t("users.management.actions.addUser"), icon: UserPlus, onClick: () => setAddOpen(true) },
+    {
+      label: t("users.management.actions.addUser"),
+      icon: UserPlus,
+      onClick: () => setAddOpen(true),
+    },
   ];
 
   return (
@@ -284,12 +298,20 @@ export default function UserManagementPage() {
         }}
       />
 
-      <UserViewDialog open={!!viewTarget} onOpenChange={(o) => !o && setViewTarget(null)} user={viewTarget} />
+      <UserViewDialog
+        open={!!viewTarget}
+        onOpenChange={(o) => !o && setViewTarget(null)}
+        user={viewTarget}
+      />
 
       <ConfirmDialog
         open={!!suspendTarget}
         onOpenChange={(o) => !o && setSuspendTarget(null)}
-        title={suspendTarget?.status === "suspended" ? t("users.management.confirm.activateTitle") : t("users.management.confirm.suspendTitle")}
+        title={
+          suspendTarget?.status === "suspended"
+            ? t("users.management.confirm.activateTitle")
+            : t("users.management.confirm.suspendTitle")
+        }
         description={
           suspendTarget?.status === "suspended"
             ? t("users.management.confirm.activateDesc")

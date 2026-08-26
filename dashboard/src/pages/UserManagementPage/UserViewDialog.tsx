@@ -1,8 +1,24 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, Globe, Heart, Mail, MapPin, Package, Phone, ShieldCheck, User } from "lucide-react";
+import {
+  Calendar,
+  Globe,
+  Heart,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 
-import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailRow, DetailSection, InitialsAvatar } from "@/components/ui/DetailView";
 import { DataTable } from "@/components/ui/DataTable";
@@ -28,16 +44,22 @@ function UserWishlistTab({ userId }: { userId: string }) {
     adminApi
       .getUserWishlist(userId, page, PAGE_SIZE)
       .then((resp) => {
-        if (cancelled) {return;}
+        if (cancelled) {
+          return;
+        }
 
         setItems(resp.data);
         setTotal(resp.pagination.total);
       })
       .catch((error) => {
-        toast.error(getApiErrorMessage(error, t("users.viewDialog.loadWishlistFailed")), { title: t("common.failed", "Failed") });
+        toast.error(getApiErrorMessage(error, t("users.viewDialog.loadWishlistFailed")), {
+          title: t("common.failed", "Failed"),
+        });
       })
       .finally(() => {
-        if (!cancelled) {setLoading(false);}
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -67,7 +89,11 @@ function UserWishlistTab({ userId }: { userId: string }) {
       header: t("users.viewDialog.wishlistColumns.price"),
       render: (_v, row) => (row.product ? `${row.product.price}` : "—"),
     },
-    { key: "createdAt", header: t("users.viewDialog.wishlistColumns.added"), render: (v) => new Date(v as string).toLocaleDateString() },
+    {
+      key: "createdAt",
+      header: t("users.viewDialog.wishlistColumns.added"),
+      render: (v) => new Date(v as string).toLocaleDateString(),
+    },
   ];
 
   return (
@@ -103,16 +129,22 @@ function UserAddressesTab({ userId }: { userId: string }) {
     adminApi
       .getUserAddresses(userId, page, PAGE_SIZE)
       .then((resp) => {
-        if (cancelled) {return;}
+        if (cancelled) {
+          return;
+        }
 
         setItems(resp.data);
         setTotal(resp.pagination.total);
       })
       .catch((error) => {
-        toast.error(getApiErrorMessage(error, t("users.viewDialog.loadAddressesFailed")), { title: t("common.failed", "Failed") });
+        toast.error(getApiErrorMessage(error, t("users.viewDialog.loadAddressesFailed")), {
+          title: t("common.failed", "Failed"),
+        });
       })
       .finally(() => {
-        if (!cancelled) {setLoading(false);}
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -178,13 +210,15 @@ const STATUS_STYLES: Record<string, string> = {
 export default function UserViewDialog({ open, onOpenChange, user }: Props) {
   const { t } = useTranslation();
 
-  if (!user) {return null;}
+  if (!user) {
+    return null;
+  }
 
   const fullName = `${user.firstName} ${user.lastName}`.trim();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent className="max-w-2xl min-h-[560px] max-h-[80vh]">
         <DialogHeader>
           <InitialsAvatar name={fullName || user.phone} />
           <div className="min-w-0 flex-1">
@@ -219,25 +253,39 @@ export default function UserViewDialog({ open, onOpenChange, user }: Props) {
             </TabsTrigger>
           </TabsList>
 
-          <DialogBody className="pt-5">
+          <DialogBody className="pt-5 min-h-[360px]">
             <TabsContent value="details" className="flex flex-col gap-5">
               <DetailSection title={t("users.viewDialog.contactInfo")} icon={User}>
                 <DetailRow icon={Phone} label={t("users.viewDialog.phone")} value={user.phone} />
                 <DetailRow icon={Mail} label={t("users.viewDialog.email")} value={user.email} />
-                <DetailRow icon={Globe} label={t("users.viewDialog.language")} value={user.language.toUpperCase()} />
+                <DetailRow
+                  icon={Globe}
+                  label={t("users.viewDialog.language")}
+                  value={user.language.toUpperCase()}
+                />
                 <DetailRow
                   icon={ShieldCheck}
                   label={t("users.viewDialog.phoneVerified")}
-                  value={user.isPhoneVerified ? t("users.viewDialog.yes") : t("users.viewDialog.no")}
+                  value={
+                    user.isPhoneVerified ? t("users.viewDialog.yes") : t("users.viewDialog.no")
+                  }
                 />
               </DetailSection>
 
               <DetailSection title={t("users.viewDialog.account")} icon={Calendar}>
-                <DetailRow icon={Calendar} label={t("users.viewDialog.created")} value={new Date(user.createdAt).toLocaleString()} />
+                <DetailRow
+                  icon={Calendar}
+                  label={t("users.viewDialog.created")}
+                  value={new Date(user.createdAt).toLocaleString()}
+                />
                 <DetailRow
                   icon={Calendar}
                   label={t("users.viewDialog.lastLogin")}
-                  value={user.lastLogin ? new Date(user.lastLogin).toLocaleString() : t("users.viewDialog.never")}
+                  value={
+                    user.lastLogin
+                      ? new Date(user.lastLogin).toLocaleString()
+                      : t("users.viewDialog.never")
+                  }
                 />
               </DetailSection>
             </TabsContent>

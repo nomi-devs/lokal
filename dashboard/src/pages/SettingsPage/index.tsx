@@ -268,7 +268,7 @@ export default function SettingsPage() {
 
         return next;
       },
-      { replace: true },
+      { replace: true }
     );
   }
 

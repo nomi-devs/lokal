@@ -17,7 +17,13 @@ interface Props {
 // Shared multi-image gallery field for the admin and vendor product dialogs —
 // uploads straight to S3 via the presigned /files/upload-url flow (see
 // productsApi.uploadProductImage) and appends the resulting URL.
-export default function ProductImagesField({ label, addLabel, uploadingLabel, images, onChange }: Props) {
+export default function ProductImagesField({
+  label,
+  addLabel,
+  uploadingLabel,
+  images,
+  onChange,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -52,7 +58,10 @@ export default function ProductImagesField({ label, addLabel, uploadingLabel, im
       </Label>
       <div className="flex flex-wrap gap-3">
         {images.map((url, i) => (
-          <div key={url} className="relative w-20 h-20 rounded-lg border overflow-hidden group shrink-0">
+          <div
+            key={url}
+            className="relative w-20 h-20 rounded-lg border overflow-hidden group shrink-0"
+          >
             <img src={url} alt="" className="w-full h-full object-cover" />
             <button
               type="button"
@@ -64,7 +73,13 @@ export default function ProductImagesField({ label, addLabel, uploadingLabel, im
           </div>
         ))}
 
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFiles} />
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFiles}
+        />
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
@@ -73,8 +88,14 @@ export default function ProductImagesField({ label, addLabel, uploadingLabel, im
             "w-20 h-20 rounded-lg border border-dashed flex flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/40 shrink-0 disabled:opacity-50"
           )}
         >
-          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-          <span className="text-center leading-tight px-1">{uploading ? uploadingLabel : addLabel}</span>
+          {uploading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <ImageIcon className="w-4 h-4" />
+          )}
+          <span className="text-center leading-tight px-1">
+            {uploading ? uploadingLabel : addLabel}
+          </span>
         </button>
       </div>
     </div>

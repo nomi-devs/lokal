@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Package, Plus, Pencil, Trash2, CheckCircle2, XCircle, Clock, Star, Image as ImageIcon } from "lucide-react";
+import {
+  Package,
+  Plus,
+  Pencil,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Star,
+  Image as ImageIcon,
+} from "lucide-react";
 
 import VendorProductFormDialog from "./VendorProductFormDialog";
 
@@ -99,7 +109,9 @@ export default function VendorProducts() {
 
     try {
       await productsApi.deleteMyProduct(pendingAction.product.id);
-      toast.success(t("vendor.products.list.toasts.deleted", { name: pendingAction.product.name.en }));
+      toast.success(
+        t("vendor.products.list.toasts.deleted", { name: pendingAction.product.name.en })
+      );
       void load();
     } catch (error) {
       toast.error(getApiErrorMessage(error, t("vendor.products.list.toasts.actionFailed")));
@@ -144,14 +156,18 @@ export default function VendorProducts() {
       header: t("vendor.products.list.columns.price"),
       render: (_, row) => {
         const hasDiscount = row.compareAtPrice != null && row.compareAtPrice > row.price;
-        const discountPct = hasDiscount ? Math.round((1 - row.price / row.compareAtPrice!) * 100) : 0;
+        const discountPct = hasDiscount
+          ? Math.round((1 - row.price / row.compareAtPrice!) * 100)
+          : 0;
 
         return (
           <div className="flex items-center gap-1.5">
             <span className="font-medium text-sm">{row.price}</span>
             {hasDiscount && (
               <>
-                <span className="text-xs text-muted-foreground line-through">{row.compareAtPrice}</span>
+                <span className="text-xs text-muted-foreground line-through">
+                  {row.compareAtPrice}
+                </span>
                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30">
                   -{discountPct}%
                 </span>
@@ -176,7 +192,11 @@ export default function VendorProducts() {
 
         return (
           <span
-            className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full", s.text, s.bg)}
+            className={cn(
+              "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
+              s.text,
+              s.bg
+            )}
             title={status === "rejected" ? row.rejectionReason : undefined}
           >
             <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
@@ -219,7 +239,10 @@ export default function VendorProducts() {
   ];
 
   return (
-    <DashboardLayout sidebarItems={vendorSidebarItems} topbarTitle={t("vendor.products.topbarTitle")}>
+    <DashboardLayout
+      sidebarItems={vendorSidebarItems}
+      topbarTitle={t("vendor.products.topbarTitle")}
+    >
       <DataTable<Product>
         title={t("vendor.products.list.title")}
         description={t("vendor.products.list.description")}
@@ -256,10 +279,30 @@ export default function VendorProducts() {
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped
         stats={[
-          { title: t("vendor.products.list.stats.total"), value: productList.length, icon: Package, variant: "primary" },
-          { title: t("vendor.products.list.stats.active"), value: activeCount, icon: CheckCircle2, variant: "success" },
-          { title: t("vendor.products.list.stats.inactive"), value: inactiveCount, icon: Clock, variant: "warning" },
-          { title: t("vendor.products.list.stats.rejected"), value: rejectedCount, icon: XCircle, variant: "danger" },
+          {
+            title: t("vendor.products.list.stats.total"),
+            value: productList.length,
+            icon: Package,
+            variant: "primary",
+          },
+          {
+            title: t("vendor.products.list.stats.active"),
+            value: activeCount,
+            icon: CheckCircle2,
+            variant: "success",
+          },
+          {
+            title: t("vendor.products.list.stats.inactive"),
+            value: inactiveCount,
+            icon: Clock,
+            variant: "warning",
+          },
+          {
+            title: t("vendor.products.list.stats.rejected"),
+            value: rejectedCount,
+            icon: XCircle,
+            variant: "danger",
+          },
         ]}
         emptyState={{
           title: t("vendor.products.list.emptyTitle"),
@@ -281,7 +324,9 @@ export default function VendorProducts() {
         title={t("vendor.products.list.confirm.deleteTitle")}
         description={
           pendingAction
-            ? t("vendor.products.list.confirm.deleteDescription", { name: pendingAction.product.name.en })
+            ? t("vendor.products.list.confirm.deleteDescription", {
+                name: pendingAction.product.name.en,
+              })
             : undefined
         }
         confirmLabel={t("common.actions.delete")}

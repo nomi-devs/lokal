@@ -34,7 +34,12 @@ import { cn } from "@/lib/utils";
 import type { RootState } from "@/store";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { changePassword } from "@/lib/usersApi";
-import { getMyVendor, updateVendorProfile, uploadVendorLogo, type VendorProfile } from "@/lib/vendorsApi";
+import {
+  getMyVendor,
+  updateVendorProfile,
+  uploadVendorLogo,
+  type VendorProfile,
+} from "@/lib/vendorsApi";
 import { getCommission } from "@/lib/commissionApi";
 
 const storeSchema = z.object({
@@ -127,6 +132,7 @@ export default function VendorStore() {
   const [commissionPercentage, setCommissionPercentage] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [logoUrl, setLogoUrl] = useState("");
+  const [initialLogoUrl, setInitialLogoUrl] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -139,7 +145,7 @@ export default function VendorStore() {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<StoreFormValues>({
     resolver: zodResolver(storeSchema),
     defaultValues: { description: "", phone: "", address: "" },
@@ -159,23 +165,36 @@ export default function VendorStore() {
 
     getMyVendor()
       .then((v) => {
-        if (cancelled) {return;}
+        if (cancelled) {
+          return;
+        }
 
         setVendor(v);
         setLogoUrl(v.logoUrl ?? "");
-        reset({ description: v.storeDescription ?? "", phone: v.phone ?? "", address: v.address ?? "" });
+        setInitialLogoUrl(v.logoUrl ?? "");
+        reset({
+          description: v.storeDescription ?? "",
+          phone: v.phone ?? "",
+          address: v.address ?? "",
+        });
       })
       .catch((error) => {
-        toast.error(getApiErrorMessage(error, "Couldn't load your store profile"), { title: "Load failed" });
+        toast.error(getApiErrorMessage(error, "Couldn't load your store profile"), {
+          title: "Load failed",
+        });
       })
       .finally(() => {
-        if (!cancelled) {setLoading(false);}
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     // Platform-wide rate, not per-vendor — see local-be's CommissionController.
     getCommission()
       .then((c) => {
-        if (!cancelled) {setCommissionPercentage(c.percentage);}
+        if (!cancelled) {
+          setCommissionPercentage(c.percentage);
+        }
       })
       .catch(() => {
         // Non-critical for this page — the field below just stays blank.
@@ -184,20 +203,23 @@ export default function VendorStore() {
     return () => {
       cancelled = true;
     };
-     
   }, []);
 
   async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
 
-    if (!file) {return;}
+    if (!file) {
+      return;
+    }
 
     setUploadingLogo(true);
     try {
       const url = await uploadVendorLogo(file);
       setLogoUrl(url);
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Couldn't upload the logo"), { title: "Upload failed" });
+      toast.error(getApiErrorMessage(error, "Couldn't upload the logo"), {
+        title: "Upload failed",
+      });
     } finally {
       setUploadingLogo(false);
     }
@@ -213,9 +235,15 @@ export default function VendorStore() {
         logoUrl: logoUrl || undefined,
       });
       setVendor(updated);
-      toast.success(t("vendor.profile.savedToast.body"), { title: t("vendor.profile.savedToast.title") });
+      setInitialLogoUrl(logoUrl);
+      reset(values);
+      toast.success(t("vendor.profile.savedToast.body"), {
+        title: t("vendor.profile.savedToast.title"),
+      });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Couldn't save your profile"), { title: "Save failed" });
+      toast.error(getApiErrorMessage(error, "Couldn't save your profile"), {
+        title: "Save failed",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -303,16 +331,14 @@ export default function VendorStore() {
                 <div className="self-start">
                   <Label className={labelRowCls}>{t("vendor.profile.fields.storeName")}</Label>
                   <Input className={inputCls} value={vendor?.storeName ?? ""} disabled />
-                   <div>
-                <Label className={labelRowCls}>{t("vendor.profile.fields.description")}</Label>
-                <textarea className={textareaCls} {...register("description")} />
-              </div>
+                  <div>
+                    <Label className={labelRowCls}>{t("vendor.profile.fields.description")}</Label>
+                    <textarea className={textareaCls} {...register("description")} />
+                  </div>
                 </div>
-                
               </div>
 
               {/* Description */}
-             
 
               {/* Phone / Address */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -336,7 +362,12 @@ export default function VendorStore() {
               </div>
 
               <div className="flex justify-end pt-1">
-                <Button type="submit" size="lg" className="shrink-0" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="shrink-0"
+                  disabled={isSaving || (!isDirty && logoUrl === initialLogoUrl)}
+                >
                   <Save className="w-4 h-4" />
                   {isSaving ? "…" : t("vendor.profile.save")}
                 </Button>
@@ -462,13 +493,21 @@ export default function VendorStore() {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-                <InfoField icon={User} label={t("vendor.profile.fields.ownerName")} value={ownerName} />
+                <InfoField
+                  icon={User}
+                  label={t("vendor.profile.fields.ownerName")}
+                  value={ownerName}
+                />
                 <InfoField
                   icon={Mail}
                   label={t("vendor.profile.fields.ownerEmail")}
                   value={authUser?.email}
                 />
-                <InfoField icon={MapPin} label={t("vendor.profile.fields.city")} value={vendor?.city} />
+                <InfoField
+                  icon={MapPin}
+                  label={t("vendor.profile.fields.city")}
+                  value={vendor?.city}
+                />
                 <InfoField
                   icon={Percent}
                   label={t("vendor.profile.fields.commission")}

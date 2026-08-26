@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Calendar,
   ExternalLink,
@@ -12,7 +13,13 @@ import {
   User,
 } from "lucide-react";
 
-import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailRow, DetailSection, InitialsAvatar } from "@/components/ui/DetailView";
 import { DataTable } from "@/components/ui/DataTable";
@@ -33,6 +40,8 @@ const PRODUCT_STATUS_STYLES: Record<string, string> = {
 const PAGE_SIZE = 5;
 
 function VendorProductsTab({ vendorId }: { vendorId: string }) {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -44,27 +53,33 @@ function VendorProductsTab({ vendorId }: { vendorId: string }) {
     adminApi
       .getVendorProducts(vendorId, page, PAGE_SIZE)
       .then((resp) => {
-        if (cancelled) {return;}
+        if (cancelled) {
+          return;
+        }
 
         setProducts(resp.data);
         setTotal(resp.pagination.total);
       })
       .catch((error) => {
-        toast.error(getApiErrorMessage(error, "Couldn't load products"), { title: "Load failed" });
+        toast.error(getApiErrorMessage(error, t("vendors.viewDialog.loadProductsFailed")), {
+          title: t("common.failed", "Failed"),
+        });
       })
       .finally(() => {
-        if (!cancelled) {setLoading(false);}
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [vendorId, page]);
+  }, [vendorId, page, t]);
 
   const columns: ColumnDef<Product>[] = [
     {
       key: "name",
-      header: "Product",
+      header: t("vendors.viewDialog.productsColumns.product"),
       render: (_v, row) => (
         <div className="flex items-center gap-2">
           {row.images[0] ? (
@@ -74,23 +89,35 @@ function VendorProductsTab({ vendorId }: { vendorId: string }) {
               <Package className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
           )}
-          <span className="font-medium">{row.name.en}</span>
+          <span className="font-medium">{isAr && row.name.ar ? row.name.ar : row.name.en}</span>
         </div>
       ),
     },
-    { key: "gender", header: "Gender", render: (v) => <span className="capitalize">{v as string}</span> },
+    {
+      key: "gender",
+      header: t("vendors.viewDialog.productsColumns.department"),
+      render: (v) => (
+        <span className="capitalize">{t(`common.status.${v as string}`, v as string)}</span>
+      ),
+    },
     {
       key: "price",
-      header: "Price",
-      render: (_v, row) => (row.compareAtPrice ? `${row.price} (was ${row.compareAtPrice})` : `${row.price}`),
+      header: t("vendors.viewDialog.productsColumns.price"),
+      render: (_v, row) =>
+        row.compareAtPrice ? `${row.price} (was ${row.compareAtPrice})` : `${row.price}`,
     },
-    { key: "stock", header: "Stock" },
+    { key: "stock", header: t("vendors.viewDialog.productsColumns.stock") },
     {
       key: "status",
-      header: "Status",
+      header: t("vendors.viewDialog.productsColumns.status"),
       render: (v) => (
-        <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", PRODUCT_STATUS_STYLES[v as string])}>
-          {v as string}
+        <span
+          className={cn(
+            "px-2 py-0.5 rounded-full text-xs font-medium",
+            PRODUCT_STATUS_STYLES[v as string]
+          )}
+        >
+          {t(`common.status.${v as string}`, v as string)}
         </span>
       ),
     },
@@ -108,7 +135,10 @@ function VendorProductsTab({ vendorId }: { vendorId: string }) {
         totalCount: total,
         onPageChange: (p) => setPage(p),
       }}
-      emptyState={{ title: "No products yet", description: "This vendor hasn't listed any products." }}
+      emptyState={{
+        title: t("vendors.viewDialog.emptyProducts"),
+        description: t("vendors.viewDialog.emptyProductsDesc"),
+      }}
     />
   );
 }
@@ -127,11 +157,15 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function VendorViewDialog({ open, onOpenChange, vendor }: Props) {
-  if (!vendor) {return null;}
+  const { t } = useTranslation();
+
+  if (!vendor) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent className="max-w-2xl min-h-[560px] max-h-[80vh]">
         <DialogHeader>
           <InitialsAvatar name={vendor.storeName} />
           <div className="min-w-0 flex-1">
@@ -144,7 +178,7 @@ export default function VendorViewDialog({ open, onOpenChange, vendor }: Props) 
               STATUS_STYLES[vendor.status]
             )}
           >
-            {vendor.status.replace("_", " ")}
+            {t(`common.status.${vendor.status}`, vendor.status.replace("_", " "))}
           </span>
         </DialogHeader>
 
@@ -152,30 +186,50 @@ export default function VendorViewDialog({ open, onOpenChange, vendor }: Props) 
           <TabsList className="px-6">
             <TabsTrigger value="details">
               <User className="h-3.5 w-3.5" />
-              Details
+              {t("vendors.viewDialog.tabs.details")}
             </TabsTrigger>
             <TabsTrigger value="products">
               <Package className="h-3.5 w-3.5" />
-              Products
+              {t("vendors.viewDialog.tabs.products")}
             </TabsTrigger>
             <TabsTrigger value="verification">
               <ShieldCheck className="h-3.5 w-3.5" />
-              Verification
+              {t("vendors.viewDialog.tabs.verification")}
             </TabsTrigger>
           </TabsList>
 
-          <DialogBody className="pt-5">
+          <DialogBody className="pt-5 min-h-[360px]">
             <TabsContent value="details" className="flex flex-col gap-5">
-              <DetailSection title="Store Information" icon={Store}>
-                <DetailRow icon={Store} label="Store name" value={vendor.storeName} />
-                <DetailRow icon={MapPin} label="City" value={vendor.city} />
-                <DetailRow icon={Calendar} label="Submitted" value={new Date(vendor.createdAt).toLocaleString()} />
+              <DetailSection title={t("vendors.viewDialog.storeInfo")} icon={Store}>
+                <DetailRow
+                  icon={Store}
+                  label={t("vendors.viewDialog.storeName")}
+                  value={vendor.storeName}
+                />
+                <DetailRow icon={MapPin} label={t("vendors.viewDialog.city")} value={vendor.city} />
+                <DetailRow
+                  icon={Calendar}
+                  label={t("vendors.viewDialog.submitted")}
+                  value={new Date(vendor.createdAt).toLocaleString()}
+                />
               </DetailSection>
 
-              <DetailSection title="Owner" icon={User}>
-                <DetailRow icon={User} label="Owner name" value={vendor.ownerName} />
-                <DetailRow icon={Phone} label="Phone" value={vendor.ownerPhone} />
-                <DetailRow icon={Mail} label="Email" value={vendor.ownerEmail} />
+              <DetailSection title={t("vendors.viewDialog.owner")} icon={User}>
+                <DetailRow
+                  icon={User}
+                  label={t("vendors.viewDialog.ownerName")}
+                  value={vendor.ownerName}
+                />
+                <DetailRow
+                  icon={Phone}
+                  label={t("vendors.viewDialog.phone")}
+                  value={vendor.ownerPhone}
+                />
+                <DetailRow
+                  icon={Mail}
+                  label={t("vendors.viewDialog.email")}
+                  value={vendor.ownerEmail}
+                />
               </DetailSection>
             </TabsContent>
 
@@ -184,7 +238,7 @@ export default function VendorViewDialog({ open, onOpenChange, vendor }: Props) 
             </TabsContent>
 
             <TabsContent value="verification">
-              <DetailSection title="KYC Document" icon={ShieldCheck}>
+              <DetailSection title={t("vendors.viewDialog.kycDocument")} icon={ShieldCheck}>
                 <div className="col-span-full">
                   {vendor.kycDocumentUrl ? (
                     <a
@@ -195,12 +249,14 @@ export default function VendorViewDialog({ open, onOpenChange, vendor }: Props) 
                     >
                       <span className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        Business license / ID document
+                        {t("vendors.viewDialog.businessLicense")}
                       </span>
                       <ExternalLink className="h-3.5 w-3.5 text-primary" />
                     </a>
                   ) : (
-                    <p className="text-sm text-muted-foreground">No document submitted.</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("vendors.viewDialog.noDocument")}
+                    </p>
                   )}
                 </div>
               </DetailSection>

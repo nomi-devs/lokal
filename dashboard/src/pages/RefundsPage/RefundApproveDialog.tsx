@@ -73,7 +73,7 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />

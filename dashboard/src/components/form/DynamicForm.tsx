@@ -118,7 +118,10 @@ function PhoneField({
   }, []);
 
   return (
-    <div ref={containerRef} className="relative flex items-center rounded-full border bg-muted/40 dark:bg-gray-800">
+    <div
+      ref={containerRef}
+      className="relative flex items-center rounded-full border bg-muted/40 dark:bg-gray-800"
+    >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

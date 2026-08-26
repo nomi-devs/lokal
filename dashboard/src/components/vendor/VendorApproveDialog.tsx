@@ -35,10 +35,14 @@ export default function VendorApproveDialog({ open, onOpenChange, vendor, onAppr
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    if (open) {setNotes("");}
+    if (open) {
+      setNotes("");
+    }
   }, [open, vendor]);
 
-  if (!vendor) {return null;}
+  if (!vendor) {
+    return null;
+  }
 
   function submit() {
     onApprove(vendor!.id, notes);
@@ -47,14 +51,16 @@ export default function VendorApproveDialog({ open, onOpenChange, vendor, onAppr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="min-w-0">
             <DialogTitle>{t("vendors.approveModal.title")}</DialogTitle>
-            <DialogDescription>{t("vendors.approveModal.description", { storeName: vendor.storeName })}</DialogDescription>
+            <DialogDescription>
+              {t("vendors.approveModal.description", { storeName: vendor.storeName })}
+            </DialogDescription>
           </div>
         </DialogHeader>
 
@@ -72,7 +78,11 @@ export default function VendorApproveDialog({ open, onOpenChange, vendor, onAppr
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             {t("vendors.approveModal.cancel")}
           </Button>
-          <Button type="button" onClick={submit} className="bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button
+            type="button"
+            onClick={submit}
+            className="bg-emerald-600 text-white hover:bg-emerald-700"
+          >
             <CheckCircle2 className="w-4 h-4" />
             {t("vendors.approveModal.approve")}
           </Button>

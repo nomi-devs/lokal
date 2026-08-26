@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Headphones, Save, Mail, Phone, MessageCircle, Globe, MapPin, type LucideIcon } from "lucide-react";
+import {
+  Headphones,
+  Save,
+  Mail,
+  Phone,
+  MessageCircle,
+  Globe,
+  MapPin,
+  type LucideIcon,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/Toast";
@@ -81,7 +90,9 @@ export function SupportInformationCard({ settings, loading, onSave }: SupportInf
         </div>
         <div>
           <h2 className="text-lg font-bold">{t("settings.support.title")}</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">{t("settings.support.description")}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {t("settings.support.description")}
+          </p>
         </div>
       </div>
 
@@ -99,7 +110,10 @@ export function SupportInformationCard({ settings, loading, onSave }: SupportInf
               const Icon = field.icon;
 
               return (
-                <div key={field.key} className={cn("flex flex-col gap-1.5", field.full && "sm:col-span-2")}>
+                <div
+                  key={field.key}
+                  className={cn("flex flex-col gap-1.5", field.full && "sm:col-span-2")}
+                >
                   <label className="text-sm font-medium">
                     {t(`settings.support.fields.${field.key}.label`)}
                     {field.required && <span className="text-destructive"> *</span>}
@@ -111,7 +125,9 @@ export function SupportInformationCard({ settings, loading, onSave }: SupportInf
                       className={inputCls}
                       value={values[field.key] ?? ""}
                       placeholder={t(`settings.support.fields.${field.key}.placeholder`)}
-                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      onChange={(e) =>
+                        setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      }
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">

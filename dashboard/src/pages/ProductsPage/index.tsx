@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Package, Pencil, Trash2, CheckCircle2, XCircle, RotateCcw, Star, Image as ImageIcon } from "lucide-react";
+import {
+  Package,
+  Pencil,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Star,
+  Image as ImageIcon,
+} from "lucide-react";
 
 import ProductFormDialog from "./ProductFormDialog";
 import ProductRejectDialog from "./ProductRejectDialog";
@@ -58,7 +67,9 @@ export default function ProductsPage() {
 
       // DataTable's search does String(row[key]).includes(...) — name is a
       // { en, ar? } object, so give it a flat string field to search against.
-      setProductList(productsResp.data.map((p) => ({ ...p, searchName: `${p.name.en} ${p.name.ar ?? ""}` })));
+      setProductList(
+        productsResp.data.map((p) => ({ ...p, searchName: `${p.name.en} ${p.name.ar ?? ""}` }))
+      );
       setVendors(vendorsResp.data);
     } catch (error) {
       toast.error(getApiErrorMessage(error, t("products.list.toasts.loadFailed")));
@@ -113,7 +124,10 @@ export default function ProductsPage() {
     }
 
     try {
-      await productsApi.updateAdminProduct(rejectTarget.id, { status: "rejected", rejectionReason: reason });
+      await productsApi.updateAdminProduct(rejectTarget.id, {
+        status: "rejected",
+        rejectionReason: reason,
+      });
       toast.success(t("products.list.toasts.rejected", { name: rejectTarget.name.en }));
       void load();
     } catch (error) {
@@ -178,14 +192,18 @@ export default function ProductsPage() {
       header: t("products.list.columns.price"),
       render: (_, row) => {
         const hasDiscount = row.compareAtPrice != null && row.compareAtPrice > row.price;
-        const discountPct = hasDiscount ? Math.round((1 - row.price / row.compareAtPrice!) * 100) : 0;
+        const discountPct = hasDiscount
+          ? Math.round((1 - row.price / row.compareAtPrice!) * 100)
+          : 0;
 
         return (
           <div className="flex items-center gap-1.5">
             <span className="font-medium text-sm">{row.price}</span>
             {hasDiscount && (
               <>
-                <span className="text-xs text-muted-foreground line-through">{row.compareAtPrice}</span>
+                <span className="text-xs text-muted-foreground line-through">
+                  {row.compareAtPrice}
+                </span>
                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30">
                   -{discountPct}%
                 </span>
@@ -202,7 +220,11 @@ export default function ProductsPage() {
       render: (v, row) => (
         <div className="flex flex-col items-end">
           <span className="font-medium">{(v as number).toLocaleString()}</span>
-          {!row.inStock && <span className="text-xs text-muted-foreground">{t("products.list.status.inactive")}</span>}
+          {!row.inStock && (
+            <span className="text-xs text-muted-foreground">
+              {t("products.list.status.inactive")}
+            </span>
+          )}
         </div>
       ),
     },
@@ -214,7 +236,13 @@ export default function ProductsPage() {
         const s = statusStyle[status];
 
         return (
-          <span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full", s.text, s.bg)}>
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
+              s.text,
+              s.bg
+            )}
+          >
             <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
             {t(`products.list.status.${status}`)}
           </span>
@@ -298,10 +326,30 @@ export default function ProductsPage() {
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped
         stats={[
-          { title: t("products.list.stats.total"), value: productList.length, icon: Package, variant: "primary" },
-          { title: t("products.list.stats.active"), value: activeCount, icon: CheckCircle2, variant: "success" },
-          { title: t("products.list.stats.inactive"), value: inactiveCount, icon: RotateCcw, variant: "warning" },
-          { title: t("products.list.stats.rejected"), value: rejectedCount, icon: XCircle, variant: "danger" },
+          {
+            title: t("products.list.stats.total"),
+            value: productList.length,
+            icon: Package,
+            variant: "primary",
+          },
+          {
+            title: t("products.list.stats.active"),
+            value: activeCount,
+            icon: CheckCircle2,
+            variant: "success",
+          },
+          {
+            title: t("products.list.stats.inactive"),
+            value: inactiveCount,
+            icon: RotateCcw,
+            variant: "warning",
+          },
+          {
+            title: t("products.list.stats.rejected"),
+            value: rejectedCount,
+            icon: XCircle,
+            variant: "danger",
+          },
         ]}
         emptyState={{
           title: t("products.list.emptyTitle"),
@@ -329,7 +377,9 @@ export default function ProductsPage() {
         variant="destructive"
         title={t("products.list.confirm.deleteTitle")}
         description={
-          pendingAction ? t("products.list.confirm.deleteDescription", { name: pendingAction.product.name.en }) : undefined
+          pendingAction
+            ? t("products.list.confirm.deleteDescription", { name: pendingAction.product.name.en })
+            : undefined
         }
         confirmLabel={t("common.actions.delete")}
         onConfirm={confirmPendingAction}

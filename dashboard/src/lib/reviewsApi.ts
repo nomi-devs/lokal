@@ -35,10 +35,11 @@ export interface ListAdminReviewsParams {
 }
 
 export async function listAdminReviews(params: ListAdminReviewsParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: AdminReview[]; pagination: Pagination }>(
-    "/admin/reviews",
-    { params: { page: 1, limit: 100, ...params } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminReview[];
+    pagination: Pagination;
+  }>("/admin/reviews", { params: { page: 1, limit: 100, ...params } });
 
   return data;
 }

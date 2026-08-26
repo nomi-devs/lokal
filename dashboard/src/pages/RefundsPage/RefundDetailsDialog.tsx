@@ -53,7 +53,7 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-2xl max-h-[85vh] flex flex-col gap-0">
+      <DialogContent className="p-0 max-w-2xl min-h-[420px] max-h-[85vh] flex flex-col gap-0">
         <div className="flex items-center gap-4 px-6 py-5 border-b shrink-0">
           <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Wallet className="w-6 h-6 text-primary" />
@@ -98,9 +98,15 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
               <InfoField
                 icon={Wallet}
                 label={t("refunds.amount")}
-                value={<span className="text-destructive">-{refund.refundAmount.toFixed(2)} KWD</span>}
+                value={
+                  <span className="text-destructive">-{refund.refundAmount.toFixed(2)} KWD</span>
+                }
               />
-              <InfoField icon={MessageSquare} label={t("refunds.reason")} value={refund.refundReason} />
+              <InfoField
+                icon={MessageSquare}
+                label={t("refunds.reason")}
+                value={refund.refundReason}
+              />
               <InfoField
                 icon={Calendar}
                 label={t("refunds.requestedDate")}
@@ -112,7 +118,9 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
                 <span className="text-xs text-muted-foreground">
                   {t("refunds.detailsDialog.customerExplanation")}
                 </span>
-                <p className="text-sm mt-1 rounded-lg bg-muted/50 p-3">{refund.customerExplanation}</p>
+                <p className="text-sm mt-1 rounded-lg bg-muted/50 p-3">
+                  {refund.customerExplanation}
+                </p>
               </div>
             )}
           </div>
@@ -160,27 +168,41 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
               </div>
               {refund.approvedAt && (
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("refunds.approveDialog.approvalDate")}</span>
-                  <span className="font-medium">{new Date(refund.approvedAt).toLocaleString()}</span>
+                  <span className="text-muted-foreground">
+                    {t("refunds.approveDialog.approvalDate")}
+                  </span>
+                  <span className="font-medium">
+                    {new Date(refund.approvedAt).toLocaleString()}
+                  </span>
                 </div>
               )}
               {refund.rejectedAt && (
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("refunds.detailsDialog.rejectedDate")}</span>
-                  <span className="font-medium">{new Date(refund.rejectedAt).toLocaleString()}</span>
+                  <span className="text-muted-foreground">
+                    {t("refunds.detailsDialog.rejectedDate")}
+                  </span>
+                  <span className="font-medium">
+                    {new Date(refund.rejectedAt).toLocaleString()}
+                  </span>
                 </div>
               )}
               {refund.completedAt && (
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("refunds.detailsDialog.completedDate")}</span>
-                  <span className="font-medium">{new Date(refund.completedAt).toLocaleString()}</span>
+                  <span className="text-muted-foreground">
+                    {t("refunds.detailsDialog.completedDate")}
+                  </span>
+                  <span className="font-medium">
+                    {new Date(refund.completedAt).toLocaleString()}
+                  </span>
                 </div>
               )}
             </div>
 
             {refund.status === "rejected" && refund.rejectionReason && (
               <div className="mt-4 pt-4 border-t">
-                <span className="text-xs text-muted-foreground">{t("refunds.rejectDialog.reason")}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("refunds.rejectDialog.reason")}
+                </span>
                 <p className="text-sm mt-1 rounded-lg bg-destructive/5 text-destructive p-3">
                   {refund.rejectionReason}
                 </p>
@@ -199,7 +221,9 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
                 <InfoField
                   icon={Calendar}
                   label={t("refunds.approveDialog.approvalDate")}
-                  value={refund.approvedAt ? new Date(refund.approvedAt).toLocaleString() : undefined}
+                  value={
+                    refund.approvedAt ? new Date(refund.approvedAt).toLocaleString() : undefined
+                  }
                 />
                 {refund.proofOfTransferUrl && (
                   <InfoField
@@ -220,7 +244,9 @@ export default function RefundDetailsDialog({ open, onOpenChange, refund }: Prop
               </div>
               {refund.approvalNotes && (
                 <div className="mt-4">
-                  <span className="text-xs text-muted-foreground">{t("refunds.approveDialog.notes")}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("refunds.approveDialog.notes")}
+                  </span>
                   <p className="text-sm mt-1 rounded-lg bg-muted/50 p-3">{refund.approvalNotes}</p>
                 </div>
               )}

@@ -52,7 +52,7 @@ export default function SidebarItem({ item }: SidebarItemProps) {
     <Link
       to={item?.path || "#"}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground mb-2",
         "path" in item &&
           isActive(item.path) &&
           "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",

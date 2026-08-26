@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ShoppingCart, DollarSign, Clock, XCircle, Eye, MapPin, Package, Check, Truck } from "lucide-react";
+import {
+  ShoppingCart,
+  DollarSign,
+  Clock,
+  XCircle,
+  Eye,
+  MapPin,
+  Package,
+  Check,
+  Truck,
+} from "lucide-react";
 
 import { ORDER_TIMELINE } from "./orderTimeline";
 
@@ -185,7 +195,9 @@ function OrderDetails({
                   {item.color ? ` · ${item.color}` : ""}
                 </p>
               </div>
-              <span className="font-medium">{(item.qty * item.unitPrice).toLocaleString()} KWD</span>
+              <span className="font-medium">
+                {(item.qty * item.unitPrice).toLocaleString()} KWD
+              </span>
             </div>
           ))}
         </div>
@@ -403,7 +415,7 @@ export default function OrdersPage() {
       />
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent className="p-0">
+        <DialogContent className="p-0 min-h-[420px] max-h-[85vh]">
           {selected && (
             <>
               <DialogHeader>

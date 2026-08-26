@@ -93,7 +93,7 @@ export default function FaqFormDialog({ open, onOpenChange, faq, onSubmit }: Faq
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0">
+      <DialogContent className="p-0 min-h-[420px] max-h-[85vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <HelpCircle className="w-5 h-5 text-primary" />
@@ -116,7 +116,10 @@ export default function FaqFormDialog({ open, onOpenChange, faq, onSubmit }: Faq
                 <Label className={labelRowCls}>
                   {t("faqs.dialog.questionEn")} <span className="text-destructive">*</span>
                 </Label>
-                <Input placeholder={t("faqs.dialog.questionEnPlaceholder")} {...register("questionEn")} />
+                <Input
+                  placeholder={t("faqs.dialog.questionEnPlaceholder")}
+                  {...register("questionEn")}
+                />
                 {errors.questionEn && (
                   <p className="text-xs text-destructive mt-1">{errors.questionEn.message}</p>
                 )}
@@ -125,7 +128,11 @@ export default function FaqFormDialog({ open, onOpenChange, faq, onSubmit }: Faq
                 <Label className={labelRowCls}>
                   {t("faqs.dialog.questionAr")} <span className="text-destructive">*</span>
                 </Label>
-                <Input dir="rtl" placeholder={t("faqs.dialog.questionArPlaceholder")} {...register("questionAr")} />
+                <Input
+                  dir="rtl"
+                  placeholder={t("faqs.dialog.questionArPlaceholder")}
+                  {...register("questionAr")}
+                />
                 {errors.questionAr && (
                   <p className="text-xs text-destructive mt-1">{errors.questionAr.message}</p>
                 )}
@@ -176,9 +183,7 @@ export default function FaqFormDialog({ open, onOpenChange, faq, onSubmit }: Faq
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("faqs.dialog.close")}
             </Button>
-            <Button type="submit">
-              {isEdit ? t("faqs.dialog.save") : t("faqs.dialog.add")}
-            </Button>
+            <Button type="submit">{isEdit ? t("faqs.dialog.save") : t("faqs.dialog.add")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

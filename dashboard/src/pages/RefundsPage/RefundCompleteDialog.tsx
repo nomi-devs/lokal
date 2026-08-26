@@ -68,7 +68,7 @@ export default function RefundCompleteDialog({ open, onOpenChange, refund, onCom
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
             <BadgeCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />

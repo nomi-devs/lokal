@@ -111,3 +111,89 @@ export const vendorSidebarItems: SidebarItem[] = [
   },
   { label: "Profile", labelKey: "vendor.sidebar.profile", icon: Store, path: "/vendor/store" },
 ];
+
+// Curated quick-add suggestions for the product Sizes/Colors chip fields
+// (ProductTagsField, used by both the admin and vendor product dialogs) —
+// click one instead of typing it out. Not exhaustive; free typing still
+// works for anything not listed here.
+export const PRODUCT_SIZE_SUGGESTIONS = ["XS", "S", "M", "L", "XL", "XXL"];
+export const PRODUCT_COLOR_SUGGESTIONS = [
+  "Black",
+  "White",
+  "Gray",
+  "Silver",
+  "Beige",
+  "Cream",
+  "Ivory",
+  "Khaki",
+  "Tan",
+  "Camel",
+  "Brown",
+  "Charcoal",
+  "Navy",
+  "Blue",
+  "Sky Blue",
+  "Teal",
+  "Turquoise",
+  "Green",
+  "Olive",
+  "Mint",
+  "Emerald",
+  "Yellow",
+  "Gold",
+  "Mustard",
+  "Orange",
+  "Rust",
+  "Red",
+  "Maroon",
+  "Burgundy",
+  "Pink",
+  "Rose Gold",
+  "Fuchsia",
+  "Purple",
+  "Lavender",
+  "Multicolor",
+];
+
+// Explicit name -> hex map for the swatch dot next to each color chip/suggestion.
+// Needed because most real fashion color names ("Burgundy", "Charcoal", "Rose
+// Gold"...) aren't valid CSS color keywords the browser can resolve on its
+// own — ProductTagsField falls back to using the raw value as a CSS color
+// (works for plain names like "Red") only when a value has no entry here.
+// Keyed lowercase; "Multicolor" is intentionally omitted (no single color).
+export const PRODUCT_COLOR_SWATCHES: Record<string, string> = {
+  black: "#000000",
+  white: "#FFFFFF",
+  gray: "#808080",
+  silver: "#C0C0C0",
+  beige: "#F5F5DC",
+  cream: "#FFFDD0",
+  ivory: "#FFFFF0",
+  khaki: "#C3B091",
+  tan: "#D2B48C",
+  camel: "#C19A6B",
+  brown: "#8B5E3C",
+  charcoal: "#36454F",
+  navy: "#000080",
+  blue: "#2563EB",
+  "sky blue": "#87CEEB",
+  teal: "#008080",
+  turquoise: "#40E0D0",
+  green: "#16A34A",
+  olive: "#808000",
+  mint: "#98FF98",
+  emerald: "#10B981",
+  yellow: "#FACC15",
+  gold: "#D4AF37",
+  mustard: "#E1AD01",
+  orange: "#F97316",
+  rust: "#B7410E",
+  red: "#DC2626",
+  maroon: "#800000",
+  burgundy: "#800020",
+  pink: "#EC4899",
+  "rose gold": "#B76E79",
+  fuchsia: "#D946EF",
+  purple: "#9333EA",
+  lavender: "#E6E6FA",
+};

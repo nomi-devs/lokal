@@ -80,9 +80,7 @@ export default function VendorDashboard() {
   const pendingOrders = orders.filter((o) => o.status === "placed").length;
   const avgOrderValue = orders.length ? totalRevenue / orders.length : 0;
 
-  const recentOrders = [...orders]
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-    .slice(0, 5);
+  const recentOrders = [...orders].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 5);
 
   const topProducts = [...products].sort((a, b) => b.ratingCount - a.ratingCount).slice(0, 5);
 

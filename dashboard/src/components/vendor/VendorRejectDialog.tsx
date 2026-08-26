@@ -61,10 +61,14 @@ export default function VendorRejectDialog({ open, onOpenChange, vendor, onRejec
   });
 
   useEffect(() => {
-    if (open) {reset({ rejectionCategory: "", rejectionReason: "" });}
+    if (open) {
+      reset({ rejectionCategory: "", rejectionReason: "" });
+    }
   }, [open, vendor, reset]);
 
-  if (!vendor) {return null;}
+  if (!vendor) {
+    return null;
+  }
 
   function submit(values: RejectValues) {
     onReject(vendor!.id, values.rejectionReason, values.rejectionCategory);
@@ -73,14 +77,16 @@ export default function VendorRejectDialog({ open, onOpenChange, vendor, onRejec
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[320px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
             <XCircle className="w-5 h-5 text-destructive" />
           </div>
           <div className="min-w-0">
             <DialogTitle>{t("vendors.rejectModal.title")}</DialogTitle>
-            <DialogDescription>{t("vendors.rejectModal.description", { storeName: vendor.storeName })}</DialogDescription>
+            <DialogDescription>
+              {t("vendors.rejectModal.description", { storeName: vendor.storeName })}
+            </DialogDescription>
           </div>
         </DialogHeader>
 
@@ -97,7 +103,9 @@ export default function VendorRejectDialog({ open, onOpenChange, vendor, onRejec
                 ))}
               </select>
               {errors.rejectionCategory && (
-                <p className="text-xs text-destructive mt-1">{t("vendors.rejectModal.errors.categoryRequired")}</p>
+                <p className="text-xs text-destructive mt-1">
+                  {t("vendors.rejectModal.errors.categoryRequired")}
+                </p>
               )}
             </div>
 
@@ -111,7 +119,9 @@ export default function VendorRejectDialog({ open, onOpenChange, vendor, onRejec
                 {...register("rejectionReason")}
               />
               {errors.rejectionReason && (
-                <p className="text-xs text-destructive mt-1">{t("vendors.rejectModal.errors.reasonRequired")}</p>
+                <p className="text-xs text-destructive mt-1">
+                  {t("vendors.rejectModal.errors.reasonRequired")}
+                </p>
               )}
             </div>
           </DialogBody>

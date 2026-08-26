@@ -31,10 +31,11 @@ export interface ListUsersParams {
 }
 
 export async function listUsers(params: ListUsersParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: AdminUserRow[]; pagination: Pagination }>(
-    "/admin/users",
-    { params: { page: 1, limit: 100, ...params } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminUserRow[];
+    pagination: Pagination;
+  }>("/admin/users", { params: { page: 1, limit: 100, ...params } });
 
   return data;
 }
@@ -45,19 +46,27 @@ export async function getUser(id: string) {
   return data.user;
 }
 
-export async function updateUserStatus(id: string, status: "active" | "inactive" | "suspended", reason?: string) {
-  const { data } = await apiClient.put<{ success: true; message: string; user: { status: string } }>(
-    `/admin/users/${id}/status`,
-    { status, reason }
-  );
+export async function updateUserStatus(
+  id: string,
+  status: "active" | "inactive" | "suspended",
+  reason?: string
+) {
+  const { data } = await apiClient.put<{
+    success: true;
+    message: string;
+    user: { status: string };
+  }>(`/admin/users/${id}/status`, { status, reason });
 
   return data;
 }
 
 export async function deleteUser(id: string, reason?: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(`/admin/users/${id}`, {
-    data: { reason },
-  });
+  const { data } = await apiClient.delete<{ success: true; message: string }>(
+    `/admin/users/${id}`,
+    {
+      data: { reason },
+    }
+  );
 
   return data;
 }
@@ -75,7 +84,10 @@ export interface CreateUserPayload {
 }
 
 export async function createUser(payload: CreateUserPayload) {
-  const { data } = await apiClient.post<{ success: true; user: AdminUserRow }>("/admin/users", payload);
+  const { data } = await apiClient.post<{ success: true; user: AdminUserRow }>(
+    "/admin/users",
+    payload
+  );
 
   return data.user;
 }
@@ -103,10 +115,11 @@ export interface ListVendorsParams {
 }
 
 export async function listVendors(params: ListVendorsParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: AdminVendorRow[]; pagination: Pagination }>(
-    "/admin/vendors",
-    { params: { page: 1, limit: 100, ...params } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminVendorRow[];
+    pagination: Pagination;
+  }>("/admin/vendors", { params: { page: 1, limit: 100, ...params } });
 
   return data;
 }
@@ -132,7 +145,10 @@ async function updateVendorStatus(
     duration?: number;
   }
 ) {
-  const { data } = await apiClient.put<UpdateVendorStatusResponse>(`/admin/vendors/${id}/status`, payload);
+  const { data } = await apiClient.put<UpdateVendorStatusResponse>(
+    `/admin/vendors/${id}/status`,
+    payload
+  );
 
   return data;
 }
@@ -164,10 +180,10 @@ export interface CreateVendorPayload {
 }
 
 export async function createVendor(payload: CreateVendorPayload) {
-  const { data } = await apiClient.post<{ success: true; vendor: { id: string; storeName: string } }>(
-    "/admin/vendors",
-    payload
-  );
+  const { data } = await apiClient.post<{
+    success: true;
+    vendor: { id: string; storeName: string };
+  }>("/admin/vendors", payload);
 
   return data.vendor;
 }
@@ -195,10 +211,11 @@ export interface AdminWishlistItem {
 }
 
 export async function getUserWishlist(userId: string, page = 1, limit = 10) {
-  const { data } = await apiClient.get<{ success: true; data: AdminWishlistItem[]; pagination: Pagination }>(
-    `/admin/users/${userId}/wishlist`,
-    { params: { page, limit } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminWishlistItem[];
+    pagination: Pagination;
+  }>(`/admin/users/${userId}/wishlist`, { params: { page, limit } });
 
   return data;
 }
@@ -222,17 +239,18 @@ export interface AdminAddress {
 }
 
 export async function getUserAddresses(userId: string, page = 1, limit = 10) {
-  const { data } = await apiClient.get<{ success: true; data: AdminAddress[]; pagination: Pagination }>(
-    `/admin/users/${userId}/addresses`,
-    { params: { page, limit } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminAddress[];
+    pagination: Pagination;
+  }>(`/admin/users/${userId}/addresses`, { params: { page, limit } });
 
   return data;
 }
 
 // ── Categories ────────────────────────────────────────────────────────────────
 
-export type CategoryDepartment = 'men' | 'women' | 'kids' | 'unisex';
+export type CategoryDepartment = "men" | "women" | "kids" | "unisex";
 
 export interface AdminCategory {
   id: string;
@@ -252,10 +270,11 @@ export interface AdminCategory {
 }
 
 export async function listAdminCategories(page = 1, limit = 100) {
-  const { data } = await apiClient.get<{ success: true; data: AdminCategory[]; pagination: Pagination }>(
-    '/admin/categories',
-    { params: { page, limit } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminCategory[];
+    pagination: Pagination;
+  }>("/admin/categories", { params: { page, limit } });
 
   return data;
 }
@@ -274,7 +293,7 @@ export interface CategoryPayload {
 
 export async function createAdminCategory(payload: CategoryPayload) {
   const { data } = await apiClient.post<{ success: true; category: AdminCategory }>(
-    '/admin/categories',
+    "/admin/categories",
     payload
   );
 
@@ -324,7 +343,7 @@ export interface FaqPayload {
 
 export async function listAdminFaqs(page = 1, limit = 100) {
   const { data } = await apiClient.get<{ success: true; data: AdminFaq[]; pagination: Pagination }>(
-    '/admin/faqs',
+    "/admin/faqs",
     { params: { page, limit } }
   );
 
@@ -332,13 +351,16 @@ export async function listAdminFaqs(page = 1, limit = 100) {
 }
 
 export async function createAdminFaq(payload: FaqPayload) {
-  const { data } = await apiClient.post<{ success: true; faq: AdminFaq }>('/admin/faqs', payload);
+  const { data } = await apiClient.post<{ success: true; faq: AdminFaq }>("/admin/faqs", payload);
 
   return data.faq;
 }
 
 export async function updateAdminFaq(id: string, payload: Partial<FaqPayload>) {
-  const { data } = await apiClient.put<{ success: true; faq: AdminFaq }>(`/admin/faqs/${id}`, payload);
+  const { data } = await apiClient.put<{ success: true; faq: AdminFaq }>(
+    `/admin/faqs/${id}`,
+    payload
+  );
 
   return data.faq;
 }

@@ -9,6 +9,7 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
   listAdminBanners,
   createAdminBanner,
@@ -51,12 +52,18 @@ const statusStyle: Record<DisplayStatus, { text: string; bg: string; dot: string
   },
 };
 
+type PendingAction =
+  | { type: "delete"; banner: AdminBanner }
+  | { type: "deleteSelected"; banners: AdminBanner[] }
+  | null;
+
 export default function BannersPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [bannerList, setBannerList] = useState<AdminBanner[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<AdminBanner | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   const fetchBanners = useCallback(async () => {
     setLoading(true);
@@ -127,11 +134,26 @@ export default function BannersPage() {
     }
   }
 
-  async function remove(banner: AdminBanner) {
+  async function confirmPendingAction() {
+    if (!pendingAction) {
+      return;
+    }
+
     try {
-      await deleteAdminBanner(banner.id);
-      setBannerList((prev) => prev.filter((b) => b.id !== banner.id));
-      toast.error(t("banners.toasts.deleted", { title: banner.titleEn }));
+      if (pendingAction.type === "delete") {
+        const { banner } = pendingAction;
+
+        await deleteAdminBanner(banner.id);
+        setBannerList((prev) => prev.filter((b) => b.id !== banner.id));
+        toast.error(t("banners.toasts.deleted", { title: banner.titleEn }));
+      } else {
+        const { banners } = pendingAction;
+
+        await Promise.all(banners.map((b) => deleteAdminBanner(b.id)));
+        const ids = new Set(banners.map((b) => b.id));
+        setBannerList((prev) => prev.filter((b) => !ids.has(b.id)));
+        toast.error(t("banners.toasts.deletedSelected", { count: banners.length }));
+      }
     } catch (err) {
       toast.error(getApiErrorMessage(err));
     }
@@ -211,7 +233,7 @@ export default function BannersPage() {
     {
       label: t("common.actions.delete"),
       icon: Trash2,
-      onClick: remove,
+      onClick: (r) => setPendingAction({ type: "delete", banner: r }),
       variant: "destructive",
     },
   ];
@@ -222,12 +244,7 @@ export default function BannersPage() {
       icon: Trash2,
       variant: "destructive",
       requiresSelection: true,
-      onClick: async (rows) => {
-        await Promise.all(rows.map((r) => deleteAdminBanner(r.id)));
-        const ids = new Set(rows.map((r) => r.id));
-        setBannerList((prev) => prev.filter((b) => !ids.has(b.id)));
-        toast.error(t("banners.toasts.deletedSelected", { count: rows.length }));
-      },
+      onClick: (rows) => setPendingAction({ type: "deleteSelected", banners: rows }),
     },
     {
       label: t("banners.addBanner"),
@@ -282,6 +299,26 @@ export default function BannersPage() {
         onOpenChange={setDialogOpen}
         banner={editingBanner}
         onSubmit={handleFormSubmit}
+      />
+
+      <ConfirmDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => !open && setPendingAction(null)}
+        variant="destructive"
+        title={
+          pendingAction?.type === "deleteSelected"
+            ? t("banners.confirm.deleteSelectedTitle", { count: pendingAction.banners.length })
+            : t("banners.confirm.deleteTitle")
+        }
+        description={
+          pendingAction?.type === "delete"
+            ? t("banners.confirm.deleteDescription", { title: pendingAction.banner.titleEn })
+            : pendingAction?.type === "deleteSelected"
+              ? t("banners.confirm.deleteSelectedDescription")
+              : undefined
+        }
+        confirmLabel={t("common.actions.delete")}
+        onConfirm={confirmPendingAction}
       />
     </DashboardLayout>
   );

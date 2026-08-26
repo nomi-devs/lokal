@@ -55,7 +55,9 @@ export default function CategoriesPage() {
     }
   }, []);
 
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const activeCategories = categoryList.filter((c) => c.isActive).length;
   const topLevel = categoryList.filter((c) => !c.parentId).length;
@@ -105,7 +107,9 @@ export default function CategoriesPage() {
   }
 
   async function confirmPendingAction() {
-    if (!pendingAction) {return;}
+    if (!pendingAction) {
+      return;
+    }
 
     try {
       if (pendingAction.type === "delete") {

@@ -1,8 +1,15 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Store } from "lucide-react";
 
-import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import DynamicForm from "@/components/form/DynamicForm";
 import type { FieldConfig } from "@/components/form/DynamicForm";
 import { toast } from "@/components/ui/Toast";
@@ -29,39 +36,69 @@ const schema = z.object({
   status: z.enum(["pending_approval", "active"]),
 });
 
-const fields: FieldConfig[] = [
-  { name: "storeName", label: "Store name", type: "text", placeholder: "Fashion Store", col: 12 },
-  { name: "firstName", label: "Owner first name", type: "text", placeholder: "Ahmed", col: 6 },
-  { name: "lastName", label: "Owner last name", type: "text", placeholder: "Al-Rashid", col: 6 },
-  { name: "phone", label: "Phone", type: "phone", col: 6 },
-  { name: "email", label: "Email", type: "email", placeholder: "you@example.com", col: 6 },
-  {
-    name: "password",
-    label: "Password",
-    type: "password",
-    placeholder: "••••••••",
-    autocomplete: "new-password",
-    col: 6,
-  },
-  {
-    name: "status",
-    label: "Status",
-    type: "select",
-    col: 6,
-    options: [
-      { label: "Pending approval", value: "pending_approval" },
-      { label: "Active", value: "active" },
-    ],
-  },
-  { name: "city", label: "City (optional)", type: "text", col: 6 },
-  { name: "address", label: "Address (optional)", type: "text", col: 6 },
-  { name: "storeDescription", label: "Store description (optional)", type: "textarea", col: 12 },
-  { name: "kycDocument", label: "KYC document — business license or ID (optional)", type: "file", col: 12 },
-];
-
 export default function VendorAddDialog({ open, onOpenChange, onCreated }: Props) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [kycFile, setKycFile] = useState<File | null>(null);
+
+  const fields: FieldConfig[] = [
+    {
+      name: "storeName",
+      label: t("vendors.addDialog.storeName"),
+      type: "text",
+      placeholder: t("vendors.addDialog.storeNamePlaceholder"),
+      col: 12,
+    },
+    {
+      name: "firstName",
+      label: t("vendors.addDialog.firstName"),
+      type: "text",
+      placeholder: t("vendors.addDialog.firstNamePlaceholder"),
+      col: 6,
+    },
+    {
+      name: "lastName",
+      label: t("vendors.addDialog.lastName"),
+      type: "text",
+      placeholder: t("vendors.addDialog.lastNamePlaceholder"),
+      col: 6,
+    },
+    { name: "phone", label: t("vendors.addDialog.phone"), type: "phone", col: 6 },
+    {
+      name: "email",
+      label: t("vendors.addDialog.email"),
+      type: "email",
+      placeholder: t("vendors.addDialog.emailPlaceholder"),
+      col: 6,
+    },
+    {
+      name: "password",
+      label: t("vendors.addDialog.password"),
+      type: "password",
+      placeholder: t("vendors.addDialog.passwordPlaceholder"),
+      autocomplete: "new-password",
+      col: 6,
+    },
+    {
+      name: "status",
+      label: t("vendors.addDialog.status"),
+      type: "select",
+      col: 6,
+      options: [
+        { label: t("vendors.addDialog.statusPending"), value: "pending_approval" },
+        { label: t("vendors.addDialog.statusActive"), value: "active" },
+      ],
+    },
+    { name: "city", label: t("vendors.addDialog.city"), type: "text", col: 6 },
+    { name: "address", label: t("vendors.addDialog.address"), type: "text", col: 6 },
+    {
+      name: "storeDescription",
+      label: t("vendors.addDialog.storeDescription"),
+      type: "textarea",
+      col: 12,
+    },
+    { name: "kycDocument", label: t("auth.register.kycDocumentLabel"), type: "file", col: 12 },
+  ];
 
   async function onSubmit(values: z.infer<typeof schema>) {
     setIsSubmitting(true);
@@ -74,7 +111,9 @@ export default function VendorAddDialog({ open, onOpenChange, onCreated }: Props
         } catch {
           // Straight-to-S3 PUT, not through our backend — see Register page's
           // identical catch for why getApiErrorMessage doesn't apply here.
-          toast.error("Couldn't upload the KYC document. Please try again.", { title: "Upload failed" });
+          toast.error(t("auth.register.uploadFailed"), {
+            title: t("auth.register.uploadFailedTitle"),
+          });
 
           return;
         }
@@ -93,11 +132,15 @@ export default function VendorAddDialog({ open, onOpenChange, onCreated }: Props
         kycDocumentUrl,
         status: values.status,
       });
-      toast.success(`${values.storeName} was added.`, { title: "Vendor created" });
+      toast.success(t("vendors.addDialog.createdSuccess"), {
+        title: t("vendors.addDialog.createdTitle"),
+      });
       onOpenChange(false);
       onCreated();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Couldn't create the vendor"), { title: "Create failed" });
+      toast.error(getApiErrorMessage(error, t("vendors.addDialog.createFailed")), {
+        title: t("vendors.addDialog.createFailedTitle"),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -105,14 +148,14 @@ export default function VendorAddDialog({ open, onOpenChange, onCreated }: Props
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh]">
+      <DialogContent className="max-w-2xl min-h-[420px] max-h-[85vh]">
         <DialogHeader>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
             <Store className="h-5 w-5" />
           </div>
           <div>
-            <DialogTitle className="text-lg">Add New Vendor</DialogTitle>
-            <p className="text-sm text-muted-foreground">Fill in the store and owner details below</p>
+            <DialogTitle className="text-lg">{t("vendors.addDialog.title")}</DialogTitle>
+            <p className="text-sm text-muted-foreground">{t("vendors.addDialog.description")}</p>
           </div>
         </DialogHeader>
 
@@ -133,9 +176,9 @@ export default function VendorAddDialog({ open, onOpenChange, onCreated }: Props
               status: "active",
             }}
             onSubmit={onSubmit}
-            submitText="Add Vendor"
+            submitText={t("vendors.addDialog.submit")}
             isSubmitting={isSubmitting}
-            submittingText="Adding…"
+            submittingText={t("vendors.addDialog.submitting")}
             onChange={(name, value) => {
               if (name === "kycDocument") {
                 setKycFile((value as File | undefined) ?? null);

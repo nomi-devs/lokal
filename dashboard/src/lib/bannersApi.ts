@@ -32,10 +32,11 @@ export interface BannerPayload {
 }
 
 export async function listAdminBanners(page = 1, limit = 100) {
-  const { data } = await apiClient.get<{ success: true; data: AdminBanner[]; pagination: Pagination }>(
-    "/admin/banners",
-    { params: { page, limit } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminBanner[];
+    pagination: Pagination;
+  }>("/admin/banners", { params: { page, limit } });
 
   return data;
 }

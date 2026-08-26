@@ -73,7 +73,9 @@ function ImageUploadField({
     const file = e.target.files?.[0];
     e.target.value = "";
 
-    if (!file) {return;}
+    if (!file) {
+      return;
+    }
 
     setUploading(true);
     try {
@@ -92,7 +94,13 @@ function ImageUploadField({
         <ImageIcon className="w-3.5 h-3.5 text-primary" />
         {label}
       </Label>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleChange}
+      />
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
@@ -137,7 +145,6 @@ export default function CategoryFormDialog({
   const { t } = useTranslation();
   const isEdit = !!category;
 
-
   const {
     register,
     handleSubmit,
@@ -179,10 +186,9 @@ export default function CategoryFormDialog({
     onOpenChange(false);
   }
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0">
+      <DialogContent className="p-0 max-w-3xl min-h-[440px] max-h-[85vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <FolderTree className="w-5 h-5 text-primary" />
@@ -233,25 +239,27 @@ export default function CategoryFormDialog({
               </div>
             </div>
 
-            {/* Description EN */}
-            <div>
-              <Label className={labelRowCls}>{t("categories.dialog.descriptionEnglish")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("categories.dialog.descriptionEnglishPlaceholder")}
-                {...register("descriptionEn")}
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Description EN */}
+              <div>
+                <Label className={labelRowCls}>{t("categories.dialog.descriptionEnglish")}</Label>
+                <textarea
+                  className={textareaCls}
+                  placeholder={t("categories.dialog.descriptionEnglishPlaceholder")}
+                  {...register("descriptionEn")}
+                />
+              </div>
 
-            {/* Description AR */}
-            <div>
-              <Label className={labelRowCls}>{t("categories.dialog.descriptionArabic")}</Label>
-              <textarea
-                className={textareaCls}
-                placeholder={t("categories.dialog.descriptionArabicPlaceholder")}
-                dir="rtl"
-                {...register("descriptionAr")}
-              />
+              {/* Description AR */}
+              <div>
+                <Label className={labelRowCls}>{t("categories.dialog.descriptionArabic")}</Label>
+                <textarea
+                  className={textareaCls}
+                  placeholder={t("categories.dialog.descriptionArabicPlaceholder")}
+                  dir="rtl"
+                  {...register("descriptionAr")}
+                />
+              </div>
             </div>
 
             {/* Category Image */}

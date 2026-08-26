@@ -29,7 +29,7 @@ export default function MobileSidebar({ items }: { items: SidebarItemType[] }) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="p-0 w-64 flex flex-col bg-sidebar text-sidebar-foreground border-sidebar-border"
+        className="p-0 w-58 flex flex-col bg-sidebar text-sidebar-foreground border-sidebar-border"
       >
         <SheetTitle className="sr-only">Navigation</SheetTitle>
         {/* Logo — mirrors DesktopSidebar */}

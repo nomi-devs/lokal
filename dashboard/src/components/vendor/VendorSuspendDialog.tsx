@@ -41,10 +41,14 @@ export default function VendorSuspendDialog({ open, onOpenChange, vendor, onSusp
     }
   }, [open, vendor]);
 
-  if (!vendor) {return null;}
+  if (!vendor) {
+    return null;
+  }
 
   function submit() {
-    if (!reason.trim()) {return;}
+    if (!reason.trim()) {
+      return;
+    }
 
     onSuspend(vendor!.id, reason, duration ? Number(duration) : undefined);
     onOpenChange(false);
@@ -52,7 +56,7 @@ export default function VendorSuspendDialog({ open, onOpenChange, vendor, onSusp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-md">
+      <DialogContent className="p-0 max-w-md min-h-[320px] max-h-[70vh]">
         <DialogHeader>
           <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
             <ShieldOff className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -79,7 +83,12 @@ export default function VendorSuspendDialog({ open, onOpenChange, vendor, onSusp
           </div>
           <div>
             <Label className="mb-1.5 block">{t("vendors.suspendModal.durationLabel")}</Label>
-            <Input type="number" min={1} value={duration} onChange={(e) => setDuration(e.target.value)} />
+            <Input
+              type="number"
+              min={1}
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+            />
           </div>
         </DialogBody>
 

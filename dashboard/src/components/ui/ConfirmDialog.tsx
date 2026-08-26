@@ -37,8 +37,8 @@ export default function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0">
-        <DialogHeader>
+      <DialogContent className="max-w-sm p-0 min-h-[280px] max-h-[70vh]">
+        <DialogHeader className="border-b-0 pb-0">
           <div
             className={cn(
               "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
@@ -54,9 +54,10 @@ export default function ConfirmDialog({
           </div>
           <div className="min-w-0">
             <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
           </div>
         </DialogHeader>
+
+        {description && <DialogDescription className="px-6 pb-6">{description}</DialogDescription>}
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

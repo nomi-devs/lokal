@@ -47,10 +47,11 @@ export interface ListAdminRefundsParams {
 }
 
 export async function listAdminRefunds(params: ListAdminRefundsParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: AdminRefund[]; pagination: Pagination }>(
-    "/admin/refunds",
-    { params: { page: 1, limit: 100, ...params } }
-  );
+  const { data } = await apiClient.get<{
+    success: true;
+    data: AdminRefund[];
+    pagination: Pagination;
+  }>("/admin/refunds", { params: { page: 1, limit: 100, ...params } });
 
   return data;
 }

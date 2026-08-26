@@ -24,7 +24,12 @@ import {
   type AdminPromoCode,
   type PromoCodeStatus,
 } from "@/lib/promoCodesApi";
-import { listVendors, listAdminCategories, type AdminVendorRow, type AdminCategory } from "@/lib/adminApi";
+import {
+  listVendors,
+  listAdminCategories,
+  type AdminVendorRow,
+  type AdminCategory,
+} from "@/lib/adminApi";
 
 type PromoCodeRow = AdminPromoCode & { computedStatus: PromoCodeStatus; isValid: boolean };
 

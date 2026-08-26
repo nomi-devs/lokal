@@ -81,15 +81,33 @@ export default function VendorsPage() {
   }
 
   const columns: ColumnDef<AdminVendorRow>[] = [
-    { key: "storeName", header: t("vendors.management.columns.store"), render: (v) => <span className="font-medium">{v as string}</span> },
-    { key: "ownerName", header: t("vendors.management.columns.owner"), render: (v) => (v as string) || "—" },
-    { key: "ownerPhone", header: t("vendors.management.columns.phone"), render: (v) => (v as string) || "—" },
-    { key: "ownerEmail", header: t("users.management.columns.email"), render: (v) => (v as string) || "—" },
+    {
+      key: "storeName",
+      header: t("vendors.management.columns.store"),
+      render: (v) => <span className="font-medium">{v as string}</span>,
+    },
+    {
+      key: "ownerName",
+      header: t("vendors.management.columns.owner"),
+      render: (v) => (v as string) || "—",
+    },
+    {
+      key: "ownerPhone",
+      header: t("vendors.management.columns.phone"),
+      render: (v) => (v as string) || "—",
+    },
+    {
+      key: "ownerEmail",
+      header: t("users.management.columns.email"),
+      render: (v) => (v as string) || "—",
+    },
     {
       key: "status",
       header: t("vendors.management.columns.status"),
       render: (v) => (
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}>
+        <span
+          className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}
+        >
           {t(`common.status.${v as string}`, (v as string).replace("_", " "))}
         </span>
       ),
@@ -103,7 +121,11 @@ export default function VendorsPage() {
   ];
 
   const rowActions: RowAction<AdminVendorRow>[] = [
-    { label: t("vendors.management.actions.view"), icon: Eye, onClick: (row) => setViewTarget(row) },
+    {
+      label: t("vendors.management.actions.view"),
+      icon: Eye,
+      onClick: (row) => setViewTarget(row),
+    },
     {
       label: t("vendors.management.actions.approve"),
       icon: CheckCircle2,
@@ -127,7 +149,11 @@ export default function VendorsPage() {
   ];
 
   const toolbarActions: ToolbarAction<AdminVendorRow>[] = [
-    { label: t("vendors.management.actions.addVendor"), icon: Store, onClick: () => setAddOpen(true) },
+    {
+      label: t("vendors.management.actions.addVendor"),
+      icon: Store,
+      onClick: () => setAddOpen(true),
+    },
   ];
 
   // Derived straight from the already-loaded `vendors` list rather than
@@ -203,7 +229,11 @@ export default function VendorsPage() {
 
       <VendorAddDialog open={addOpen} onOpenChange={setAddOpen} onCreated={() => void load()} />
 
-      <VendorViewDialog open={!!viewTarget} onOpenChange={(o) => !o && setViewTarget(null)} vendor={viewTarget} />
+      <VendorViewDialog
+        open={!!viewTarget}
+        onOpenChange={(o) => !o && setViewTarget(null)}
+        vendor={viewTarget}
+      />
       <VendorApproveDialog
         open={!!approveTarget}
         onOpenChange={(o) => !o && setApproveTarget(null)}
