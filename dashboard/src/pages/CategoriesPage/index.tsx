@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FolderTree, Plus, Pencil, Trash2, Eye, Power, Layers, FileText } from "lucide-react";
 
@@ -11,6 +11,7 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { useListData } from "@/hooks/useListData";
 import {
   listAdminCategories,
   createAdminCategory,
@@ -37,27 +38,17 @@ type PendingAction =
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [categoryList, setCategoryList] = useState<AdminCategory[]>([]);
+
+  const {
+    data: categoryList,
+    setData: setCategoryList,
+    loading,
+  } = useListData(async () => (await listAdminCategories(1, 200)).data, [] as AdminCategory[], {
+    fallbackMessage: "Failed to load categories",
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listAdminCategories(1, 200);
-      setCategoryList(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load categories"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
 
   const activeCategories = categoryList.filter((c) => c.isActive).length;
   const topLevel = categoryList.filter((c) => !c.parentId).length;
@@ -278,7 +269,6 @@ export default function CategoriesPage() {
         ]}
         selectable
         rowActions={categoryRowActions}
-        rowActionsVariant="inline"
         toolbarActions={categoryToolbarActions}
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "sortOrder", direction: "asc" }}

@@ -120,7 +120,7 @@ export interface DataTableProps<T extends RowData> {
 
   // Actions
   rowActions?: RowAction<T>[];
-  /** "menu" (default) shows a "…" dropdown; "inline" renders each action as its own icon button. */
+  /** "inline" (default) renders each action as its own icon button; "menu" shows a "…" dropdown instead. */
   rowActionsVariant?: "menu" | "inline";
   /** Header label for the row-actions column. Defaults to the translated "Actions". */
   rowActionsLabel?: string;

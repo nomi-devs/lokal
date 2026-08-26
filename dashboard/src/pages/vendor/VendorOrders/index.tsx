@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShoppingCart, DollarSign, Clock, Eye, Pencil } from "lucide-react";
 
@@ -7,7 +7,7 @@ import VendorOrderViewDialog from "./VendorOrderViewDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { vendorSidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate, renderCurrency } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import Badge, { type BadgeVariant } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
   type UpdateVendorOrderStatusPayload,
 } from "@/lib/ordersApi";
 import { getApiErrorMessage } from "@/lib/apiClient";
+import { useListData } from "@/hooks/useListData";
 
 const statusVariant: Record<OrderStatus, BadgeVariant> = {
   placed: "warning",
@@ -30,26 +31,16 @@ const statusVariant: Record<OrderStatus, BadgeVariant> = {
 
 export default function VendorOrders() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
+
+  const {
+    data: orders,
+    setData: setOrders,
+    loading,
+  } = useListData(async () => (await listVendorOrders()).data, [] as Order[], {
+    fallbackMessage: "Failed to load orders",
+  });
   const [viewing, setViewing] = useState<Order | null>(null);
   const [editing, setEditing] = useState<Order | null>(null);
-
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listVendorOrders();
-      setOrders(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load orders"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
 
   const totalRevenue = orders
     .filter((o) => o.status !== "cancelled")
@@ -94,7 +85,7 @@ export default function VendorOrders() {
       header: t("vendor.orders.columns.total"),
       sortable: true,
       align: "right",
-      render: (v) => <span className="font-semibold">{(v as number).toLocaleString()} KWD</span>,
+      render: renderCurrency,
     },
     {
       key: "status",
@@ -110,7 +101,7 @@ export default function VendorOrders() {
       key: "createdAt",
       header: t("vendor.orders.columns.date"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 
@@ -150,7 +141,6 @@ export default function VendorOrders() {
           },
         ]}
         rowActions={rowActions}
-        rowActionsVariant="inline"
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped

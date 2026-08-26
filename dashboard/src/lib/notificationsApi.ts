@@ -1,5 +1,4 @@
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated } from "./apiClient";
 
 // Mirrors local-be's NotificationPayload (notifications/notification.serializer.ts)
 // — the same shape the backend builds both the list response and the FCM push
@@ -24,14 +23,7 @@ export interface ListNotificationsParams {
 }
 
 export async function listNotifications(params: ListNotificationsParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: NotificationRow[];
-    unreadCount: number;
-    pagination: Pagination;
-  }>("/me/notifications", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<NotificationRow>("/me/notifications", params);
 }
 
 export async function getUnreadCount() {

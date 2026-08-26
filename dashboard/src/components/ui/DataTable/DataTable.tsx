@@ -35,7 +35,7 @@ function DataTableInner<T extends RowData>(props: DataTableProps<T>) {
     selectable,
     onSelectionChange,
     rowActions,
-    rowActionsVariant = "menu",
+    rowActionsVariant = "inline",
     rowActionsLabel,
     toolbarActions,
     pagination,

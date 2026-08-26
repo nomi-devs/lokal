@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailRow, DetailSection, InitialsAvatar } from "@/components/ui/DetailView";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/components/ui/DataTable";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { toast } from "@/components/ui/Toast";
@@ -92,7 +92,7 @@ function UserWishlistTab({ userId }: { userId: string }) {
     {
       key: "createdAt",
       header: t("users.viewDialog.wishlistColumns.added"),
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 

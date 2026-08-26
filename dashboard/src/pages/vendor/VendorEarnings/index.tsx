@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Wallet, DollarSign, Percent, Landmark } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/components/ui/DataTable";
 import { vendorSidebarItems } from "@/constants";
 import { toast } from "@/components/ui/Toast";
@@ -88,7 +88,7 @@ export default function VendorEarnings() {
       key: "date",
       header: t("vendor.earnings.columns.date"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
     {
       key: "gross",

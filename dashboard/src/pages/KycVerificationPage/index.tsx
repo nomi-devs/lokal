@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Clock, FileText, FileWarning, Users, XCircle } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import * as adminApi from "@/lib/adminApi";
 import type { AdminVendorRow } from "@/lib/adminApi";
 import VendorActionDialog from "@/components/vendor/VendorActionDialog";
+import { useListData } from "@/hooks/useListData";
 
 // Focused queue of vendors awaiting approval — a filtered view over the same
 // data/endpoints as /admin/vendors, kept as its own page for admins who only
@@ -18,44 +19,27 @@ import VendorActionDialog from "@/components/vendor/VendorActionDialog";
 // + the optional kycDocumentUrl captured at registration.
 export default function KycVerificationPage() {
   const { t } = useTranslation();
-  const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    data: vendors,
+    loading,
+    refetch: load,
+  } = useListData(
+    async () => (await adminApi.listVendors({ status: "pending_approval" })).data,
+    [] as AdminVendorRow[],
+    { fallbackMessage: t("kyc.management.toasts.loadFailed") }
+  );
   const [approveTarget, setApproveTarget] = useState<AdminVendorRow | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminVendorRow | null>(null);
+
   // This page only ever loads the pending_approval subset, so total vendor
   // count (any status) needs its own lightweight request — same limit:1
-  // precedent as UserManagementPage's stats strip.
-  const [totalVendors, setTotalVendors] = useState(0);
-  const [totalLoading, setTotalLoading] = useState(true);
-
-  async function load() {
-    setLoading(true);
-    try {
-      const { data } = await adminApi.listVendors({ status: "pending_approval" });
-      setVendors(data);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, t("kyc.management.toasts.loadFailed")));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadTotalVendors() {
-    setTotalLoading(true);
-    try {
-      const { pagination } = await adminApi.listVendors({ limit: 1 });
-      setTotalVendors(pagination.total);
-    } catch {
-      // Secondary, non-blocking figure — leave the prior value on failure.
-    } finally {
-      setTotalLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void load();
-    void loadTotalVendors();
-  }, []);
+  // precedent as UserManagementPage's stats strip. Fails silently (no
+  // fallbackMessage) since it's a secondary, non-blocking figure.
+  const { data: totalVendors, loading: totalLoading } = useListData(
+    async () => (await adminApi.listVendors({ limit: 1 })).pagination.total,
+    0
+  );
 
   async function handleApprove(id: string, notes: string) {
     try {
@@ -116,7 +100,7 @@ export default function KycVerificationPage() {
       key: "createdAt",
       header: t("kyc.management.columns.submitted"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, ImagePlus, Eye, Pencil, Trash2, CalendarClock } from "lucide-react";
 
@@ -11,6 +11,7 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import Badge, { type BadgeVariant } from "@/components/ui/badge";
+import { useListData } from "@/hooks/useListData";
 import {
   listAdminBanners,
   createAdminBanner,
@@ -48,27 +49,17 @@ type PendingAction =
 
 export default function BannersPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [bannerList, setBannerList] = useState<AdminBanner[]>([]);
+
+  const {
+    data: bannerList,
+    setData: setBannerList,
+    loading,
+  } = useListData(async () => (await listAdminBanners()).data, [] as AdminBanner[], {
+    fallbackMessage: "Failed to load banners",
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<AdminBanner | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-
-  const fetchBanners = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listAdminBanners();
-      setBannerList(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load banners"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchBanners();
-  }, [fetchBanners]);
 
   const active = bannerList.filter((b) => displayStatus(b) === "Active").length;
   const scheduled = bannerList.filter((b) => displayStatus(b) === "Scheduled").length;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Clock, Eye, ShieldOff, Store, XCircle } from "lucide-react";
 
@@ -7,7 +7,7 @@ import VendorAddDialog from "./VendorAddDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import Badge, { type BadgeVariant } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { getApiErrorMessage } from "@/lib/apiClient";
 import * as adminApi from "@/lib/adminApi";
 import type { AdminVendorRow } from "@/lib/adminApi";
 import VendorActionDialog from "@/components/vendor/VendorActionDialog";
+import { useListData } from "@/hooks/useListData";
 
 const STATUS_VARIANT: Record<string, BadgeVariant> = {
   pending_approval: "warning",
@@ -25,29 +26,19 @@ const STATUS_VARIANT: Record<string, BadgeVariant> = {
 
 export default function VendorsPage() {
   const { t } = useTranslation();
-  const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    data: vendors,
+    loading,
+    refetch: load,
+  } = useListData(async () => (await adminApi.listVendors()).data, [] as AdminVendorRow[], {
+    fallbackMessage: t("vendors.management.toasts.loadFailed"),
+  });
   const [viewTarget, setViewTarget] = useState<AdminVendorRow | null>(null);
   const [approveTarget, setApproveTarget] = useState<AdminVendorRow | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminVendorRow | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<AdminVendorRow | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-
-  async function load() {
-    setLoading(true);
-    try {
-      const { data } = await adminApi.listVendors();
-      setVendors(data);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, t("vendors.management.toasts.loadFailed")));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void load();
-  }, []);
 
   async function handleApprove(id: string, notes: string) {
     try {
@@ -113,7 +104,7 @@ export default function VendorsPage() {
       key: "createdAt",
       header: t("vendors.management.columns.joined"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 

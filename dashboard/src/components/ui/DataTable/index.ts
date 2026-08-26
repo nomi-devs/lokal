@@ -1,4 +1,5 @@
 export { default as DataTable } from "./DataTable";
+export { renderDate, renderCurrency } from "./renderers";
 export type {
   ColumnDef,
   RowAction,

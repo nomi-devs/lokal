@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Package,
@@ -26,6 +26,7 @@ import * as productsApi from "@/lib/productsApi";
 import type { Product } from "@/lib/productsApi";
 import * as adminApi from "@/lib/adminApi";
 import type { AdminVendorRow } from "@/lib/adminApi";
+import { useListData } from "@/hooks/useListData";
 
 const statusStyle: Record<string, { text: string; bg: string; dot: string }> = {
   active: {
@@ -49,17 +50,17 @@ type PendingAction = { type: "delete"; product: Product } | null;
 
 export default function ProductsPage() {
   const { t } = useTranslation();
-  const [productList, setProductList] = useState<Product[]>([]);
-  const [vendors, setVendors] = useState<AdminVendorRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [rejectTarget, setRejectTarget] = useState<Product | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-  async function load() {
-    setLoading(true);
-    try {
+  const {
+    data: { products: productList, vendors },
+    loading,
+    refetch: load,
+  } = useListData(
+    async () => {
       const [productsResp, vendorsResp] = await Promise.all([
         productsApi.listAdminProducts(),
         adminApi.listVendors(),
@@ -67,20 +68,17 @@ export default function ProductsPage() {
 
       // DataTable's search does String(row[key]).includes(...) — name is a
       // { en, ar? } object, so give it a flat string field to search against.
-      setProductList(
-        productsResp.data.map((p) => ({ ...p, searchName: `${p.name.en} ${p.name.ar ?? ""}` }))
-      );
-      setVendors(vendorsResp.data);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, t("products.list.toasts.loadFailed")));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void load();
-  }, []);
+      return {
+        products: productsResp.data.map((p) => ({
+          ...p,
+          searchName: `${p.name.en} ${p.name.ar ?? ""}`,
+        })),
+        vendors: vendorsResp.data,
+      };
+    },
+    { products: [] as Product[], vendors: [] as AdminVendorRow[] },
+    { fallbackMessage: t("products.list.toasts.loadFailed") }
+  );
 
   const vendorName = (id: string) => vendors.find((v) => v.id === id)?.storeName ?? null;
 
@@ -192,6 +190,7 @@ export default function ProductsPage() {
       header: t("products.list.columns.price"),
       render: (_, row) => {
         const hasDiscount = row.compareAtPrice != null && row.compareAtPrice > row.price;
+
         const discountPct = hasDiscount
           ? Math.round((1 - row.price / row.compareAtPrice!) * 100)
           : 0;
@@ -321,7 +320,6 @@ export default function ProductsPage() {
           },
         ]}
         rowActions={rowActions}
-        rowActionsVariant="inline"
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped

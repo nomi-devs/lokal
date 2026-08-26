@@ -7,7 +7,7 @@ import UserAddDialog from "./UserAddDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "@/components/ui/Toast";
@@ -177,7 +177,7 @@ export default function UserManagementPage() {
       key: "createdAt",
       header: t("users.management.columns.joined"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 

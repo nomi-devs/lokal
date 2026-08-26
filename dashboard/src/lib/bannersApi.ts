@@ -1,7 +1,6 @@
 import axios from "axios";
 
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated, del } from "./apiClient";
 
 // Mirrors local-be's banners/domain/banner.ts.
 export interface AdminBanner {
@@ -32,13 +31,7 @@ export interface BannerPayload {
 }
 
 export async function listAdminBanners(page = 1, limit = 100) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminBanner[];
-    pagination: Pagination;
-  }>("/admin/banners", { params: { page, limit } });
-
-  return data;
+  return listPaginated<AdminBanner>("/admin/banners", { page, limit });
 }
 
 export async function createAdminBanner(payload: BannerPayload) {
@@ -60,11 +53,7 @@ export async function updateAdminBanner(id: string, payload: Partial<BannerPaylo
 }
 
 export async function deleteAdminBanner(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(
-    `/admin/banners/${id}`
-  );
-
-  return data;
+  return del(`/admin/banners/${id}`);
 }
 
 export async function uploadBannerImage(file: File): Promise<string> {

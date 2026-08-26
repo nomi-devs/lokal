@@ -107,3 +107,31 @@ export function getApiErrorMessage(
 
   return fallback;
 }
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+}
+
+// Every list endpoint in local-be responds { success, data: T[], pagination }
+// and every lib/*Api.ts list function was hand-rolling the same
+// apiClient.get<{...}>(url, { params: { page: 1, limit: 100, ...params } })
+// wrapper — this is the one place that shape lives now.
+export async function listPaginated<T>(
+  url: string,
+  params: object = {}
+): Promise<{ data: T[]; pagination: Pagination }> {
+  const { data } = await apiClient.get<{ success: true; data: T[]; pagination: Pagination }>(url, {
+    params: { page: 1, limit: 100, ...params },
+  });
+
+  return { data: data.data, pagination: data.pagination };
+}
+
+// Same idea for the equally-repeated single-resource delete call.
+export async function del(url: string): Promise<{ success: true; message: string }> {
+  const { data } = await apiClient.delete<{ success: true; message: string }>(url);
+
+  return data;
+}

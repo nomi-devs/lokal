@@ -1,14 +1,10 @@
 import axios from "axios";
 
-import { apiClient } from "./apiClient";
+import { apiClient, listPaginated, del } from "./apiClient";
 import type { AuthUser } from "./authApi";
 import type { Product } from "./productsApi";
 
-export interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-}
+export type { Pagination } from "./apiClient";
 
 export interface AdminUserRow extends AuthUser {
   status: "active" | "inactive" | "suspended" | "deleted";
@@ -31,13 +27,7 @@ export interface ListUsersParams {
 }
 
 export async function listUsers(params: ListUsersParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminUserRow[];
-    pagination: Pagination;
-  }>("/admin/users", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<AdminUserRow>("/admin/users", params);
 }
 
 export async function getUser(id: string) {
@@ -60,6 +50,8 @@ export async function updateUserStatus(
   return data;
 }
 
+// Keeps its own apiClient.delete call (unlike the del() helper) because it
+// needs to send a request body alongside the DELETE.
 export async function deleteUser(id: string, reason?: string) {
   const { data } = await apiClient.delete<{ success: true; message: string }>(
     `/admin/users/${id}`,
@@ -115,13 +107,7 @@ export interface ListVendorsParams {
 }
 
 export async function listVendors(params: ListVendorsParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminVendorRow[];
-    pagination: Pagination;
-  }>("/admin/vendors", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<AdminVendorRow>("/admin/vendors", params);
 }
 
 // One endpoint for every status transition (previously three: approve/
@@ -193,12 +179,7 @@ export async function createVendor(payload: CreateVendorPayload) {
 // This one stays here since it hangs off the vendor-detail view, not the
 // Products pages themselves.
 export async function getVendorProducts(vendorId: string, page = 1, limit = 10) {
-  const { data } = await apiClient.get<{ success: true; data: Product[]; pagination: Pagination }>(
-    `/admin/vendors/${vendorId}/products`,
-    { params: { page, limit } }
-  );
-
-  return data;
+  return listPaginated<Product>(`/admin/vendors/${vendorId}/products`, { page, limit });
 }
 
 export interface AdminWishlistItem {
@@ -211,13 +192,7 @@ export interface AdminWishlistItem {
 }
 
 export async function getUserWishlist(userId: string, page = 1, limit = 10) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminWishlistItem[];
-    pagination: Pagination;
-  }>(`/admin/users/${userId}/wishlist`, { params: { page, limit } });
-
-  return data;
+  return listPaginated<AdminWishlistItem>(`/admin/users/${userId}/wishlist`, { page, limit });
 }
 
 // Mirrors local-be's addresses/domain/address.ts.
@@ -239,13 +214,7 @@ export interface AdminAddress {
 }
 
 export async function getUserAddresses(userId: string, page = 1, limit = 10) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminAddress[];
-    pagination: Pagination;
-  }>(`/admin/users/${userId}/addresses`, { params: { page, limit } });
-
-  return data;
+  return listPaginated<AdminAddress>(`/admin/users/${userId}/addresses`, { page, limit });
 }
 
 // ── Categories ────────────────────────────────────────────────────────────────
@@ -270,13 +239,7 @@ export interface AdminCategory {
 }
 
 export async function listAdminCategories(page = 1, limit = 100) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminCategory[];
-    pagination: Pagination;
-  }>("/admin/categories", { params: { page, limit } });
-
-  return data;
+  return listPaginated<AdminCategory>("/admin/categories", { page, limit });
 }
 
 export interface CategoryPayload {
@@ -310,11 +273,7 @@ export async function updateAdminCategory(id: string, payload: Partial<CategoryP
 }
 
 export async function deleteAdminCategory(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(
-    `/admin/categories/${id}`
-  );
-
-  return data;
+  return del(`/admin/categories/${id}`);
 }
 
 // ── FAQs ──────────────────────────────────────────────────────────────────────
@@ -342,12 +301,7 @@ export interface FaqPayload {
 }
 
 export async function listAdminFaqs(page = 1, limit = 100) {
-  const { data } = await apiClient.get<{ success: true; data: AdminFaq[]; pagination: Pagination }>(
-    "/admin/faqs",
-    { params: { page, limit } }
-  );
-
-  return data;
+  return listPaginated<AdminFaq>("/admin/faqs", { page, limit });
 }
 
 export async function createAdminFaq(payload: FaqPayload) {
@@ -366,9 +320,7 @@ export async function updateAdminFaq(id: string, payload: Partial<FaqPayload>) {
 }
 
 export async function deleteAdminFaq(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(`/admin/faqs/${id}`);
-
-  return data;
+  return del(`/admin/faqs/${id}`);
 }
 
 export async function uploadCategoryIcon(file: File): Promise<string> {

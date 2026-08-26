@@ -1,5 +1,4 @@
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated } from "./apiClient";
 
 // Mirrors local-be's refunds/domain/refund.ts + RefundWithContextDto.
 // requested -> approved -> completed, or requested -> rejected — 'rejected'
@@ -47,13 +46,7 @@ export interface ListAdminRefundsParams {
 }
 
 export async function listAdminRefunds(params: ListAdminRefundsParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminRefund[];
-    pagination: Pagination;
-  }>("/admin/refunds", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<AdminRefund>("/admin/refunds", params);
 }
 
 export async function approveRefund(id: string, approvalNotes?: string): Promise<AdminRefund> {

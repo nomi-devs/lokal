@@ -1,5 +1,4 @@
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { listPaginated } from "./apiClient";
 
 // Mirrors local-be's AdminPaymentRowDto — a payment "row" is an Order
 // projected the way this page wants it, not a separate collection (orders
@@ -30,11 +29,5 @@ export interface ListAdminPaymentsParams {
 }
 
 export async function listAdminPayments(params: ListAdminPaymentsParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminPaymentRow[];
-    pagination: Pagination;
-  }>("/admin/payments", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<AdminPaymentRow>("/admin/payments", params);
 }

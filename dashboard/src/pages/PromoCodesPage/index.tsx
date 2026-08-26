@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Tag, Plus, Pencil, Trash2, Eye, Hash, Wallet } from "lucide-react";
 
@@ -8,7 +8,7 @@ import PromoStatusBadge, { DiscountTypeBadge } from "./PromoStatusBadge";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -30,6 +30,7 @@ import {
   type AdminVendorRow,
   type AdminCategory,
 } from "@/lib/adminApi";
+import { useListData } from "@/hooks/useListData";
 
 type PromoCodeRow = AdminPromoCode & { computedStatus: PromoCodeStatus; isValid: boolean };
 
@@ -50,36 +51,41 @@ type PendingAction =
 
 export default function PromoCodesPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [promoCodeList, setPromoCodeList] = useState<AdminPromoCode[]>([]);
-  const [vendorsById, setVendorsById] = useState<Map<string, AdminVendorRow>>(new Map());
-  const [categoriesById, setCategoriesById] = useState<Map<string, AdminCategory>>(new Map());
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPromoCode, setEditingPromoCode] = useState<AdminPromoCode | null>(null);
-  const [viewingPromoCode, setViewingPromoCode] = useState<AdminPromoCode | null>(null);
-  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    try {
+  const {
+    data: { promoCodes: promoCodeList, vendorsById, categoriesById },
+    setData,
+    loading,
+  } = useListData(
+    async () => {
       const [promoRes, vendorsRes, categoriesRes] = await Promise.all([
         listAdminPromoCodes(),
         listVendors({ limit: 200 }),
         listAdminCategories(),
       ]);
-      setPromoCodeList(promoRes.data);
-      setVendorsById(new Map(vendorsRes.data.map((v) => [v.id, v])));
-      setCategoriesById(new Map(categoriesRes.data.map((c) => [c.id, c])));
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load promo codes"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+      return {
+        promoCodes: promoRes.data,
+        vendorsById: new Map(vendorsRes.data.map((v) => [v.id, v])),
+        categoriesById: new Map(categoriesRes.data.map((c) => [c.id, c])),
+      };
+    },
+    {
+      promoCodes: [] as AdminPromoCode[],
+      vendorsById: new Map<string, AdminVendorRow>(),
+      categoriesById: new Map<string, AdminCategory>(),
+    },
+    { fallbackMessage: "Failed to load promo codes" }
+  );
+
+  function setPromoCodeList(updater: (prev: AdminPromoCode[]) => AdminPromoCode[]) {
+    setData((prev) => ({ ...prev, promoCodes: updater(prev.promoCodes) }));
+  }
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPromoCode, setEditingPromoCode] = useState<AdminPromoCode | null>(null);
+  const [viewingPromoCode, setViewingPromoCode] = useState<AdminPromoCode | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   const rows = useMemo(() => promoCodeList.map(toRow), [promoCodeList]);
 
@@ -202,7 +208,7 @@ export default function PromoCodesPage() {
       key: "validUntil",
       header: t("promoCodes.columns.validUntil"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 
@@ -273,7 +279,6 @@ export default function PromoCodesPage() {
         ]}
         selectable
         rowActions={rowActions}
-        rowActionsVariant="menu"
         toolbarActions={toolbarActions}
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}

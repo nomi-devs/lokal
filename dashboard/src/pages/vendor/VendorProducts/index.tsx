@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Package,
@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import * as productsApi from "@/lib/productsApi";
 import type { Product, ProductPayload } from "@/lib/productsApi";
+import { useListData } from "@/hooks/useListData";
 
 const statusStyle: Record<string, { text: string; bg: string; dot: string }> = {
   active: {
@@ -47,29 +48,25 @@ type PendingAction = { type: "delete"; product: Product } | null;
 
 export default function VendorProducts() {
   const { t } = useTranslation();
-  const [productList, setProductList] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-  async function load() {
-    setLoading(true);
-    try {
+  const {
+    data: productList,
+    loading,
+    refetch: load,
+  } = useListData(
+    async () => {
       const { data } = await productsApi.listMyProducts();
+
       // DataTable's search does String(row[key]).includes(...) — name is a
       // { en, ar? } object, so give it a flat string field to search against.
-      setProductList(data.map((p) => ({ ...p, searchName: `${p.name.en} ${p.name.ar ?? ""}` })));
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, t("vendor.products.list.toasts.loadFailed")));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void load();
-  }, []);
+      return data.map((p) => ({ ...p, searchName: `${p.name.en} ${p.name.ar ?? ""}` }));
+    },
+    [] as Product[],
+    { fallbackMessage: t("vendor.products.list.toasts.loadFailed") }
+  );
 
   const activeCount = productList.filter((p) => p.status === "active").length;
   const inactiveCount = productList.filter((p) => p.status === "inactive").length;
@@ -156,6 +153,7 @@ export default function VendorProducts() {
       header: t("vendor.products.list.columns.price"),
       render: (_, row) => {
         const hasDiscount = row.compareAtPrice != null && row.compareAtPrice > row.price;
+
         const discountPct = hasDiscount
           ? Math.round((1 - row.price / row.compareAtPrice!) * 100)
           : 0;
@@ -273,7 +271,6 @@ export default function VendorProducts() {
           },
         ]}
         rowActions={rowActions}
-        rowActionsVariant="inline"
         toolbarActions={toolbarActions}
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}

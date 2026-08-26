@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Star,
@@ -14,12 +14,13 @@ import RejectReviewDialog from "./RejectReviewDialog";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getApiErrorMessage } from "@/lib/apiClient";
+import { useListData } from "@/hooks/useListData";
 import {
   listAdminReviews,
   approveReview,
@@ -70,26 +71,16 @@ function toRow(review: AdminReview): ReviewRow {
 // itself is recomputed server-side, so this page never touches it directly).
 export default function ReviewsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [reviewList, setReviewList] = useState<AdminReview[]>([]);
+
+  const {
+    data: reviewList,
+    setData: setReviewList,
+    loading,
+  } = useListData(async () => (await listAdminReviews()).data, [] as AdminReview[], {
+    fallbackMessage: "Failed to load reviews",
+  });
   const [rejectTarget, setRejectTarget] = useState<AdminReview | null>(null);
   const rows = reviewList.map(toRow);
-
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listAdminReviews();
-      setReviewList(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load reviews"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchReviews();
-  }, [fetchReviews]);
 
   const pendingCount = reviewList.filter((r) => r.status === "pending").length;
   const approvedCount = reviewList.filter((r) => r.status === "approved").length;
@@ -154,7 +145,7 @@ export default function ReviewsPage() {
       key: "createdAt",
       header: t("reviews.list.columns.date", "Date"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 
@@ -198,7 +189,6 @@ export default function ReviewsPage() {
           },
         ]}
         rowActions={rowActions}
-        rowActionsVariant="inline"
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped

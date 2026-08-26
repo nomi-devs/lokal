@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ShoppingCart,
@@ -16,7 +16,7 @@ import { ORDER_TIMELINE } from "./orderTimeline";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate, renderCurrency } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import {
   Dialog,
@@ -26,12 +26,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/Toast";
 import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { listAdminOrders, type Order, type OrderStatus } from "@/lib/ordersApi";
 import { listUsers, listVendors, type AdminUserRow, type AdminVendorRow } from "@/lib/adminApi";
-import { getApiErrorMessage } from "@/lib/apiClient";
+import { useListData } from "@/hooks/useListData";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
 const statusVariant: Record<OrderStatus, BadgeVariant> = {
@@ -195,33 +194,32 @@ function OrderDetails({
 // customer can cancel, so this page has no status-edit/cancel actions.
 export default function OrdersPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [orderList, setOrderList] = useState<Order[]>([]);
-  const [usersById, setUsersById] = useState<Map<string, AdminUserRow>>(new Map());
-  const [vendorsById, setVendorsById] = useState<Map<string, AdminVendorRow>>(new Map());
-  const [selected, setSelected] = useState<Order | null>(null);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    try {
+  const {
+    data: { orders: orderList, usersById, vendorsById },
+    loading,
+  } = useListData(
+    async () => {
       const [ordersRes, usersRes, vendorsRes] = await Promise.all([
         listAdminOrders({ limit: 200 }),
         listUsers({ limit: 200 }),
         listVendors({ limit: 200 }),
       ]);
-      setOrderList(ordersRes.data);
-      setUsersById(new Map(usersRes.data.map((u) => [u.id, u])));
-      setVendorsById(new Map(vendorsRes.data.map((v) => [v.id, v])));
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load orders"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+      return {
+        orders: ordersRes.data,
+        usersById: new Map(usersRes.data.map((u) => [u.id, u])),
+        vendorsById: new Map(vendorsRes.data.map((v) => [v.id, v])),
+      };
+    },
+    {
+      orders: [] as Order[],
+      usersById: new Map<string, AdminUserRow>(),
+      vendorsById: new Map<string, AdminVendorRow>(),
+    },
+    { fallbackMessage: "Failed to load orders" }
+  );
+  const [selected, setSelected] = useState<Order | null>(null);
 
   const customerName = useCallback(
     (o: Order) => {
@@ -275,7 +273,7 @@ export default function OrdersPage() {
       header: t("orders.columns.total"),
       sortable: true,
       align: "right",
-      render: (v) => <span className="font-semibold">{(v as number).toLocaleString()} KWD</span>,
+      render: renderCurrency,
     },
     {
       key: "status",
@@ -301,7 +299,7 @@ export default function OrdersPage() {
       key: "createdAt",
       header: t("orders.columns.date"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 
@@ -335,7 +333,6 @@ export default function OrdersPage() {
           },
         ]}
         rowActions={rowActions}
-        rowActionsVariant="inline"
         pagination={{ pageSize: 8, pageSizeOptions: [5, 8, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped

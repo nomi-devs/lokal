@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreditCard, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate, renderCurrency } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/components/ui/DataTable";
-import { toast } from "@/components/ui/Toast";
 import Badge, { type BadgeVariant } from "@/components/ui/badge";
-import { getApiErrorMessage } from "@/lib/apiClient";
 import { listAdminPayments, type AdminPaymentRow } from "@/lib/paymentsApi";
+import { useListData } from "@/hooks/useListData";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
 const statusVariant: Record<AdminPaymentRow["paymentStatus"], BadgeVariant> = {
@@ -25,24 +23,12 @@ const statusVariant: Record<AdminPaymentRow["paymentStatus"], BadgeVariant> = {
 // 'paid' today — see local-be's admin-payments.controller.ts).
 export default function PaymentsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [paymentList, setPaymentList] = useState<AdminPaymentRow[]>([]);
 
-  const fetchPayments = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listAdminPayments();
-      setPaymentList(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load payments"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+  const { data: paymentList, loading } = useListData(
+    async () => (await listAdminPayments()).data,
+    [] as AdminPaymentRow[],
+    { fallbackMessage: "Failed to load payments" }
+  );
 
   const successfulAmount = paymentList
     .filter((p) => p.paymentStatus === "paid")
@@ -78,7 +64,7 @@ export default function PaymentsPage() {
       header: t("payments.list.columns.amount"),
       sortable: true,
       align: "right",
-      render: (v) => <span className="font-semibold">{(v as number).toLocaleString()} KWD</span>,
+      render: renderCurrency,
     },
     {
       key: "paymentMethodType",
@@ -99,7 +85,7 @@ export default function PaymentsPage() {
       key: "createdAt",
       header: t("payments.list.columns.date"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 

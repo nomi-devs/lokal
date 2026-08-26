@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Hourglass, CheckCircle2, XCircle, Wallet, Eye, BadgeCheck } from "lucide-react";
 
@@ -10,10 +10,11 @@ import RefundStatusBadge from "./RefundStatusBadge";
 
 import { DashboardLayout } from "@/components/Dashboard";
 import { sidebarItems } from "@/constants";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable, renderDate } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import { getApiErrorMessage } from "@/lib/apiClient";
+import { useListData } from "@/hooks/useListData";
 import {
   listAdminRefunds,
   approveRefund,
@@ -25,29 +26,19 @@ import {
 
 export default function RefundsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [refundList, setRefundList] = useState<AdminRefund[]>([]);
+
+  const {
+    data: refundList,
+    setData: setRefundList,
+    loading,
+  } = useListData(async () => (await listAdminRefunds()).data, [] as AdminRefund[], {
+    fallbackMessage: "Failed to load refunds",
+  });
 
   const [viewTarget, setViewTarget] = useState<AdminRefund | null>(null);
   const [approveTarget, setApproveTarget] = useState<AdminRefund | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminRefund | null>(null);
   const [completeTarget, setCompleteTarget] = useState<AdminRefund | null>(null);
-
-  const fetchRefunds = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listAdminRefunds();
-      setRefundList(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load refunds"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchRefunds();
-  }, [fetchRefunds]);
 
   async function approve(refundId: string, approvalNotes: string) {
     try {
@@ -117,7 +108,7 @@ export default function RefundsPage() {
       key: "createdAt",
       header: t("refunds.requestedDate"),
       sortable: true,
-      render: (v) => new Date(v as string).toLocaleDateString(),
+      render: renderDate,
     },
   ];
 
@@ -168,7 +159,6 @@ export default function RefundsPage() {
           },
         ]}
         rowActions={rowActions}
-        rowActionsVariant="menu"
         pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 20] }}
         defaultSort={{ key: "createdAt", direction: "desc" }}
         striped

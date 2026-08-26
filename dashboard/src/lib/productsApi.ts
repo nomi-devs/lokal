@@ -1,7 +1,6 @@
 import axios from "axios";
 
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated, del } from "./apiClient";
 
 // Mirrors local-be's products/domain/product.ts. No separate approval
 // workflow — products are live by default (status: "active"); admin can flag
@@ -70,13 +69,9 @@ export interface CategoryOption {
 }
 
 export async function listCategories(): Promise<CategoryOption[]> {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: CategoryOption[];
-    pagination: Pagination;
-  }>("/categories", { params: { page: 1, limit: 200 } });
+  const { data } = await listPaginated<CategoryOption>("/categories", { limit: 200 });
 
-  return data.data;
+  return data;
 }
 
 // ── Vendor self-service (GET/POST/PATCH/DELETE /vendor/products) ──────────
@@ -90,12 +85,7 @@ export interface ListVendorProductsParams {
 }
 
 export async function listMyProducts(params: ListVendorProductsParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: Product[]; pagination: Pagination }>(
-    "/vendor/products",
-    { params: { page: 1, limit: 100, ...params } }
-  );
-
-  return data;
+  return listPaginated<Product>("/vendor/products", params);
 }
 
 export async function createMyProduct(payload: ProductPayload): Promise<Product> {
@@ -120,11 +110,7 @@ export async function updateMyProduct(
 }
 
 export async function deleteMyProduct(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(
-    `/vendor/products/${id}`
-  );
-
-  return data;
+  return del(`/vendor/products/${id}`);
 }
 
 // ── Admin (GET/PATCH/DELETE /admin/products) ───────────────────────────────
@@ -139,12 +125,7 @@ export interface ListAdminProductsParams {
 }
 
 export async function listAdminProducts(params: ListAdminProductsParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: Product[]; pagination: Pagination }>(
-    "/admin/products",
-    { params: { page: 1, limit: 100, ...params } }
-  );
-
-  return data;
+  return listPaginated<Product>("/admin/products", params);
 }
 
 export async function getAdminProduct(id: string): Promise<Product> {
@@ -174,9 +155,5 @@ export async function updateAdminProduct(
 }
 
 export async function deleteAdminProduct(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(
-    `/admin/products/${id}`
-  );
-
-  return data;
+  return del(`/admin/products/${id}`);
 }

@@ -1,5 +1,4 @@
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated } from "./apiClient";
 
 // Mirrors local-be's reviews/domain/review.ts. A review only counts toward
 // its product's/vendor's public rating once approved — see
@@ -35,13 +34,7 @@ export interface ListAdminReviewsParams {
 }
 
 export async function listAdminReviews(params: ListAdminReviewsParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminReview[];
-    pagination: Pagination;
-  }>("/admin/reviews", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<AdminReview>("/admin/reviews", params);
 }
 
 export async function approveReview(id: string): Promise<AdminReview> {

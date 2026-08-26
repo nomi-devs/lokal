@@ -1,5 +1,4 @@
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated, del } from "./apiClient";
 
 // Mirrors local-be's promo-codes/domain/promo-code.ts.
 export type DiscountType = "percentage" | "fixed";
@@ -77,13 +76,7 @@ export interface ListAdminPromoCodesParams {
 }
 
 export async function listAdminPromoCodes(params: ListAdminPromoCodesParams = {}) {
-  const { data } = await apiClient.get<{
-    success: true;
-    data: AdminPromoCode[];
-    pagination: Pagination;
-  }>("/admin/promo-codes", { params: { page: 1, limit: 100, ...params } });
-
-  return data;
+  return listPaginated<AdminPromoCode>("/admin/promo-codes", params);
 }
 
 export async function createPromoCode(payload: PromoCodePayload): Promise<AdminPromoCode> {
@@ -108,9 +101,5 @@ export async function updatePromoCode(
 }
 
 export async function deletePromoCode(id: string) {
-  const { data } = await apiClient.delete<{ success: true; message: string }>(
-    `/admin/promo-codes/${id}`
-  );
-
-  return data;
+  return del(`/admin/promo-codes/${id}`);
 }

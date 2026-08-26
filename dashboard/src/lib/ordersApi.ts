@@ -1,5 +1,4 @@
-import { apiClient } from "./apiClient";
-import type { Pagination } from "./adminApi";
+import { apiClient, listPaginated } from "./apiClient";
 
 // Mirrors local-be's orders/domain/order.ts. Canonical lifecycle:
 // placed -> confirmed -> in_transit -> delivered, plus a one-directional
@@ -71,12 +70,7 @@ export interface ListAdminOrdersParams {
 }
 
 export async function listAdminOrders(params: ListAdminOrdersParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: Order[]; pagination: Pagination }>(
-    "/admin/orders",
-    { params: { page: 1, limit: 100, ...params } }
-  );
-
-  return data;
+  return listPaginated<Order>("/admin/orders", params);
 }
 
 export async function getAdminOrder(id: string): Promise<Order> {
@@ -94,12 +88,7 @@ export interface ListVendorOrdersParams {
 }
 
 export async function listVendorOrders(params: ListVendorOrdersParams = {}) {
-  const { data } = await apiClient.get<{ success: true; data: Order[]; pagination: Pagination }>(
-    "/vendor/orders",
-    { params: { page: 1, limit: 100, ...params } }
-  );
-
-  return data;
+  return listPaginated<Order>("/vendor/orders", params);
 }
 
 export async function getVendorOrder(id: string): Promise<Order> {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HelpCircle, Plus, Pencil, Trash2, Eye, Power } from "lucide-react";
 
@@ -11,6 +11,7 @@ import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTa
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { useListData } from "@/hooks/useListData";
 import {
   listAdminFaqs,
   createAdminFaq,
@@ -33,28 +34,17 @@ type PendingAction =
 
 export default function FaqPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [faqList, setFaqList] = useState<AdminFaq[]>([]);
+
+  const {
+    data: faqList,
+    setData: setFaqList,
+    loading,
+  } = useListData(async () => (await listAdminFaqs(1, 200)).data, [] as AdminFaq[], {
+    fallbackMessage: t("faqs.list.loadFailed"),
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<AdminFaq | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-
-  const fetchFaqs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await listAdminFaqs(1, 200);
-
-      setFaqList(res.data);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, t("faqs.list.loadFailed")));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    fetchFaqs();
-  }, [fetchFaqs]);
 
   const activeCount = faqList.filter((f) => f.isActive).length;
 
@@ -225,7 +215,6 @@ export default function FaqPage() {
         ]}
         selectable
         rowActions={rowActions}
-        rowActionsVariant="inline"
         toolbarActions={toolbarActions}
         pagination={{ pageSize: 10, pageSizeOptions: [5, 10, 25] }}
         defaultSort={{ key: "sortOrder", direction: "asc" }}
