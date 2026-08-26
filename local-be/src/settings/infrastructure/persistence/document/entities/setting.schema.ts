@@ -20,7 +20,15 @@ export class SettingSchemaClass extends EntityDocumentHelper {
   type: string;
 
   @Prop({
-    enum: ['payment', 'shipping', 'commission', 'sms', 'auth', 'general'],
+    enum: [
+      'payment',
+      'shipping',
+      'commission',
+      'sms',
+      'auth',
+      'general',
+      'support',
+    ],
     required: true,
   })
   category: string;

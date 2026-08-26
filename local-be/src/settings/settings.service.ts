@@ -5,6 +5,17 @@ import { Setting } from './domain/setting';
 import { SettingRepository } from './infrastructure/persistence/setting.repository';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdateSupportSettingsDto } from './dto/update-support-settings.dto';
+
+// Keys settings-seed.service.ts creates under category "support" — see
+// SettingsService.updateSupport and SupportInformationCard.tsx (dashboard).
+const SUPPORT_SETTING_KEYS = [
+  'supportEmail',
+  'supportPhone',
+  'whatsappNumber',
+  'websiteUrl',
+  'officeAddress',
+] as const;
 
 @Injectable()
 export class SettingsService {
@@ -48,6 +59,25 @@ export class SettingsService {
       updatedBy: adminId,
     });
     return updated as Setting;
+  }
+
+  // Backs the dashboard's single "Support Information" form — one request
+  // in, one or more of the 5 support-category rows updated, the updated
+  // rows returned so the client can merge them back into its settings list
+  // without a second GET. Reuses update() per key (same type-check/
+  // updatedBy bookkeeping as the generic single-key PATCH), just sequenced
+  // behind one call instead of the client firing one PATCH per field.
+  async updateSupport(
+    adminId: string,
+    dto: UpdateSupportSettingsDto,
+  ): Promise<Setting[]> {
+    const entries = SUPPORT_SETTING_KEYS.filter(
+      (key) => dto[key] !== undefined,
+    ).map((key) => [key, dto[key] as string] as const);
+
+    return Promise.all(
+      entries.map(([key, value]) => this.update(adminId, key, { value })),
+    );
   }
 
   async remove(key: string): Promise<void> {

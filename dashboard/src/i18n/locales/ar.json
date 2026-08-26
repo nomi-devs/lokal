@@ -1793,9 +1793,47 @@
     },
     "tabs": {
       "general": "عام",
+      "support": "الدعم",
       "notifications": "الإشعارات",
       "security": "الأمان",
       "appearance": "المظهر"
+    },
+    "support": {
+      "title": "معلومات الدعم",
+      "description": "إدارة معلومات التواصل الخاصة بالدعم",
+      "contactDetails": "تفاصيل التواصل",
+      "fields": {
+        "supportEmail": {
+          "label": "البريد الإلكتروني للدعم",
+          "caption": "البريد الإلكتروني الأساسي لاستفسارات المستخدمين",
+          "placeholder": "support@example.com"
+        },
+        "supportPhone": {
+          "label": "رقم الهاتف",
+          "caption": "خط هاتف دعم العملاء",
+          "placeholder": "+965 2220 4321"
+        },
+        "whatsappNumber": {
+          "label": "رقم واتساب",
+          "caption": "رقم واتساب للتواصل السريع",
+          "placeholder": "+965 9988 7766"
+        },
+        "websiteUrl": {
+          "label": "رابط الموقع الإلكتروني",
+          "caption": "رابط الموقع الإلكتروني أو مركز المساعدة",
+          "placeholder": "https://example.com/help"
+        },
+        "officeAddress": {
+          "label": "عنوان المكتب",
+          "caption": "العنوان الفعلي لمكتب الدعم",
+          "placeholder": "الشارع، المدينة، الدولة"
+        }
+      },
+      "saveFailed": "فشل تحديث معلومات الدعم",
+      "savedToast": {
+        "title": "تم تحديث معلومات الدعم",
+        "body": "تم حفظ بيانات التواصل الخاصة بالدعم."
+      }
     },
     "commissionCard": {
       "title": "العمولة",

@@ -24,6 +24,7 @@ export abstract class NotificationRepository {
     userId: string,
     page: number,
     limit: number,
+    status?: 'all' | 'read' | 'unread',
   ): Promise<{ data: Notification[]; total: number }>;
   abstract countUnreadByUserId(userId: string): Promise<number>;
 

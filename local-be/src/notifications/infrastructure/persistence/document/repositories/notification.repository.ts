@@ -52,8 +52,13 @@ export class NotificationsDocumentRepository implements NotificationRepository {
     userId: string,
     page: number,
     limit: number,
+    status: 'all' | 'read' | 'unread' = 'all',
   ): Promise<{ data: Notification[]; total: number }> {
-    const query = { userId: new Types.ObjectId(userId) };
+    const query = {
+      userId: new Types.ObjectId(userId),
+      ...(status === 'read' && { isRead: true }),
+      ...(status === 'unread' && { isRead: false }),
+    };
 
     const [data, total] = await Promise.all([
       this.notificationModel

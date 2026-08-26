@@ -3,7 +3,14 @@ import { apiClient } from "./apiClient";
 // Mirrors local-be's settings/domain/setting.ts — a record-keeping surface,
 // not a live config source (see local-be's AdminSettingsController).
 export type SettingType = "number" | "string" | "boolean" | "json";
-export type SettingCategory = "payment" | "shipping" | "commission" | "sms" | "auth" | "general";
+export type SettingCategory =
+  | "payment"
+  | "shipping"
+  | "commission"
+  | "sms"
+  | "auth"
+  | "general"
+  | "support";
 
 export interface AdminSetting {
   id: string;
@@ -36,4 +43,26 @@ export async function updateAdminSetting(
   );
 
   return data.setting;
+}
+
+// Mirrors local-be's UpdateSupportSettingsDto keys.
+export type SupportSettingKey =
+  | "supportEmail"
+  | "supportPhone"
+  | "whatsappNumber"
+  | "websiteUrl"
+  | "officeAddress";
+
+// One PATCH for the whole Support Information form (see
+// SupportInformationCard.tsx) instead of one per field — only send the
+// keys that actually changed, all optional on the backend DTO.
+export async function updateSupportSettings(
+  values: Partial<Record<SupportSettingKey, string>>
+): Promise<AdminSetting[]> {
+  const { data } = await apiClient.patch<{ success: true; data: AdminSetting[] }>(
+    "/admin/settings/support",
+    values
+  );
+
+  return data.data;
 }

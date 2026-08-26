@@ -5,6 +5,7 @@ import databaseConfig from '../../config/database.config';
 import authConfig from '../../../auth/config/auth.config';
 import { AllConfigType } from '../../../config/config.type';
 import { AdminSeedModule } from './admin/admin-seed.module';
+import { SettingsSeedModule } from './settings/settings-seed.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AdminSeedModule } from './admin/admin-seed.module';
       }),
     }),
     AdminSeedModule,
+    SettingsSeedModule,
   ],
 })
 export class SeedModule {}

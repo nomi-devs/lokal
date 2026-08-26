@@ -23,6 +23,7 @@ import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { SettingsService } from './settings.service';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdateSupportSettingsDto } from './dto/update-support-settings.dto';
 import {
   SettingResponseDto,
   SettingsListResponseDto,
@@ -51,6 +52,20 @@ export class AdminSettingsController {
   async create(@Body() dto: CreateSettingDto): Promise<SettingResponseDto> {
     const setting = await this.settingsService.create(dto);
     return { success: true, setting };
+  }
+
+  // Declared before the generic ':key' route below so PATCH
+  // /admin/settings/support is matched here, not swallowed as key='support'
+  // (Nest/Express match routes in declaration order — same precedent as
+  // VendorsController/StoresController this session).
+  @ApiOkResponse({ type: SettingsListResponseDto })
+  @Patch('support')
+  async updateSupport(
+    @CurrentUser() admin: AuthenticatedUser,
+    @Body() dto: UpdateSupportSettingsDto,
+  ): Promise<SettingsListResponseDto> {
+    const data = await this.settingsService.updateSupport(admin.userId, dto);
+    return { success: true, data };
   }
 
   @ApiOkResponse({ type: SettingResponseDto })

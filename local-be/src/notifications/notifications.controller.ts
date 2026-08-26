@@ -11,13 +11,13 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.type';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { MESSAGES } from '../common/constants/messages.constant';
 import { NotificationsService } from './notifications.service';
 import {
   NotificationListResponseDto,
   UnreadCountResponseDto,
 } from './dto/notification-response.dto';
+import { ListNotificationsQueryDto } from './dto/list-notifications-query.dto';
 
 // Shared by customers, vendors, and admins alike — order updates and
 // promotions for customers, new-order alerts and admin messages for vendors
@@ -34,13 +34,14 @@ export class NotificationsController {
   @Get()
   async list(
     @CurrentUser() currentUser: AuthenticatedUser,
-    @Query() query: PaginationQueryDto,
+    @Query() query: ListNotificationsQueryDto,
   ): Promise<NotificationListResponseDto> {
     const { data, unreadCount, total } =
       await this.notificationsService.findManyByUserId(
         currentUser.userId,
         query.page,
         query.limit,
+        query.status,
       );
     return {
       success: true,

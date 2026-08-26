@@ -64,13 +64,14 @@ export class NotificationsService {
     userId: string,
     page: number,
     limit: number,
+    status: 'all' | 'read' | 'unread' = 'all',
   ): Promise<{
     data: NotificationPayload[];
     unreadCount: number;
     total: number;
   }> {
     const [{ data, total }, unreadCount] = await Promise.all([
-      this.notificationRepository.findManyByUserId(userId, page, limit),
+      this.notificationRepository.findManyByUserId(userId, page, limit, status),
       this.notificationRepository.countUnreadByUserId(userId),
     ]);
     // Same toNotificationPayload() used for the push data map (dispatchPush

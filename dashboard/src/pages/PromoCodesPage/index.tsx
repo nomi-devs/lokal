@@ -288,7 +288,7 @@ export default function PromoCodesPage() {
           },
           {
             title: t("promoCodes.revenueImpact"),
-            value: `-${revenueImpact.toLocaleString()}`,
+            value: `${revenueImpact > 0 ? "-" : ""}${revenueImpact.toLocaleString()}`,
             suffix: " KWD",
             icon: Wallet,
             variant: "warning",

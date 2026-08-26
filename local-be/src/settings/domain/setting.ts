@@ -2,7 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export type SettingType = 'number' | 'string' | 'boolean' | 'json';
 export type SettingCategory =
-  'payment' | 'shipping' | 'commission' | 'sms' | 'auth' | 'general';
+  | 'payment'
+  | 'shipping'
+  | 'commission'
+  | 'sms'
+  | 'auth'
+  | 'general'
+  | 'support';
 
 // A generic key/value config store for admin-tunable values shown on the
 // dashboard's Settings page. Deliberately not wired into runtime app
@@ -22,7 +28,15 @@ export class Setting {
   type: SettingType;
 
   @ApiProperty({
-    enum: ['payment', 'shipping', 'commission', 'sms', 'auth', 'general'],
+    enum: [
+      'payment',
+      'shipping',
+      'commission',
+      'sms',
+      'auth',
+      'general',
+      'support',
+    ],
   })
   category: SettingCategory;
 

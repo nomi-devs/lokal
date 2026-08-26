@@ -1793,9 +1793,47 @@
     },
     "tabs": {
       "general": "General",
+      "support": "Support",
       "notifications": "Notifications",
       "security": "Security",
       "appearance": "Appearance"
+    },
+    "support": {
+      "title": "Support Information",
+      "description": "Manage your support contact information",
+      "contactDetails": "Contact Details",
+      "fields": {
+        "supportEmail": {
+          "label": "Support Email",
+          "caption": "Primary email for user inquiries",
+          "placeholder": "support@example.com"
+        },
+        "supportPhone": {
+          "label": "Phone Number",
+          "caption": "Customer support phone line",
+          "placeholder": "+965 2220 4321"
+        },
+        "whatsappNumber": {
+          "label": "WhatsApp Number",
+          "caption": "WhatsApp contact for quick messaging",
+          "placeholder": "+965 9988 7766"
+        },
+        "websiteUrl": {
+          "label": "Website URL",
+          "caption": "Main website or help center URL",
+          "placeholder": "https://example.com/help"
+        },
+        "officeAddress": {
+          "label": "Office Address",
+          "caption": "Physical office address for support",
+          "placeholder": "Street, City, Country"
+        }
+      },
+      "saveFailed": "Failed to update support information",
+      "savedToast": {
+        "title": "Support Info Updated",
+        "body": "Your support contact details have been saved."
+      }
     },
     "commissionCard": {
       "title": "Commission",

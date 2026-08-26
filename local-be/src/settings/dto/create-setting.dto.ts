@@ -12,8 +12,23 @@ export class CreateSettingDto {
   @IsIn(['number', 'string', 'boolean', 'json'])
   type: 'number' | 'string' | 'boolean' | 'json';
 
-  @IsIn(['payment', 'shipping', 'commission', 'sms', 'auth', 'general'])
-  category: 'payment' | 'shipping' | 'commission' | 'sms' | 'auth' | 'general';
+  @IsIn([
+    'payment',
+    'shipping',
+    'commission',
+    'sms',
+    'auth',
+    'general',
+    'support',
+  ])
+  category:
+    | 'payment'
+    | 'shipping'
+    | 'commission'
+    | 'sms'
+    | 'auth'
+    | 'general'
+    | 'support';
 
   @IsString()
   @IsNotEmpty()
