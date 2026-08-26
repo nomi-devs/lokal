@@ -17,6 +17,7 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import {
@@ -28,22 +29,10 @@ import {
 } from "@/lib/reviewsApi";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
-const statusStyle: Record<ReviewStatus, { text: string; bg: string; dot: string }> = {
-  pending: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    dot: "bg-amber-400",
-  },
-  approved: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  rejected: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    dot: "bg-red-500",
-  },
+const statusVariant: Record<ReviewStatus, BadgeVariant> = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
 };
 
 // ── Star rating ───────────────────────────────────────────────────────────────
@@ -155,22 +144,11 @@ export default function ReviewsPage() {
       key: "status",
       header: t("reviews.list.columns.status", "Status"),
       sortable: true,
-      render: (v) => {
-        const s = statusStyle[v as ReviewStatus];
-
-        return (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
-              s.text,
-              s.bg
-            )}
-          >
-            <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
-            {t(`common.status.${v as string}`, v as string)}
-          </span>
-        );
-      },
+      render: (v) => (
+        <Badge variant={statusVariant[v as ReviewStatus]} dot>
+          {t(`common.status.${v as string}`, v as string)}
+        </Badge>
+      ),
     },
     {
       key: "createdAt",

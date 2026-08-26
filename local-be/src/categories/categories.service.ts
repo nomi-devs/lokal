@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NullableType } from '../utils/types/nullable.type';
-import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { Category } from './domain/category';
 import { CategoryRepository } from './infrastructure/persistence/category.repository';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -54,15 +54,11 @@ export class CategoriesService {
     await this.categoryRepository.remove(id);
   }
 
-  private async getOrThrow(id: string): Promise<Category> {
-    const category = await this.categoryRepository.findById(id);
-    if (!category) {
-      throw new AppException(
-        ERROR_CODES.CATEGORY_NOT_FOUND,
-        'Category not found',
-        404,
-      );
-    }
-    return category;
+  private getOrThrow(id: string): Promise<Category> {
+    return findOrThrow(
+      this.categoryRepository.findById(id),
+      ERROR_CODES.CATEGORY_NOT_FOUND,
+      'Category not found',
+    );
   }
 }

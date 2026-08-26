@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PromoCode } from '../domain/promo-code';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 export class PromoCodeResponseDto {
   @ApiProperty({ example: true })
@@ -7,12 +8,6 @@ export class PromoCodeResponseDto {
 
   @ApiProperty({ type: PromoCode })
   promoCode: PromoCode;
-}
-
-class PaginationDto {
-  @ApiProperty() page: number;
-  @ApiProperty() limit: number;
-  @ApiProperty() total: number;
 }
 
 export class PromoCodesListResponseDto {

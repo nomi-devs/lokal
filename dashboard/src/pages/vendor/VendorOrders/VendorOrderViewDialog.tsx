@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 
 export interface VendorOrderViewDialogProps {
   open: boolean;
@@ -18,37 +18,24 @@ export interface VendorOrderViewDialogProps {
   order: Order | null;
 }
 
-const statusStyle: Record<OrderStatus, { text: string; bg: string }> = {
-  placed: { text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
-  confirmed: { text: "text-sky-700 dark:text-sky-400", bg: "bg-sky-100 dark:bg-sky-900/30" },
-  in_transit: {
-    text: "text-violet-700 dark:text-violet-400",
-    bg: "bg-violet-100 dark:bg-violet-900/30",
-  },
-  delivered: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-  },
-  cancelled: { text: "text-red-700 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" },
+const statusVariant: Record<OrderStatus, BadgeVariant> = {
+  placed: "warning",
+  confirmed: "info",
+  in_transit: "purple",
+  delivered: "success",
+  cancelled: "danger",
 };
 
-const paymentStyle: Record<Order["paymentStatus"], string> = {
-  paid: "text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30",
-  pending: "text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30",
-  failed: "text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30",
+const paymentVariant: Record<Order["paymentStatus"], BadgeVariant> = {
+  paid: "success",
+  pending: "warning",
+  failed: "danger",
 };
 
 function StatusPill({ status }: { status: OrderStatus }) {
   const { t } = useTranslation();
-  const s = statusStyle[status];
 
-  return (
-    <span
-      className={cn("inline-flex text-xs font-semibold px-2.5 py-1 rounded-full", s.text, s.bg)}
-    >
-      {t(`common.status.${status}`, status)}
-    </span>
-  );
+  return <Badge variant={statusVariant[status]}>{t(`common.status.${status}`, status)}</Badge>;
 }
 
 export default function VendorOrderViewDialog({
@@ -155,14 +142,9 @@ export default function VendorOrderViewDialog({
                 {t("vendor.orders.details.paymentStatus")}
               </span>
               <span className="text-right">
-                <span
-                  className={cn(
-                    "inline-flex text-xs font-semibold px-2 py-0.5 rounded-full",
-                    paymentStyle[order.paymentStatus]
-                  )}
-                >
+                <Badge variant={paymentVariant[order.paymentStatus]}>
                   {t(`common.status.${order.paymentStatus}`, order.paymentStatus)}
-                </span>
+                </Badge>
               </span>
             </div>
           </div>

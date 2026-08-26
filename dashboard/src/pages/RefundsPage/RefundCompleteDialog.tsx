@@ -9,15 +9,8 @@ import type { AdminRefund } from "@/lib/refundsApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import DialogIconHeader from "@/components/ui/DialogIconHeader";
 
 const completeSchema = z.object({
   proofOfTransferUrl: z
@@ -69,20 +62,15 @@ export default function RefundCompleteDialog({ open, onOpenChange, refund, onCom
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
-        <DialogHeader>
-          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-            <BadgeCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div className="min-w-0">
-            <DialogTitle>{t("refunds.completeDialog.title", "Mark as completed")}</DialogTitle>
-            <DialogDescription>
-              {t("refunds.completeDialog.description", {
-                orderId: refund.orderNumber,
-                defaultValue: "Confirm the bank transfer for order {{orderId}}",
-              })}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
+        <DialogIconHeader
+          icon={BadgeCheck}
+          variant="info"
+          title={t("refunds.completeDialog.title", "Mark as completed")}
+          description={t("refunds.completeDialog.description", {
+            orderId: refund.orderNumber,
+            defaultValue: "Confirm the bank transfer for order {{orderId}}",
+          })}
+        />
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
@@ -102,7 +90,7 @@ export default function RefundCompleteDialog({ open, onOpenChange, refund, onCom
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t("common.actions.cancel")}
             </Button>
-            <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button type="submit" variant="info">
               <BadgeCheck className="w-4 h-4" />
               {t("refunds.completeDialog.confirm", "Mark completed")}
             </Button>

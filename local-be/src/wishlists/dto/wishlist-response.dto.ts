@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from '../../products/domain/product';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 class WishlistItemDto {
   @ApiProperty()
@@ -13,17 +14,6 @@ class WishlistItemDto {
 
   @ApiProperty({ type: Product, nullable: true })
   product: Product | null;
-}
-
-class PaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
 }
 
 export class WishlistListResponseDto {

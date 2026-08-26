@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NullableType } from '../utils/types/nullable.type';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { CategoriesService } from '../categories/categories.service';
 import { VendorsService } from '../vendors/vendors.service';
 import { WishlistRepository } from '../wishlists/infrastructure/persistence/wishlist.repository';
@@ -251,16 +252,12 @@ export class ProductsService {
     return product;
   }
 
-  private async getOrThrow(id: string): Promise<Product> {
-    const product = await this.productRepository.findById(id);
-    if (!product) {
-      throw new AppException(
-        ERROR_CODES.PRODUCT_NOT_FOUND,
-        'Product not found',
-        404,
-      );
-    }
-    return product;
+  private getOrThrow(id: string): Promise<Product> {
+    return findOrThrow(
+      this.productRepository.findById(id),
+      ERROR_CODES.PRODUCT_NOT_FOUND,
+      'Product not found',
+    );
   }
 
   private async assertCategoryExists(categoryId: string): Promise<void> {

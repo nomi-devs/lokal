@@ -8,6 +8,8 @@ import { Bell, Send } from "lucide-react";
 import type { AdminVendorRow } from "@/lib/adminApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -18,7 +20,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 
 // Backend support is vendor-only (POST /admin/notifications/vendor) — an
 // empty vendorId broadcasts to every vendor instead of targeting one.
@@ -40,8 +41,6 @@ const emptyValues: ComposeFormValues = {
   messageAr: "",
 };
 
-const selectCls =
-  "h-10 w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring cursor-pointer";
 const labelCls = "mb-1.5";
 
 export interface ComposeNotificationDialogProps {
@@ -98,14 +97,14 @@ export default function ComposeNotificationDialog({
           <DialogBody className="flex flex-col gap-4">
             <div>
               <Label className={labelCls}>{t("notificationsSend.compose.recipient")}</Label>
-              <select className={selectCls} {...register("vendorId")}>
+              <Select className="cursor-pointer" {...register("vendorId")}>
                 <option value="">{t("notificationsSend.compose.allVendors")}</option>
                 {vendors.map((v) => (
                   <option key={v.id} value={v.id}>
                     {v.storeName}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div>
@@ -133,13 +132,10 @@ export default function ComposeNotificationDialog({
                 {t("notificationsSend.compose.messageLabel")}{" "}
                 <span className="text-destructive">*</span>
               </Label>
-              <textarea
+              <Textarea
                 rows={4}
                 placeholder={t("notificationsSend.compose.messagePlaceholder")}
-                className={cn(
-                  "w-full rounded-md border bg-transparent px-3 py-2.5 text-sm resize-none",
-                  "focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
-                )}
+                className="resize-none"
                 {...register("message")}
               />
               {errors.message && (
@@ -149,15 +145,7 @@ export default function ComposeNotificationDialog({
 
             <div>
               <Label className={labelCls}>{t("notificationsSend.compose.messageArLabel")}</Label>
-              <textarea
-                rows={3}
-                dir="rtl"
-                className={cn(
-                  "w-full rounded-md border bg-transparent px-3 py-2.5 text-sm resize-none",
-                  "focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
-                )}
-                {...register("messageAr")}
-              />
+              <Textarea rows={3} dir="rtl" className="resize-none" {...register("messageAr")} />
             </div>
           </DialogBody>
 

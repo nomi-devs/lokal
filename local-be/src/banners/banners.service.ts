@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NullableType } from '../utils/types/nullable.type';
-import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { Banner } from './domain/banner';
 import { BannerRepository } from './infrastructure/persistence/banner.repository';
 import { CreateBannerDto } from './dto/create-banner.dto';
@@ -54,15 +54,11 @@ export class BannersService {
     await this.bannerRepository.remove(id);
   }
 
-  private async getOrThrow(id: string): Promise<Banner> {
-    const banner = await this.bannerRepository.findById(id);
-    if (!banner) {
-      throw new AppException(
-        ERROR_CODES.BANNER_NOT_FOUND,
-        'Banner not found',
-        404,
-      );
-    }
-    return banner;
+  private getOrThrow(id: string): Promise<Banner> {
+    return findOrThrow(
+      this.bannerRepository.findById(id),
+      ERROR_CODES.BANNER_NOT_FOUND,
+      'Banner not found',
+    );
   }
 }

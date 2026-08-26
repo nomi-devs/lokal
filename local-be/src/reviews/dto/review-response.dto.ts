@@ -1,16 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Review } from '../domain/review';
-
-class PaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
-}
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 export class RatingSummaryDto {
   @ApiProperty({ description: 'Average of approved ratings, rounded to 1dp' })

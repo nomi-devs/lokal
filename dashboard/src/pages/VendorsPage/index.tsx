@@ -10,18 +10,17 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import * as adminApi from "@/lib/adminApi";
 import type { AdminVendorRow } from "@/lib/adminApi";
-import VendorApproveDialog from "@/components/vendor/VendorApproveDialog";
-import VendorRejectDialog from "@/components/vendor/VendorRejectDialog";
-import VendorSuspendDialog from "@/components/vendor/VendorSuspendDialog";
+import VendorActionDialog from "@/components/vendor/VendorActionDialog";
 
-const STATUS_BADGE: Record<string, string> = {
-  pending_approval: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
-  active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  suspended: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+const STATUS_VARIANT: Record<string, BadgeVariant> = {
+  pending_approval: "warning",
+  active: "success",
+  suspended: "danger",
+  inactive: "neutral",
 };
 
 export default function VendorsPage() {
@@ -105,11 +104,9 @@ export default function VendorsPage() {
       key: "status",
       header: t("vendors.management.columns.status"),
       render: (v) => (
-        <span
-          className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}
-        >
+        <Badge variant={STATUS_VARIANT[v as string] ?? "neutral"}>
           {t(`common.status.${v as string}`, (v as string).replace("_", " "))}
-        </span>
+        </Badge>
       ),
     },
     {
@@ -234,23 +231,26 @@ export default function VendorsPage() {
         onOpenChange={(o) => !o && setViewTarget(null)}
         vendor={viewTarget}
       />
-      <VendorApproveDialog
+      <VendorActionDialog
+        action="approve"
         open={!!approveTarget}
         onOpenChange={(o) => !o && setApproveTarget(null)}
         vendor={approveTarget}
-        onApprove={handleApprove}
+        onConfirm={handleApprove}
       />
-      <VendorRejectDialog
+      <VendorActionDialog
+        action="reject"
         open={!!rejectTarget}
         onOpenChange={(o) => !o && setRejectTarget(null)}
         vendor={rejectTarget}
-        onReject={handleReject}
+        onConfirm={handleReject}
       />
-      <VendorSuspendDialog
+      <VendorActionDialog
+        action="suspend"
         open={!!suspendTarget}
         onOpenChange={(o) => !o && setSuspendTarget(null)}
         vendor={suspendTarget}
-        onSuspend={handleSuspend}
+        onConfirm={handleSuspend}
       />
     </DashboardLayout>
   );

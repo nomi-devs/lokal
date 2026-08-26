@@ -7,15 +7,15 @@ import { sidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { listAdminPayments, type AdminPaymentRow } from "@/lib/paymentsApi";
 
 // ── Style maps ────────────────────────────────────────────────────────────────
-const statusStyle: Record<AdminPaymentRow["paymentStatus"], string> = {
-  paid: "text-emerald-700 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30",
-  pending: "text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30",
-  failed: "text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30",
+const statusVariant: Record<AdminPaymentRow["paymentStatus"], BadgeVariant> = {
+  paid: "success",
+  pending: "warning",
+  failed: "danger",
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -90,14 +90,9 @@ export default function PaymentsPage() {
       header: t("payments.list.columns.status"),
       sortable: true,
       render: (v) => (
-        <span
-          className={cn(
-            "inline-flex text-xs font-semibold px-2 py-0.5 rounded-full",
-            statusStyle[v as AdminPaymentRow["paymentStatus"]]
-          )}
-        >
+        <Badge variant={statusVariant[v as AdminPaymentRow["paymentStatus"]]}>
           {t(`common.status.${v as string}`, v as string)}
-        </span>
+        </Badge>
       ),
     },
     {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NullableType } from '../utils/types/nullable.type';
-import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { Faq } from './domain/faq';
 import { FaqRepository } from './infrastructure/persistence/faq.repository';
 import { CreateFaqDto } from './dto/create-faq.dto';
@@ -45,11 +45,11 @@ export class FaqsService {
     await this.faqRepository.remove(id);
   }
 
-  private async getOrThrow(id: string): Promise<Faq> {
-    const faq = await this.faqRepository.findById(id);
-    if (!faq) {
-      throw new AppException(ERROR_CODES.FAQ_NOT_FOUND, 'FAQ not found', 404);
-    }
-    return faq;
+  private getOrThrow(id: string): Promise<Faq> {
+    return findOrThrow(
+      this.faqRepository.findById(id),
+      ERROR_CODES.FAQ_NOT_FOUND,
+      'FAQ not found',
+    );
   }
 }

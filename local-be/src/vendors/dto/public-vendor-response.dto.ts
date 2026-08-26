@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Vendor } from '../domain/vendor';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 // Customer-facing "store" shape — deliberately thinner than the full Vendor
 // domain (no businessLicense/kycDocumentUrl/approval-workflow/suspension
@@ -50,17 +51,6 @@ export function toPublicVendor(vendor: Vendor): PublicVendorDto {
   };
 }
 
-class PublicVendorsPaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
-}
-
 export class PublicVendorResponseDto {
   @ApiProperty({ example: true })
   success: boolean;
@@ -76,6 +66,6 @@ export class PublicVendorsListResponseDto {
   @ApiProperty({ type: [PublicVendorDto] })
   data: PublicVendorDto[];
 
-  @ApiProperty({ type: PublicVendorsPaginationDto })
-  pagination: PublicVendorsPaginationDto;
+  @ApiProperty({ type: PaginationDto })
+  pagination: PaginationDto;
 }

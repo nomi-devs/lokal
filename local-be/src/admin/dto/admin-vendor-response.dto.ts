@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Product } from '../../products/domain/product';
 import { Vendor } from '../../vendors/domain/vendor';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 class AdminVendorListItemDto {
   @ApiProperty()
@@ -37,17 +38,6 @@ class AdminVendorListItemDto {
     description: 'KYC document uploaded at registration',
   })
   kycDocumentUrl?: string;
-}
-
-class PaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
 }
 
 export class AdminVendorsListResponseDto {

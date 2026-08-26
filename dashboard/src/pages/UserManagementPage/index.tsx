@@ -11,6 +11,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "@/components/ui/Toast";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import * as adminApi from "@/lib/adminApi";
 import type { AdminUserRow } from "@/lib/adminApi";
@@ -18,17 +19,17 @@ import type { AdminUserRow } from "@/lib/adminApi";
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
 
-const STATUS_BADGE: Record<string, string> = {
-  active: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  suspended: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  deleted: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500",
+const STATUS_VARIANT: Record<string, BadgeVariant> = {
+  active: "success",
+  inactive: "neutral",
+  suspended: "danger",
+  deleted: "neutral",
 };
 
-const ROLE_BADGE: Record<string, string> = {
-  admin: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
-  vendor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  customer: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+const ROLE_VARIANT: Record<string, BadgeVariant> = {
+  admin: "purple",
+  vendor: "info",
+  customer: "warning",
 };
 
 export default function UserManagementPage() {
@@ -158,22 +159,18 @@ export default function UserManagementPage() {
       key: "role",
       header: t("users.management.columns.role"),
       render: (v) => (
-        <span
-          className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${ROLE_BADGE[v as string] ?? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}
-        >
+        <Badge variant={ROLE_VARIANT[v as string] ?? "neutral"} className="capitalize">
           {t(`common.status.${v as string}`, v as string)}
-        </span>
+        </Badge>
       ),
     },
     {
       key: "status",
       header: t("users.management.columns.status"),
       render: (v) => (
-        <span
-          className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[v as string]}`}
-        >
+        <Badge variant={STATUS_VARIANT[v as string] ?? "neutral"}>
           {t(`common.status.${v as string}`, v as string)}
-        </span>
+        </Badge>
       ),
     },
     {

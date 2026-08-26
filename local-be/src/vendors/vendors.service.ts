@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NullableType } from '../utils/types/nullable.type';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import type { VendorStatus } from '../common/constants/auth.constants';
 import { UsersService } from '../users/users.service';
 import { OtpService } from '../otp/otp.service';
@@ -337,15 +338,11 @@ export class VendorsService {
     await this.vendorRepository.update(vendorId, { rating, totalReviews });
   }
 
-  private async getOrThrow(id: string): Promise<Vendor> {
-    const vendor = await this.vendorRepository.findById(id);
-    if (!vendor) {
-      throw new AppException(
-        ERROR_CODES.VENDOR_NOT_FOUND,
-        'Vendor not found',
-        404,
-      );
-    }
-    return vendor;
+  private getOrThrow(id: string): Promise<Vendor> {
+    return findOrThrow(
+      this.vendorRepository.findById(id),
+      ERROR_CODES.VENDOR_NOT_FOUND,
+      'Vendor not found',
+    );
   }
 }

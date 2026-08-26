@@ -2,17 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../../users/domain/user';
 import { Address } from '../../addresses/domain/address';
 import { Product } from '../../products/domain/product';
-
-class PaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
-}
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 class WishlistItemDto {
   @ApiProperty()

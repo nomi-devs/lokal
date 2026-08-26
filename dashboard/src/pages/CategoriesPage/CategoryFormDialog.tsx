@@ -10,6 +10,8 @@ import { uploadCategoryIcon } from "@/lib/adminApi";
 import { toast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -48,12 +50,6 @@ const emptyValues: CategoryFormValues = {
 
 const inputCls = "h-10";
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-20 resize-y"
-);
 
 function ImageUploadField({
   label,
@@ -243,8 +239,8 @@ export default function CategoryFormDialog({
               {/* Description EN */}
               <div>
                 <Label className={labelRowCls}>{t("categories.dialog.descriptionEnglish")}</Label>
-                <textarea
-                  className={textareaCls}
+                <Textarea
+                  className="min-h-20"
                   placeholder={t("categories.dialog.descriptionEnglishPlaceholder")}
                   {...register("descriptionEn")}
                 />
@@ -253,8 +249,8 @@ export default function CategoryFormDialog({
               {/* Description AR */}
               <div>
                 <Label className={labelRowCls}>{t("categories.dialog.descriptionArabic")}</Label>
-                <textarea
-                  className={textareaCls}
+                <Textarea
+                  className="min-h-20"
                   placeholder={t("categories.dialog.descriptionArabicPlaceholder")}
                   dir="rtl"
                   {...register("descriptionAr")}
@@ -277,20 +273,14 @@ export default function CategoryFormDialog({
                   <Layers className="w-3.5 h-3.5 text-primary" />
                   {t("categories.dialog.parentCategory")}
                 </Label>
-                <select
-                  className={cn(
-                    inputCls,
-                    "w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
-                  )}
-                  {...register("parentId")}
-                >
+                <Select {...register("parentId")}>
                   <option value="">{t("categories.dialog.topLevel")}</option>
                   {parentOptions.map((p) => (
                     <option key={p.id} value={String(p.id)}>
                       {p.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div>
@@ -298,18 +288,12 @@ export default function CategoryFormDialog({
                   <Users2 className="w-3.5 h-3.5 text-primary" />
                   {t("categories.dialog.department")}
                 </Label>
-                <select
-                  className={cn(
-                    inputCls,
-                    "w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
-                  )}
-                  {...register("department")}
-                >
+                <Select {...register("department")}>
                   <option value="unisex">{t("common.departments.unisex")}</option>
                   <option value="men">{t("common.departments.men")}</option>
                   <option value="women">{t("common.departments.women")}</option>
                   <option value="kids">{t("common.departments.kids")}</option>
-                </select>
+                </Select>
               </div>
 
               <div>

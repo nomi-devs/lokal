@@ -33,7 +33,9 @@ npm run start:dev   # Nest dev server, watch mode (default port 3000)
 npm run build       # nest build
 npm run lint        # ESLint --fix across src/apps/libs/test
 npm run format      # Prettier --write on src/**/*.ts and test/**/*.ts
-npm run test         # Jest unit tests (*.spec.ts, co-located under src/)
+npm run test         # Jest unit tests (*.spec.ts, co-located under src/ — none written yet)
+npm run test -- <path/to/some.spec.ts>   # run a single unit test file
+npm run test -- -t "some test name"       # run tests matching a name pattern
 npm run test:e2e     # Jest e2e tests (test/jest-e2e.json)
 npm run test:cov     # Jest with coverage
 npm run seed:admin   # Create the initial admin user from ADMIN_* env vars, then seed the 5 default (empty-value) Support settings rows if missing (both safe to re-run)

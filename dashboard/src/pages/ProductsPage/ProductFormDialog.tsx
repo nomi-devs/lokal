@@ -14,6 +14,8 @@ import {
 } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -24,7 +26,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import {
   listCategories,
   type CategoryOption,
@@ -68,17 +69,6 @@ const emptyValues: FormValues = {
 
 const inputCls = "h-10";
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
-
-const selectCls = cn(
-  inputCls,
-  "w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
-);
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-20 resize-y"
-);
 
 interface Props {
   open: boolean;
@@ -212,8 +202,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className={labelRowCls}>{t("products.dialog.descriptionEnglish")}</Label>
-                <textarea
-                  className={textareaCls}
+                <Textarea
+                  className="min-h-20"
                   placeholder={t("products.dialog.descriptionEnglishPlaceholder")}
                   {...register("descriptionEn")}
                 />
@@ -224,8 +214,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
 
               <div>
                 <Label className={labelRowCls}>{t("products.dialog.descriptionArabic")}</Label>
-                <textarea
-                  className={textareaCls}
+                <Textarea
+                  className="min-h-20"
                   placeholder={t("products.dialog.descriptionArabicPlaceholder")}
                   dir="rtl"
                   {...register("descriptionAr")}
@@ -281,14 +271,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
                   <FolderTree className="w-3.5 h-3.5 text-primary" />
                   {t("products.dialog.category")} <span className="text-destructive">*</span>
                 </Label>
-                <select className={selectCls} {...register("categoryId")}>
+                <Select {...register("categoryId")}>
                   <option value="">{t("products.dialog.selectCategory")}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nameEn}
                     </option>
                   ))}
-                </select>
+                </Select>
                 {errors.categoryId && (
                   <p className="text-xs text-destructive mt-1">{errors.categoryId.message}</p>
                 )}
@@ -299,12 +289,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSubmi
                   <Users2 className="w-3.5 h-3.5 text-primary" />
                   {t("products.dialog.gender")}
                 </Label>
-                <select className={selectCls} {...register("gender")}>
+                <Select {...register("gender")}>
                   <option value="unisex">{t("common.genders.unisex")}</option>
                   <option value="male">{t("common.genders.male")}</option>
                   <option value="female">{t("common.genders.female")}</option>
                   <option value="kids">{t("common.genders.kids")}</option>
-                </select>
+                </Select>
               </div>
             </div>
 

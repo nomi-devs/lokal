@@ -7,40 +7,21 @@ import { DashboardLayout } from "@/components/Dashboard";
 import Chart from "@/components/ui/Chart";
 import StatsCard from "@/components/ui/StatsCard";
 import { vendorSidebarItems } from "@/constants";
-import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/Toast";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { listVendorOrders, type Order, type OrderStatus } from "@/lib/ordersApi";
 import { listMyProducts, type Product } from "@/lib/productsApi";
 
-const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }> = {
-  placed: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    dot: "bg-amber-400",
-  },
-  confirmed: {
-    text: "text-sky-700 dark:text-sky-400",
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    dot: "bg-sky-500",
-  },
-  in_transit: {
-    text: "text-violet-700 dark:text-violet-400",
-    bg: "bg-violet-100 dark:bg-violet-900/30",
-    dot: "bg-violet-500",
-  },
-  delivered: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  cancelled: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    dot: "bg-red-500",
-  },
+const statusVariant: Record<OrderStatus, BadgeVariant> = {
+  placed: "warning",
+  confirmed: "info",
+  in_transit: "purple",
+  delivered: "success",
+  cancelled: "danger",
 };
 
+// Chart.js needs literal hex, not Tailwind classes, so this can't reuse statusVariant directly.
 const STATUS_COLORS: Record<OrderStatus, string> = {
   placed: "#f59e0b",
   confirmed: "#3b82f6",
@@ -256,18 +237,9 @@ export default function VendorDashboard() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
-                          statusStyle[o.status].text,
-                          statusStyle[o.status].bg
-                        )}
-                      >
-                        <span
-                          className={cn("w-1.5 h-1.5 rounded-full", statusStyle[o.status].dot)}
-                        />
+                      <Badge variant={statusVariant[o.status]} dot>
                         {t(`common.status.${o.status}`, o.status)}
-                      </span>
+                      </Badge>
                       <span className="text-sm font-semibold w-20 text-right">
                         {o.total.toLocaleString()} KWD
                       </span>

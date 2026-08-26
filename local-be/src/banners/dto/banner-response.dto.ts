@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Banner } from '../domain/banner';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 export class BannerResponseDto {
   @ApiProperty({ example: true })
@@ -13,12 +14,6 @@ export class BannerResponseDto {
 
   @ApiProperty({ required: false })
   messageAr?: string;
-}
-
-class PaginationDto {
-  @ApiProperty() page: number;
-  @ApiProperty() limit: number;
-  @ApiProperty() total: number;
 }
 
 export class BannersListResponseDto {

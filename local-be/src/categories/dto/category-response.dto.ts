@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from '../domain/category';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 export class CategoryResponseDto {
   @ApiProperty({ example: true })
@@ -7,17 +8,6 @@ export class CategoryResponseDto {
 
   @ApiProperty({ type: Category })
   category: Category;
-}
-
-class PaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
 }
 
 export class CategoriesListResponseDto {

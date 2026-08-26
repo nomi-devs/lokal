@@ -8,16 +8,9 @@ import { CheckCircle2 } from "lucide-react";
 import type { AdminRefund } from "@/lib/refundsApi";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import DialogIconHeader from "@/components/ui/DialogIconHeader";
 
 const approveSchema = z.object({
   approvalNotes: z.string().max(500, "Max 500 characters").optional(),
@@ -25,12 +18,6 @@ const approveSchema = z.object({
 type ApproveValues = z.infer<typeof approveSchema>;
 
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-24 resize-y"
-);
 
 interface Props {
   open: boolean;
@@ -74,24 +61,18 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
-        <DialogHeader>
-          <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="min-w-0">
-            <DialogTitle>{t("refunds.approveDialog.title")}</DialogTitle>
-            <DialogDescription>
-              {t("refunds.approveDialog.description", { orderId: refund.orderNumber })}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
+        <DialogIconHeader
+          icon={CheckCircle2}
+          variant="success"
+          title={t("refunds.approveDialog.title")}
+          description={t("refunds.approveDialog.description", { orderId: refund.orderNumber })}
+        />
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
             <div>
               <Label className={labelRowCls}>{t("refunds.approveDialog.notes")}</Label>
-              <textarea
-                className={textareaCls}
+              <Textarea
                 placeholder={t("refunds.approveDialog.notesPlaceholder")}
                 maxLength={500}
                 {...register("approvalNotes")}
@@ -106,7 +87,7 @@ export default function RefundApproveDialog({ open, onOpenChange, refund, onAppr
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t("common.actions.cancel")}
             </Button>
-            <Button type="submit" className="bg-emerald-600 text-white hover:bg-emerald-700">
+            <Button type="submit" variant="success">
               <CheckCircle2 className="w-4 h-4" />
               {t("refunds.approve")}
             </Button>

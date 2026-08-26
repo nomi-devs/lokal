@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
+
 class NotificationItemDto {
   @ApiProperty()
   id: string;
@@ -29,17 +31,6 @@ class NotificationItemDto {
 
   @ApiProperty()
   createdAt: string;
-}
-
-class PaginationDto {
-  @ApiProperty()
-  page: number;
-
-  @ApiProperty()
-  limit: number;
-
-  @ApiProperty()
-  total: number;
 }
 
 export class NotificationListResponseDto {

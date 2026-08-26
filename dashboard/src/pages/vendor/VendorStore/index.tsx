@@ -28,8 +28,10 @@ import { DashboardLayout } from "@/components/Dashboard";
 import { vendorSidebarItems } from "@/constants";
 import { toast } from "@/components/ui/Toast";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/store";
 import { getApiErrorMessage } from "@/lib/apiClient";
@@ -68,29 +70,11 @@ const labelRowCls = "flex items-center gap-1.5 mb-1.5";
 const cardCls = "bg-card rounded-xl border p-6 flex flex-col gap-5";
 const sectionTitleCls = "flex items-center gap-2 text-sm font-semibold";
 
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-14 resize-y"
-);
-
-const approvalStyle: Record<VendorProfile["status"], { text: string; bg: string; dot: string }> = {
-  pending_approval: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    dot: "bg-amber-400",
-  },
-  active: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  inactive: { text: "text-muted-foreground", bg: "bg-muted", dot: "bg-slate-400" },
-  suspended: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    dot: "bg-red-500",
-  },
+const approvalVariant: Record<VendorProfile["status"], BadgeVariant> = {
+  pending_approval: "warning",
+  active: "success",
+  inactive: "neutral",
+  suspended: "danger",
 };
 
 function InfoField({
@@ -333,7 +317,7 @@ export default function VendorStore() {
                   <Input className={inputCls} value={vendor?.storeName ?? ""} disabled />
                   <div>
                     <Label className={labelRowCls}>{t("vendor.profile.fields.description")}</Label>
-                    <textarea className={textareaCls} {...register("description")} />
+                    <Textarea className="min-h-14" {...register("description")} />
                   </div>
                 </div>
               </div>
@@ -478,18 +462,9 @@ export default function VendorStore() {
                   {t("vendor.profile.sections.accountStatus")}
                 </h2>
                 {vendor && (
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-                      approvalStyle[vendor.status].text,
-                      approvalStyle[vendor.status].bg
-                    )}
-                  >
-                    <span
-                      className={cn("w-1.5 h-1.5 rounded-full", approvalStyle[vendor.status].dot)}
-                    />
+                  <Badge variant={approvalVariant[vendor.status]} dot>
                     {t(`common.status.${vendor.status}`, vendor.status.replace("_", " "))}
-                  </span>
+                  </Badge>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">

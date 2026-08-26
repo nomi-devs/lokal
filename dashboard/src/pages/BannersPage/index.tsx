@@ -10,6 +10,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction, ToolbarAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import {
   listAdminBanners,
   createAdminBanner,
@@ -34,22 +35,10 @@ function displayStatus(b: AdminBanner): DisplayStatus {
   return "Active";
 }
 
-const statusStyle: Record<DisplayStatus, { text: string; bg: string; dot: string }> = {
-  Active: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  Inactive: {
-    text: "text-muted-foreground",
-    bg: "bg-muted",
-    dot: "bg-slate-400",
-  },
-  Scheduled: {
-    text: "text-sky-700 dark:text-sky-400",
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    dot: "bg-sky-500",
-  },
+const statusVariant: Record<DisplayStatus, BadgeVariant> = {
+  Active: "success",
+  Inactive: "neutral",
+  Scheduled: "info",
 };
 
 type PendingAction =
@@ -184,15 +173,11 @@ export default function BannersPage() {
       sortable: true,
       render: (_, row) => {
         const status = displayStatus(row);
-        const s = statusStyle[status];
 
         return (
-          <span
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${s.text} ${s.bg}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+          <Badge variant={statusVariant[status]} dot>
             {t(`common.status.${status.toLowerCase()}`, status)}
-          </span>
+          </Badge>
         );
       },
     },

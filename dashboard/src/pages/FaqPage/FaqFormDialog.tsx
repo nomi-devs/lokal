@@ -8,6 +8,7 @@ import { HelpCircle, ListOrdered } from "lucide-react";
 import type { AdminFaq } from "@/lib/adminApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -18,7 +19,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 
 const faqSchema = z.object({
   questionEn: z.string().min(1, "Question (English) is required"),
@@ -39,12 +39,6 @@ const emptyValues: FaqFormValues = {
 };
 
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-24 resize-y"
-);
 
 export interface FaqFormDialogProps {
   open: boolean;
@@ -144,8 +138,7 @@ export default function FaqFormDialog({ open, onOpenChange, faq, onSubmit }: Faq
               <Label className={labelRowCls}>
                 {t("faqs.dialog.answerEn")} <span className="text-destructive">*</span>
               </Label>
-              <textarea
-                className={textareaCls}
+              <Textarea
                 placeholder={t("faqs.dialog.answerEnPlaceholder")}
                 {...register("answerEn")}
               />
@@ -158,8 +151,8 @@ export default function FaqFormDialog({ open, onOpenChange, faq, onSubmit }: Faq
               <Label className={labelRowCls}>
                 {t("faqs.dialog.answerAr")} <span className="text-destructive">*</span>
               </Label>
-              <textarea
-                className={cn(textareaCls, "text-right")}
+              <Textarea
+                className="text-right"
                 dir="rtl"
                 placeholder={t("faqs.dialog.answerArPlaceholder")}
                 {...register("answerAr")}

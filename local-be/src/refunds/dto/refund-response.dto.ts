@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Refund } from '../domain/refund';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 // Refund enriched with a thin, read-only snapshot of its order — fetched
 // live from OrdersService rather than duplicated into the Refund schema
@@ -17,12 +18,6 @@ export class RefundResponseDto {
 
   @ApiProperty({ type: RefundWithContextDto })
   refund: RefundWithContextDto;
-}
-
-class PaginationDto {
-  @ApiProperty() page: number;
-  @ApiProperty() limit: number;
-  @ApiProperty() total: number;
 }
 
 export class RefundsListResponseDto {

@@ -7,28 +7,15 @@ import { XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import DialogIconHeader from "@/components/ui/DialogIconHeader";
 import type { Product } from "@/lib/productsApi";
 
 const rejectSchema = z.object({
   rejectionReason: z.string().min(5).max(500),
 });
 type RejectValues = z.infer<typeof rejectSchema>;
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-24 resize-y"
-);
 
 interface Props {
   open: boolean;
@@ -68,24 +55,17 @@ export default function ProductRejectDialog({ open, onOpenChange, product, onRej
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
-        <DialogHeader>
-          <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-            <XCircle className="w-5 h-5 text-destructive" />
-          </div>
-          <div className="min-w-0">
-            <DialogTitle>{t("products.reject.title")}</DialogTitle>
-            <DialogDescription>
-              {t("products.reject.description", { name: product.name.en })}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
+        <DialogIconHeader
+          icon={XCircle}
+          title={t("products.reject.title")}
+          description={t("products.reject.description", { name: product.name.en })}
+        />
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
             <div>
               <Label className="mb-1.5 block">{t("products.reject.reasonLabel")}</Label>
-              <textarea
-                className={textareaCls}
+              <Textarea
                 placeholder={t("products.reject.reasonPlaceholder")}
                 {...register("rejectionReason")}
               />

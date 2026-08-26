@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { OrdersService } from '../orders/orders.service';
 import { ProductsService } from '../products/products.service';
 import { VendorsService } from '../vendors/vendors.service';
@@ -214,15 +215,11 @@ export class ReviewsService {
     return review;
   }
 
-  private async getOrThrow(id: string): Promise<Review> {
-    const review = await this.reviewRepository.findById(id);
-    if (!review) {
-      throw new AppException(
-        ERROR_CODES.REVIEW_NOT_FOUND,
-        'Review not found',
-        404,
-      );
-    }
-    return review;
+  private getOrThrow(id: string): Promise<Review> {
+    return findOrThrow(
+      this.reviewRepository.findById(id),
+      ERROR_CODES.REVIEW_NOT_FOUND,
+      'Review not found',
+    );
   }
 }

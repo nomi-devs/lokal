@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '../config/config.type';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { CartService } from '../cart/cart.service';
 import { AddressesService } from '../addresses/addresses.service';
 import { ProductsService } from '../products/products.service';
@@ -568,15 +569,11 @@ export class OrdersService {
     }
   }
 
-  private async getOrThrow(orderId: string): Promise<Order> {
-    const order = await this.orderRepository.findById(orderId);
-    if (!order) {
-      throw new AppException(
-        ERROR_CODES.ORDER_NOT_FOUND,
-        'Order not found',
-        404,
-      );
-    }
-    return order;
+  private getOrThrow(orderId: string): Promise<Order> {
+    return findOrThrow(
+      this.orderRepository.findById(orderId),
+      ERROR_CODES.ORDER_NOT_FOUND,
+      'Order not found',
+    );
   }
 }

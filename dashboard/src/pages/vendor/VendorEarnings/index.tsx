@@ -6,8 +6,8 @@ import { DashboardLayout } from "@/components/Dashboard";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/components/ui/DataTable";
 import { vendorSidebarItems } from "@/constants";
-import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/Toast";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import { listVendorOrders } from "@/lib/ordersApi";
 
@@ -26,12 +26,9 @@ type EarningsRow = {
   [key: string]: unknown;
 };
 
-const payoutStyle: Record<PayoutStatus, { text: string; bg: string }> = {
-  paid: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-  },
-  pending: { text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
+const payoutVariant: Record<PayoutStatus, BadgeVariant> = {
+  paid: "success",
+  pending: "warning",
 };
 
 // There's no payout/bank-account tracking in local-be yet — this reads
@@ -118,21 +115,11 @@ export default function VendorEarnings() {
       key: "payoutStatus",
       header: t("vendor.earnings.columns.payoutStatus"),
       sortable: true,
-      render: (v) => {
-        const s = payoutStyle[v as PayoutStatus];
-
-        return (
-          <span
-            className={cn(
-              "inline-flex text-xs font-semibold px-2 py-0.5 rounded-full",
-              s.text,
-              s.bg
-            )}
-          >
-            {t(`vendor.earnings.payoutStatus.${v as string}`)}
-          </span>
-        );
-      },
+      render: (v) => (
+        <Badge variant={payoutVariant[v as PayoutStatus]}>
+          {t(`vendor.earnings.payoutStatus.${v as string}`)}
+        </Badge>
+      ),
     },
   ];
 

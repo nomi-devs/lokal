@@ -7,6 +7,7 @@ import { Package, FolderTree, Coins, Boxes, Tag, Users2, Ruler, Palette, Power }
 
 import ProductImagesField from "@/components/product/ProductImagesField";
 import ProductMultiSelectField from "@/components/product/ProductMultiSelectField";
+import Badge from "@/components/ui/badge";
 import {
   PRODUCT_SIZE_SUGGESTIONS,
   PRODUCT_COLOR_SUGGESTIONS,
@@ -14,6 +15,8 @@ import {
 } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -24,7 +27,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import {
   listCategories,
   type CategoryOption,
@@ -68,19 +70,6 @@ const emptyValues: FormValues = {
 
 const inputCls = "h-10";
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
-
-const selectCls = cn(
-  inputCls,
-  "w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
-);
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-20 resize-y"
-);
-
-const rejectedBadgeCls = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
 
 interface Props {
   open: boolean;
@@ -178,11 +167,7 @@ export default function VendorProductFormDialog({ open, onOpenChange, product, o
                 ? t("vendor.products.dialog.editTitle")
                 : t("vendor.products.dialog.addTitle")}
               {isEdit && product && product.status === "rejected" && (
-                <span
-                  className={cn("text-xs font-medium px-2 py-0.5 rounded-full", rejectedBadgeCls)}
-                >
-                  {t("vendor.products.list.status.rejected")}
-                </span>
+                <Badge variant="danger">{t("vendor.products.list.status.rejected")}</Badge>
               )}
             </DialogTitle>
             <DialogDescription>
@@ -230,7 +215,7 @@ export default function VendorProductFormDialog({ open, onOpenChange, product, o
                 <Label className={labelRowCls}>
                   {t("vendor.products.dialog.descriptionEnglish")}
                 </Label>
-                <textarea className={textareaCls} {...register("descriptionEn")} />
+                <Textarea className="min-h-20" {...register("descriptionEn")} />
                 {errors.descriptionEn && (
                   <p className="text-xs text-destructive mt-1">{errors.descriptionEn.message}</p>
                 )}
@@ -240,7 +225,7 @@ export default function VendorProductFormDialog({ open, onOpenChange, product, o
                 <Label className={labelRowCls}>
                   {t("vendor.products.dialog.descriptionArabic")}
                 </Label>
-                <textarea className={textareaCls} dir="rtl" {...register("descriptionAr")} />
+                <Textarea className="min-h-20" dir="rtl" {...register("descriptionAr")} />
               </div>
             </div>
 
@@ -292,14 +277,14 @@ export default function VendorProductFormDialog({ open, onOpenChange, product, o
                   <FolderTree className="w-3.5 h-3.5 text-primary" />
                   {t("vendor.products.dialog.category")} <span className="text-destructive">*</span>
                 </Label>
-                <select className={selectCls} {...register("categoryId")}>
+                <Select {...register("categoryId")}>
                   <option value="">{t("vendor.products.dialog.selectCategory")}</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nameEn}
                     </option>
                   ))}
-                </select>
+                </Select>
                 {errors.categoryId && (
                   <p className="text-xs text-destructive mt-1">{errors.categoryId.message}</p>
                 )}
@@ -310,12 +295,12 @@ export default function VendorProductFormDialog({ open, onOpenChange, product, o
                   <Users2 className="w-3.5 h-3.5 text-primary" />
                   {t("vendor.products.dialog.gender")}
                 </Label>
-                <select className={selectCls} {...register("gender")}>
+                <Select {...register("gender")}>
                   <option value="unisex">{t("common.genders.unisex")}</option>
                   <option value="male">{t("common.genders.male")}</option>
                   <option value="female">{t("common.genders.female")}</option>
                   <option value="kids">{t("common.genders.kids")}</option>
-                </select>
+                </Select>
               </div>
             </div>
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { OrdersService } from '../orders/orders.service';
 import { UsersService } from '../users/users.service';
 import { Refund } from './domain/refund';
@@ -185,15 +186,11 @@ export class RefundsService {
     return refund;
   }
 
-  private async getOrThrow(id: string): Promise<Refund> {
-    const refund = await this.refundRepository.findById(id);
-    if (!refund) {
-      throw new AppException(
-        ERROR_CODES.REFUND_NOT_FOUND,
-        'Refund not found',
-        404,
-      );
-    }
-    return refund;
+  private getOrThrow(id: string): Promise<Refund> {
+    return findOrThrow(
+      this.refundRepository.findById(id),
+      ERROR_CODES.REFUND_NOT_FOUND,
+      'Refund not found',
+    );
   }
 }

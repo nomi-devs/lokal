@@ -10,7 +10,7 @@ import { vendorSidebarItems } from "@/constants";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef, RowAction } from "@/components/ui/DataTable";
 import { toast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 import {
   listVendorOrders,
   updateVendorOrderStatus,
@@ -20,32 +20,12 @@ import {
 } from "@/lib/ordersApi";
 import { getApiErrorMessage } from "@/lib/apiClient";
 
-const statusStyle: Record<OrderStatus, { text: string; bg: string; dot: string }> = {
-  placed: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    dot: "bg-amber-400",
-  },
-  confirmed: {
-    text: "text-sky-700 dark:text-sky-400",
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    dot: "bg-sky-500",
-  },
-  in_transit: {
-    text: "text-violet-700 dark:text-violet-400",
-    bg: "bg-violet-100 dark:bg-violet-900/30",
-    dot: "bg-violet-500",
-  },
-  delivered: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    dot: "bg-emerald-500",
-  },
-  cancelled: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    dot: "bg-red-500",
-  },
+const statusVariant: Record<OrderStatus, BadgeVariant> = {
+  placed: "warning",
+  confirmed: "info",
+  in_transit: "purple",
+  delivered: "success",
+  cancelled: "danger",
 };
 
 export default function VendorOrders() {
@@ -120,22 +100,11 @@ export default function VendorOrders() {
       key: "status",
       header: t("vendor.orders.columns.status"),
       sortable: true,
-      render: (v) => {
-        const s = statusStyle[v as OrderStatus];
-
-        return (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full",
-              s.text,
-              s.bg
-            )}
-          >
-            <span className={cn("w-1.5 h-1.5 rounded-full", s.dot)} />
-            {t(`common.status.${v as string}`, v as string)}
-          </span>
-        );
-      },
+      render: (v) => (
+        <Badge variant={statusVariant[v as OrderStatus]} dot>
+          {t(`common.status.${v as string}`, v as string)}
+        </Badge>
+      ),
     },
     {
       key: "createdAt",

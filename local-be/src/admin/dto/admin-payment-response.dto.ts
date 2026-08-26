@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
+
 // A payment "row" is just an Order projected the way the dashboard's
 // Payments page wants it — there's no separate Payment collection. Orders
 // are only ever created after MyFatoorah confirms payment (see
@@ -19,12 +21,6 @@ export class AdminPaymentRowDto {
   @ApiProperty() paymentMethodType: string;
   @ApiProperty({ enum: ['pending', 'paid', 'failed'] }) paymentStatus: string;
   @ApiProperty() createdAt: Date;
-}
-
-class PaginationDto {
-  @ApiProperty() page: number;
-  @ApiProperty() limit: number;
-  @ApiProperty() total: number;
 }
 
 export class AdminPaymentsListResponseDto {

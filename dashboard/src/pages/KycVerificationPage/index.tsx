@@ -10,8 +10,7 @@ import { toast } from "@/components/ui/Toast";
 import { getApiErrorMessage } from "@/lib/apiClient";
 import * as adminApi from "@/lib/adminApi";
 import type { AdminVendorRow } from "@/lib/adminApi";
-import VendorApproveDialog from "@/components/vendor/VendorApproveDialog";
-import VendorRejectDialog from "@/components/vendor/VendorRejectDialog";
+import VendorActionDialog from "@/components/vendor/VendorActionDialog";
 
 // Focused queue of vendors awaiting approval — a filtered view over the same
 // data/endpoints as /admin/vendors, kept as its own page for admins who only
@@ -178,17 +177,19 @@ export default function KycVerificationPage() {
         }}
       />
 
-      <VendorApproveDialog
+      <VendorActionDialog
+        action="approve"
         open={!!approveTarget}
         onOpenChange={(o) => !o && setApproveTarget(null)}
         vendor={approveTarget}
-        onApprove={handleApprove}
+        onConfirm={handleApprove}
       />
-      <VendorRejectDialog
+      <VendorActionDialog
+        action="reject"
         open={!!rejectTarget}
         onOpenChange={(o) => !o && setRejectTarget(null)}
         vendor={rejectTarget}
-        onReject={handleReject}
+        onConfirm={handleReject}
       />
     </DashboardLayout>
   );

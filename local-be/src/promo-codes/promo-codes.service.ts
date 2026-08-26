@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { PromoCode } from './domain/promo-code';
 import {
   ListPromoCodesFilters,
@@ -87,15 +88,11 @@ export class PromoCodesService {
     }
   }
 
-  private async getOrThrow(id: string): Promise<PromoCode> {
-    const promoCode = await this.promoCodeRepository.findById(id);
-    if (!promoCode) {
-      throw new AppException(
-        ERROR_CODES.PROMO_CODE_NOT_FOUND,
-        'Promo code not found',
-        404,
-      );
-    }
-    return promoCode;
+  private getOrThrow(id: string): Promise<PromoCode> {
+    return findOrThrow(
+      this.promoCodeRepository.findById(id),
+      ERROR_CODES.PROMO_CODE_NOT_FOUND,
+      'Promo code not found',
+    );
   }
 }

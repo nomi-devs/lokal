@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppException } from '../common/exceptions/app.exception';
 import { ERROR_CODES } from '../common/exceptions/error-codes';
+import { findOrThrow } from '../common/utils/find-or-throw.util';
 import { Setting } from './domain/setting';
 import { SettingRepository } from './infrastructure/persistence/setting.repository';
 import { CreateSettingDto } from './dto/create-setting.dto';
@@ -102,15 +103,11 @@ export class SettingsService {
     }
   }
 
-  private async getOrThrow(key: string): Promise<Setting> {
-    const setting = await this.settingRepository.findByKey(key);
-    if (!setting) {
-      throw new AppException(
-        ERROR_CODES.SETTING_NOT_FOUND,
-        'Setting not found',
-        404,
-      );
-    }
-    return setting;
+  private getOrThrow(key: string): Promise<Setting> {
+    return findOrThrow(
+      this.settingRepository.findByKey(key),
+      ERROR_CODES.SETTING_NOT_FOUND,
+      'Setting not found',
+    );
   }
 }

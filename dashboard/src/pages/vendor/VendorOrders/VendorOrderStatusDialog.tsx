@@ -7,6 +7,7 @@ import { ORDER_TIMELINE } from "../../OrdersPage/orderTimeline";
 import type { Order, OrderDriver, UpdateVendorOrderStatusPayload } from "@/lib/ordersApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -34,8 +35,6 @@ export interface VendorOrderStatusDialogProps {
   onSave: (orderId: string, payload: UpdateVendorOrderStatusPayload) => void;
 }
 
-const selectCls =
-  "h-10 w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring";
 const inputCls = "h-10";
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
 
@@ -173,8 +172,7 @@ export default function VendorOrderStatusDialog({
                 <label className="text-sm font-medium mb-1.5 block">
                   {t("vendor.orders.details.updateStatus")}
                 </label>
-                <select
-                  className={selectCls}
+                <Select
                   value={status}
                   onChange={(e) =>
                     setStatus(e.target.value as UpdateVendorOrderStatusPayload["status"])
@@ -185,7 +183,7 @@ export default function VendorOrderStatusDialog({
                       {t(`common.status.${step}`, step)}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {showDriverFields && (

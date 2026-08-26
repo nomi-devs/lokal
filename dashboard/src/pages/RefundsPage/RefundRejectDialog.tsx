@@ -8,16 +8,10 @@ import { XCircle } from "lucide-react";
 import type { AdminRefund } from "@/lib/refundsApi";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import DialogIconHeader from "@/components/ui/DialogIconHeader";
 
 const rejectSchema = z.object({
   reasonCategory: z.string(),
@@ -26,15 +20,6 @@ const rejectSchema = z.object({
 type RejectValues = z.infer<typeof rejectSchema>;
 
 const labelRowCls = "flex items-center gap-1.5 mb-1.5";
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-24 resize-y"
-);
-
-const selectCls =
-  "h-10 w-full rounded-md border bg-transparent px-3 text-sm focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring";
 
 const REASON_CATEGORIES = [
   "warranty",
@@ -84,24 +69,17 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-md min-h-[320px] max-h-[70vh]">
-        <DialogHeader>
-          <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-            <XCircle className="w-5 h-5 text-destructive" />
-          </div>
-          <div className="min-w-0">
-            <DialogTitle>{t("refunds.rejectDialog.title")}</DialogTitle>
-            <DialogDescription>
-              {t("refunds.rejectDialog.description", { orderId: refund.orderNumber })}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
+        <DialogIconHeader
+          icon={XCircle}
+          title={t("refunds.rejectDialog.title")}
+          description={t("refunds.rejectDialog.description", { orderId: refund.orderNumber })}
+        />
 
         <form onSubmit={handleSubmit(submit)} className="contents">
           <DialogBody className="flex flex-col gap-4">
             <div>
               <Label className={labelRowCls}>{t("refunds.rejectDialog.reasonCategory")}</Label>
-              <select
-                className={selectCls}
+              <Select
                 value={watch("reasonCategory")}
                 onChange={(e) => setValue("reasonCategory", e.target.value)}
               >
@@ -111,15 +89,14 @@ export default function RefundRejectDialog({ open, onOpenChange, refund, onRejec
                     {t(`refunds.rejectDialog.categories.${category}`)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div>
               <Label className={labelRowCls}>
                 {t("refunds.rejectDialog.reason")} <span className="text-destructive">*</span>
               </Label>
-              <textarea
-                className={textareaCls}
+              <Textarea
                 placeholder={t("refunds.rejectDialog.reasonPlaceholder")}
                 maxLength={500}
                 {...register("reason")}

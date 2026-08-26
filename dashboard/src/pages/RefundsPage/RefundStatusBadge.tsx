@@ -2,45 +2,22 @@ import { useTranslation } from "react-i18next";
 import { Hourglass, CheckCircle2, XCircle, BadgeCheck } from "lucide-react";
 
 import type { RefundStatus } from "@/lib/refundsApi";
-import { cn } from "@/lib/utils";
+import Badge, { type BadgeVariant } from "@/components/ui/badge";
 
-const statusStyle: Record<RefundStatus, { text: string; bg: string; icon: typeof Hourglass }> = {
-  requested: {
-    text: "text-amber-700 dark:text-amber-400",
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    icon: Hourglass,
-  },
-  approved: {
-    text: "text-emerald-700 dark:text-emerald-400",
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    icon: CheckCircle2,
-  },
-  rejected: {
-    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-100 dark:bg-red-900/30",
-    icon: XCircle,
-  },
-  completed: {
-    text: "text-blue-700 dark:text-blue-400",
-    bg: "bg-blue-100 dark:bg-blue-900/30",
-    icon: BadgeCheck,
-  },
+const statusConfig: Record<RefundStatus, { variant: BadgeVariant; icon: typeof Hourglass }> = {
+  requested: { variant: "warning", icon: Hourglass },
+  approved: { variant: "success", icon: CheckCircle2 },
+  rejected: { variant: "danger", icon: XCircle },
+  completed: { variant: "info", icon: BadgeCheck },
 };
 
 export default function RefundStatusBadge({ status }: { status: RefundStatus }) {
   const { t } = useTranslation();
-  const { text, bg, icon: Icon } = statusStyle[status];
+  const { variant, icon } = statusConfig[status];
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full",
-        text,
-        bg
-      )}
-    >
-      <Icon className="w-3 h-3" />
+    <Badge variant={variant} icon={icon}>
       {t(`refunds.statusLabels.${status}`)}
-    </span>
+    </Badge>
   );
 }

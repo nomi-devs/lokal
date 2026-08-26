@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Faq } from '../domain/faq';
+import { PaginationDto } from '../../common/dto/pagination-response.dto';
 
 export class FaqResponseDto {
   @ApiProperty({ example: true })
@@ -7,12 +8,6 @@ export class FaqResponseDto {
 
   @ApiProperty({ type: Faq })
   faq: Faq;
-}
-
-class PaginationDto {
-  @ApiProperty() page: number;
-  @ApiProperty() limit: number;
-  @ApiProperty() total: number;
 }
 
 export class FaqsListResponseDto {

@@ -5,22 +5,9 @@ import { XCircle } from "lucide-react";
 import type { AdminReview } from "@/lib/reviewsApi";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-
-const textareaCls = cn(
-  "flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-  "min-h-24 resize-y"
-);
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import DialogIconHeader from "@/components/ui/DialogIconHeader";
 
 export interface RejectReviewDialogProps {
   open: boolean;
@@ -55,24 +42,17 @@ export default function RejectReviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-md min-h-[280px] max-h-[70vh]">
-        <DialogHeader>
-          <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-            <XCircle className="w-5 h-5 text-destructive" />
-          </div>
-          <div className="min-w-0">
-            <DialogTitle>{t("reviews.rejectDialog.title", "Reject review")}</DialogTitle>
-            <DialogDescription>
-              {t("reviews.rejectDialog.description", { title: review.title.en })}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
+        <DialogIconHeader
+          icon={XCircle}
+          title={t("reviews.rejectDialog.title", "Reject review")}
+          description={t("reviews.rejectDialog.description", { title: review.title.en })}
+        />
 
         <DialogBody className="flex flex-col gap-3">
           <Label className="text-sm font-medium">
             {t("reviews.rejectDialog.reasonLabel", "Reason")}
           </Label>
-          <textarea
-            className={textareaCls}
+          <Textarea
             placeholder={t("reviews.rejectDialog.reasonPlaceholder", "Why is this being rejected?")}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -80,7 +60,7 @@ export default function RejectReviewDialog({
         </DialogBody>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             {t("common.actions.cancel")}
           </Button>
           <Button
